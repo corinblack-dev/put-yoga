@@ -27,6 +27,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:b
 .hud .l{display:flex;gap:6px}
 #btnBack{color:var(--amber);border-color:rgba(232,184,106,.5)}
 #btnBack.hidden{display:none}
+#btnTilt.off{color:#d98a6a;border-color:rgba(217,138,106,.5)}
 .hud .r{display:flex;gap:6px}
 .stage{color:var(--amber)}
 .panel{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;padding:22px 12px calc(env(safe-area-inset-bottom) + 12px);pointer-events:auto}
@@ -73,7 +74,7 @@ a{color:var(--amber)}
 <div id="ui">
   <div id="hud" class="hud hidden">
     <div class="l"><button id="btnBack" class="hidden">◀ назад</button><button id="who"><span class="stage">Ищущий</span></button></div>
-    <div class="r"><button id="btnScrolls">Свитки · 0</button><button id="btnSound">звук</button></div>
+    <div class="r"><button id="btnScrolls">Свитки · 0</button><button id="btnTilt" class="off">наклон</button><button id="btnSound">звук</button></div>
   </div>
   <div id="title" class="title hidden"></div>
   <div id="center" class="center hidden"></div>
@@ -294,23 +295,36 @@ function musicStart(){if(!AC||MUS.on)return;MUS.on=true;try{
 function musicGain(){if(MUS.g&&AC)MUS.g.gain.setTargetAtTime(muted||document.hidden?0:0.08,AC.currentTime,0.15);}
 document.addEventListener('visibilitychange',musicGain);
 function vib(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
-const M={ok:false,last:0,gs:{x:0,y:0,z:0},jolt:0,lastG:null,init:false};
+const M={ok:false,last:0,lastMotion:0,gs:{x:0,y:0,z:0},jolt:0,lastG:null,init:false};
 function onMotion(e){
   const a=e.accelerationIncludingGravity;if(!a||a.x==null)return;
   if(!M.init){M.gs={x:a.x,y:a.y,z:a.z};M.init=true;}
-  M.ok=true;M.last=performance.now();const k=0.18;
+  M.ok=true;M.last=M.lastMotion=performance.now();const k=0.18;
   M.gs.x+=(a.x-M.gs.x)*k;M.gs.y+=(a.y-M.gs.y)*k;M.gs.z+=(a.z-M.gs.z)*k;
   const ac=e.acceleration;let j=0;
   if(ac&&ac.x!=null)j=Math.hypot(ac.x,ac.y,ac.z);else if(M.lastG)j=Math.hypot(a.x-M.lastG.x,a.y-M.lastG.y,a.z-M.lastG.z);
   M.lastG={x:a.x,y:a.y,z:a.z};M.jolt=Math.max(M.jolt*0.9,j);
 }
-let motionAsked=false;
-function askMotion(){
-  if(motionAsked)return Promise.resolve();motionAsked=true;
-  let p=Promise.resolve();
-  try{if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function')p=DeviceMotionEvent.requestPermission().catch(()=>'denied');}catch(e){}
-  return p.then(()=>{try{window.addEventListener('devicemotion',onMotion);}catch(e){}});
+let motionAsked=false,motionState='unknown';
+function onOrient(e){ // запасной путь: ориентация -> вектор гравитации
+  if(e.beta==null||(M.ok&&performance.now()-M.lastMotion<500))return;
+  const b=e.beta*Math.PI/180,g=e.gamma*Math.PI/180,G=9.81;
+  const a={x:-G*Math.sin(g)*Math.cos(b)*(IOS?-1:1),y:G*Math.sin(b)*(IOS?-1:1),z:G*Math.cos(g)*Math.cos(b)*(IOS?-1:1)};
+  if(!M.init){M.gs={...a};M.init=true;}M.ok=true;M.last=performance.now();const k=0.18;
+  M.gs.x+=(a.x-M.gs.x)*k;M.gs.y+=(a.y-M.gs.y)*k;M.gs.z+=(a.z-M.gs.z)*k;
+  if(M.lastG)M.jolt=Math.max(M.jolt*0.9,Math.hypot(a.x-M.lastG.x,a.y-M.lastG.y,a.z-M.lastG.z));M.lastG=a;
 }
+function askMotion(){ // вызывать только из касания
+  motionAsked=true;const ps=[];
+  try{if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function')ps.push(DeviceMotionEvent.requestPermission().catch(()=>'denied'));}catch(e){ps.push(Promise.resolve('denied'));}
+  try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function')ps.push(DeviceOrientationEvent.requestPermission().catch(()=>'denied'));}catch(e){}
+  if(!ps.length)ps.push(Promise.resolve('granted'));
+  return Promise.all(ps).then(r=>{motionState=r.includes('granted')?'granted':'denied';
+    try{window.removeEventListener('devicemotion',onMotion);window.addEventListener('devicemotion',onMotion);window.removeEventListener('deviceorientation',onOrient);window.addEventListener('deviceorientation',onOrient);}catch(e){}
+    setTimeout(sensorBadge,1200);});
+}
+function sensorBadge(){const b=$('#btnTilt');if(!b)return;const live=sensorsLive();b.textContent=live?'наклон ✓':'наклон ✕';b.classList.toggle('off',!live);}
+setInterval(sensorBadge,2000);
 const sensorsLive=()=>M.ok&&performance.now()-M.last<1000;
 function tiltFromBase(g0){
   const g=M.gs,n1=Math.hypot(g.x,g.y,g.z)||1,n0=Math.hypot(g0.x,g0.y,g0.z)||1;
@@ -379,6 +393,7 @@ function info(html){const el=$('#info');if(!html){el.classList.add('hidden');el.
 let toastT=0;function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2800);}
 function hud(){$('#who').innerHTML='<span class="stage">'+STAGES[S.stage]+'</span>'+(S.ashram?' · '+ASH[S.ashram].n:'');$('#btnScrolls').textContent='Свитки '+S.scrolls.length;$('#btnSound').textContent=muted?'звук выкл':'звук';}
 $('#btnSound').onclick=()=>{muted=!muted;audioInit();musicGain();hud();};
+$('#btnTilt').onclick=()=>{askMotion().then(()=>{setTimeout(()=>{if(sensorsLive())toast('Датчики работают');else if(motionState==='denied')toast(IOS?'Доступ запрещён. Закрой Safari полностью, открой сайт снова и нажми «Разрешить». Или: Настройки → Safari → Движение и ориентация.':'Браузер не дал доступ к датчикам. Открой сайт в Chrome, не во встроенном браузере Telegram или Instagram.');else toast('Датчик молчит. Открой сайт в Safari или Chrome, не во встроенном браузере мессенджера.');},1200);});};
 $('#btnBack').onclick=()=>{if(scene&&scene.back){center();hint();hidePanel();go(scene.back());}};
 $('#btnScrolls').onclick=()=>{if(!scene||scene.name!=='map'){toast('Сначала заверши практику');return;}library();};
 $('#who').onclick=()=>{if(!scene||scene.name!=='map'){toast('Сначала заверши практику');return;}qualities();};
