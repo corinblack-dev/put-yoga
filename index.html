@@ -1312,10 +1312,14 @@ function makeChakra(){
       const top=oy+CHY[Math.min(6,lit.filter(Boolean).length)]*Sc;
       ctx.save();ctx.strokeStyle='rgba(255,236,190,.3)';ctx.lineWidth=0.7;ctx.shadowColor='rgba(255,236,190,.8)';ctx.shadowBlur=4;
       ctx.beginPath();ctx.moveTo(ox,oy+CHY[0]*Sc);ctx.lineTo(ox,top);ctx.stroke();ctx.restore();
-      for(let k=0;k<7;k++){const y=oy+CHY[k]*Sc,R=CHR[k]*Sc;
-        const L=lit[k]?1:(k===i&&st!=='done')?f*(0.75+0.25*Math.sin(t*4)):0;
-        chGlow(ox,y,R*2.6,k,0.05+0.1*L);
-        chSym(ox,y,R*1.25,k,0.34+0.5*L,0.25+0.75*L);}
+      for(let k=0;k<7;k++){
+        const app=lit[k]?1:(k===i&&st!=='done')?(st==='out'?1:clamp(f,0,1)):0;
+        if(app<=0.015)continue;
+        const y=oy+CHY[k]*Sc,R=CHR[k]*Sc*1.25*(0.68+0.32*app);
+        const inner=app*app*(lit[k]?1:0.8+0.2*Math.sin(t*4));
+        chGlow(ox,y,R*0.8,k,0.34*inner);
+        chGlow(ox,y,R*2.8,k,0.04*app+0.1*inner);
+        chSym(ox,y,R,k,0.12+0.72*app,0.15+0.85*inner);}
     }
   };
 }
