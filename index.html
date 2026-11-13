@@ -184,8 +184,343 @@ function sdf(f,x,y){let m=1e9;const s=f.s;for(let i=0;i<s.length;i++){const q=s[
   else{const dx=(x-q[1])/q[3],dy=(y-q[2])/q[4];d=(Math.sqrt(dx*dx+dy*dy)-1)*Math.min(q[3],q[4]);}
   m=i?smin(m,d,f.k):d;}return m;}
 let FRAME=0;
+/* ---------- фигуры из знаков: запекаются один раз и кэшируются ---------- */
+const SPRB=(()=>{
+
+const W=390,H=844;let CS=2.75,COLS=0,ROWS=0,BR,MAT,GL,ctx,cv;
+const RAMP=['·','ः','ऽ','।','र','॥','म','ष','क्ष'];
+const MATS=[];
+function mat(o){MATS.push(o);return MATS.length-1;}
+// --- SDF ---
+const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
+function cap(ax,ay,bx,by,ra,rb){return {t:'c',ax,ay,bx,by,ra,rb:rb==null?ra:rb};}
+function ell(cx,cy,rx,ry,rot){return {t:'e',cx,cy,rx,ry,rot:rot||0};}
+function rock(cx,cy,rx,ry,sd,rot,amp){return {t:'r',cx,cy,rx,ry,sd:sd||1,rot:rot||0,amp:amp};}
+function box(cx,cy,hw,hh,r){return {t:'b',cx,cy,hw,hh,r:r||0};}
+function prim(p,x,y){
+  if(p.t==='c'){const dx=p.bx-p.ax,dy=p.by-p.ay,l2=dx*dx+dy*dy||1;let t=((x-p.ax)*dx+(y-p.ay)*dy)/l2;t=clamp(t,0,1);return Math.hypot(x-p.ax-dx*t,y-p.ay-dy*t)-lerp(p.ra,p.rb,t);}
+  if(p.t==='e'){let X=x-p.cx,Y=y-p.cy;if(p.rot){const c=Math.cos(-p.rot),s=Math.sin(-p.rot);[X,Y]=[X*c-Y*s,X*s+Y*c];}const k=Math.hypot(X/p.rx,Y/p.ry);return (k-1)*Math.min(p.rx,p.ry);}
+  if(p.t==='r'){let X=x-p.cx,Y=y-p.cy;if(p.rot){const c=Math.cos(-p.rot),s2=Math.sin(-p.rot);[X,Y]=[X*c-Y*s2,X*s2+Y*c];}const a=Math.atan2(Y/p.ry,X/p.rx);const k=Math.hypot(X/p.rx,Y/p.ry);const A=p.amp||0.12;const m=1+A*(vnoise(Math.cos(a)*1.3+p.sd,Math.sin(a)*1.3+p.sd)-0.5)*2+A*0.35*Math.sin(a*2+p.sd)+A*0.25*Math.sin(a*5+p.sd*2);return (k-m)*Math.min(p.rx,p.ry);}
+  if(p.t==='b'){const qx=Math.abs(x-p.cx)-p.hw+p.r,qy=Math.abs(y-p.cy)-p.hh+p.r;return Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-p.r;}
+}
+function smin(a,b,k){if(k<=0)return Math.min(a,b);const h=clamp(0.5+0.5*(b-a)/k,0,1);return lerp(b,a,h)-k*h*(1-h);}
+function bodySdf(B,x,y){let d=1e9;for(const p of B.prims)d=smin(d,prim(p,x,y),B.k||0);if(B.cut)for(const p of B.cut)d=Math.max(d,-prim(p,x,y));return d;}
+function bbox(B){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of B.prims){let a,b,c,d;if(p.t==='c'){const r=Math.max(p.ra,p.rb);a=Math.min(p.ax,p.bx)-r;c=Math.max(p.ax,p.bx)+r;b=Math.min(p.ay,p.by)-r;d=Math.max(p.ay,p.by)+r;}else if(p.t==='e'||p.t==='r'){const r=Math.max(p.rx,p.ry);a=p.cx-r;c=p.cx+r;b=p.cy-r;d=p.cy+r;}else{a=p.cx-p.hw;c=p.cx+p.hw;b=p.cy-p.hh;d=p.cy+p.hh;}x0=Math.min(x0,a);y0=Math.min(y0,b);x1=Math.max(x1,c);y1=Math.max(y1,d);}return [x0-4,y0-4,x1+4,y1+4];}
+// --- шум ---
+function hash(x,y){let h=(x*374761393+y*668265263)|0;h=(h^(h>>>13))*1274126177|0;return ((h^(h>>>16))>>>0)/4294967295;}
+function vnoise(x,y){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);return lerp(lerp(hash(xi,yi),hash(xi+1,yi),u),lerp(hash(xi,yi+1),hash(xi+1,yi+1),u),v);}
+function fbm(x,y){return 0.5*vnoise(x,y)+0.25*vnoise(x*2.1,y*2.1)+0.125*vnoise(x*4.3,y*4.3)+0.0625*vnoise(x*8.7,y*8.7);}
+let SEED=7;function rnd(){SEED=(SEED*16807)%2147483647;return SEED/2147483647;}
+// --- растеризация тела ---
+// opt: {m: материал, light:[lx,ly], amb, emit(x,y)->доп.яркость, pat(x,y,d,b)->b, glow:true}
+function paint(B,opt){
+  const [x0,y0,x1,y1]=bbox(B);const c0=Math.max(0,Math.floor(x0/CS)),c1=Math.min(COLS-1,Math.ceil(x1/CS)),r0=Math.max(0,Math.floor(y0/CS)),r1=Math.min(ROWS-1,Math.ceil(y1/CS));
+  const L=opt.light||[-0.45,-0.75],ll=Math.hypot(L[0],L[1]);const e=0.8,rim=opt.rim==null?CS*1.2:opt.rim;
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){const x=c*CS+CS/2,y=r*CS+CS/2;const d=bodySdf(B,x,y);
+    if(d>CS*2)continue;const i=r*COLS+c;
+    if(d>0){ if(opt.gap&&MAT[i]>=0&&!opt.over){MAT[i]=-1;BR[i]=0;} continue;}
+    const gx=bodySdf(B,x+e,y)-bodySdf(B,x-e,y),gy=bodySdf(B,x,y+e)-bodySdf(B,x,y-e),gl=Math.hypot(gx,gy)||1;
+    let ndl=-(gx*L[0]+gy*L[1])/(gl*ll);if(B.prims.every(q=>q.t==='b')&&d<-CS*2)ndl=0.35;
+    const allBox=B.prims.every(q=>q.t==='b');const depth=Math.sqrt(clamp(-d/(allBox?3:(opt.depth||18)),0,1));
+    let b=(opt.amb==null?0.18:opt.amb)+(opt.kd==null?0.35:opt.kd)*depth+(opt.kl==null?0.45:opt.kl)*Math.max(0,ndl);
+    if(d>-rim)b=Math.max(b,opt.rimB==null?0.55:opt.rimB);
+    if(opt.emit)b+=opt.emit(x,y);
+    if(opt.pat)b=opt.pat(x,y,d,b);
+    b=clamp(b,0,1);b=b<0.5?0.5*Math.pow(2*b,1.3):1-0.5*Math.pow(2-2*b,1.3);b=clamp(b+(hash(c,r)-0.5)*0.05,0,1);
+    MAT[i]=opt.m;BR[i]=b;GL[i]=opt.glow?1:0;}
+}
+function dot(x,y,b,m,g){const c=Math.floor(x/CS),r=Math.floor(y/CS);if(c<0||r<0||c>=COLS||r>=ROWS)return;const i=r*COLS+c;MAT[i]=m;BR[i]=b;GL[i]=g?1:0;}
+function curve(pts,m,b,g,step){for(let k=0;k<pts.length-1;k++){const [ax,ay]=pts[k],[bx,by]=pts[k+1];const n=Math.ceil(Math.hypot(bx-ax,by-ay)/(step||CS));for(let j=0;j<=n;j++)dot(lerp(ax,bx,j/n),lerp(ay,by,j/n),typeof b==='function'?b(k,j):b,m,g);}}
+// --- палитры ---
+function pal(stops){return b=>{const t=clamp(b,0,1)*(stops.length-1),i=Math.floor(t),f=t-i,a=stops[i],c=stops[Math.min(i+1,stops.length-1)];return 'rgb('+Math.round(lerp(a[0],c[0],f))+','+Math.round(lerp(a[1],c[1],f))+','+Math.round(lerp(a[2],c[2],f))+')';};}
+const GOLD=pal([[40,26,6],[110,72,18],[190,130,40],[236,190,90],[255,236,170],[255,250,225]]);
+const STONE=pal([[28,30,28],[70,72,68],[118,120,112],[168,168,156],[214,212,198]]);
+const MOSS=pal([[20,34,10],[50,86,22],[96,140,40],[150,190,70],[200,228,120]]);
+const SNAKE=pal([[10,26,16],[30,70,40],[70,120,60],[130,170,90],[200,215,140]]);
+const BRONZE=pal([[22,20,16],[54,50,40],[96,88,70],[150,138,108],[214,200,160]]);
+const INK=pal([[20,20,18],[70,66,58],[130,124,110],[190,182,164],[236,230,214]]);
+const SAND=pal([[40,32,20],[100,84,56],[170,146,100],[220,196,148]]);
+const SEA=pal([[10,20,32],[30,60,90],[70,120,160],[160,200,220]]);
+const LEAF=pal([[10,22,12],[26,56,30],[50,100,50],[100,150,70],[170,200,110]]);
+const SKY=pal([[8,10,16],[20,26,40]]);
+// --- фон ---
+function stars(n,col,seed){return;SEED=seed||11;const m=mat({pal:col||GOLD});for(let i=0;i<n;i++){const x=rnd()*W,y=rnd()*H,b=rnd();dot(x,y,0.15+0.5*b*b,m,b>0.9);if(b>0.97){for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])dot(x+dx*CS,y+dy*CS,0.4,m,true);}}}
+function field(x0,y0,x1,y1,palf,fn){return;const m=mat({pal:palf});for(let r=Math.floor(y0/CS);r<Math.min(ROWS,y1/CS);r++)for(let c=Math.floor(x0/CS);c<Math.min(COLS,x1/CS);c++){const x=c*CS,y=r*CS;const b=fn(x,y,c,r);if(b==null||b<=0)continue;const i=r*COLS+c;if(MAT[i]>=0)continue;MAT[i]=m;BR[i]=b;}}
+// --- финальный рендер ---
+function render(glow){
+  ctx.font=(CS*1.25).toFixed(2)+"px 'Tiro Devanagari Sanskrit', serif";ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const i=r*COLS+c,m=MAT[i];if(m<0)continue;const b=BR[i];
+    ctx.fillStyle=MATS[m].pal(b);ctx.fillText(RAMP[Math.min(RAMP.length-1,Math.floor(b*RAMP.length))],c*CS+CS/2,r*CS+CS/2);}
+  if(glow){const sw=Math.max(1,cv.width>>3),sh=Math.max(1,cv.height>>3),t=document.createElement('canvas');t.width=sw;t.height=sh;const tc=t.getContext('2d');tc.drawImage(cv,0,0,sw,sh);
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,glow.a*2.2);ctx.drawImage(t,0,0,W,H);ctx.restore();}
+}
+function radial(x,y,r,col,a){ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba('+col+','+a+')');g.addColorStop(1,'rgba('+col+',0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,2*r,2*r);ctx.restore();}
+
+/* ======================= СЦЕНЫ ======================= */
+const SC={};
+// человеческая фигура по анатомическим линиям (стоящая, лёгкий контрапост)
+function humanStanding(cx,base,h,opt){opt=opt||{};const s=h/600;const X=v=>cx+v*s,Y=v=>base-v*s;const P=[];
+  P.push(ell(X(0),Y(545),26,32));P.push(ell(X(-2),Y(590),17,20));            // голова, пучок
+  P.push(cap(X(0),Y(510),X(0),Y(492),11,12));                                 // шея
+  P.push(ell(X(0),Y(470),56,18));                                             // плечевой пояс
+  P.push(cap(X(0),Y(470),X(4),Y(380),40,30));                                 // грудная клетка -> талия
+  P.push(ell(X(10),Y(330),46,40));                                            // таз (сдвинут)
+  // ноги: опорная прямая, другая чуть согнута
+  P.push(cap(X(-20),Y(320),X(-22),Y(175),25,16));P.push(cap(X(-22),Y(175),X(-26),Y(30),15,9));P.push(ell(X(-24),Y(10),18,9));
+  P.push(cap(X(32),Y(318),X(30),Y(178),24,15));P.push(cap(X(30),Y(178),X(10),Y(32),14,9));P.push(ell(X(6),Y(10),18,9));
+  const arms=opt.arms||'down';
+  if(arms==='down'){P.push(cap(X(-50),Y(468),X(-62),Y(370),13,10));P.push(cap(X(-62),Y(370),X(-66),Y(280),10,7));P.push(ell(X(-67),Y(266),8,13));
+    P.push(cap(X(50),Y(468),X(66),Y(372),13,10));P.push(cap(X(66),Y(372),X(78),Y(290),10,7));P.push(ell(X(80),Y(276),8,13));}
+  if(arms==='pot'){P.push(cap(X(-50),Y(468),X(-62),Y(370),13,10));P.push(cap(X(-62),Y(370),X(-66),Y(280),10,7));P.push(ell(X(-67),Y(266),8,13));
+    P.push(cap(X(50),Y(468),X(72),Y(390),13,10));P.push(cap(X(72),Y(390),X(52),Y(330),10,8));}
+  return {prims:P.map(p=>{if(p.t==='c'){p.ra*=s;p.rb*=s;}else if(p.t==='e'){p.rx*=s;p.ry*=s;}return p;}),k:18*s};}
+
+SC.meditation=(plain)=>{
+  stars(220,GOLD,3);
+  const cx=195; const F={prims:[
+    ell(cx,318,30,37),cap(cx,350,cx,372,8,9.5),ell(cx,392,64,19),
+    cap(cx,392,cx,470,47,39),ell(cx,500,45,25),
+    cap(cx-62,398,cx-76,470,14,11),cap(cx-76,470,cx-40,528,11,9),
+    cap(cx+62,398,cx+76,470,14,11),cap(cx+76,470,cx+40,528,11,9),
+    ell(cx,532,28,10),
+    ell(cx,566,148,29),ell(cx-112,560,45,25),ell(cx+112,560,45,25),
+    cap(cx-120,572,cx+40,548,19,14),cap(cx+120,572,cx-40,548,19,14)],k:14};
+  const m1=mat({pal:GOLD});
+  const teardrop=(x,yb,w,h,b)=>{const P=[];for(let i=0;i<=360;i++){const u=i/360;const ang=u*Math.PI*2;const yy=0.5-0.5*Math.cos(ang);const half=w*Math.sin(Math.PI*Math.pow(yy,0.62));P.push([x+(u<0.5?half:-half),yb-h+h*yy]);}curve(P,m1,b,true,CS*0.8);};
+  if(!plain){teardrop(cx,360,52,150,0.8);teardrop(cx,700,175,620,0.45);}for(let r=Math.floor(194/CS);r<226/CS;r++)for(let c=Math.floor((cx-16)/CS);c<(cx+16)/CS;c++){const i=r*COLS+c;if(MAT[i]===m1)MAT[i]=-1;}
+  for(let r=Math.floor(560/CS);r<ROWS;r++)for(let c=0;c<COLS;c++){const i=r*COLS+c;if(MAT[i]===m1)MAT[i]=-1;}
+  if(!plain)curve([[cx,80],[cx,192]],m1,0.45,true);
+  if(!plain){
+  // лотос: веер заострённых лепестков под фигурой
+  const ml=mat({pal:GOLD});
+  const petal=(px,py,ang,len,wid,b)=>{const P=[];for(let i=0;i<=60;i++){const t=i/60*Math.PI*2;const yy=0.5-0.5*Math.cos(t);const half=wid*Math.sin(Math.PI*Math.pow(yy,0.7));const lx=(t<Math.PI?half:-half),ly=-len*yy;const c=Math.cos(ang),s2=Math.sin(ang);P.push([px+lx*c-ly*s2,py+lx*s2+ly*c]);}curve(P,ml,b,false,CS*0.8);};
+  for(let k=-5;k<=5;k++){const ang=k*0.27;petal(cx+k*4,640,ang*1.15,110-Math.abs(k)*6,20,0.55-Math.abs(k)*0.03);}
+  for(let k=-4;k<=4;k++){petal(cx+k*34,642,k*0.14,48,15,0.4);}
+  curve([[cx-185,644],[cx+185,644]],ml,0.3,false);
+  }
+  paint(F,{m:mat({pal:GOLD}),light:[-0.4,-0.8],amb:0.3,kd:0.3,kl:0.4,rimB:0.7,depth:30,glow:true,
+    emit:(x,y)=>0.35*Math.exp(-((x-cx)**2+(y-440)**2)/(2*36*36))+0.35*Math.exp(-((x-cx)**2+(y-318)**2)/(2*10*10))});
+  render({r:2,a:0.3});
+  if(!plain){radial(cx,440,110,'255,210,120',0.18);radial(cx,318,30,'255,240,200',0.3);}
+};
+SC.seat=()=>SC.meditation(true);
+
+SC.stone=()=>{
+  stars(160,GOLD,4);
+  const ms=mat({pal:STONE}),mm=mat({pal:MOSS}),L=[-0.55,-0.75];
+  const R=(prims,o)=>paint({prims},Object.assign({m:ms,amb:0.15,kd:0.35,kl:0.6,depth:26,rimB:0.6,light:L,pat:(x,y,d,b)=>b*(0.78+0.4*fbm(x/6,y/6))},o||{}));
+  // пирамидка из трёх камней на большом валуне у воды
+  R([rock(190,648,152,70,3,0.03,0.14)]);
+  R([rock(214,550,90,42,7,-0.09,0.16)]);
+  R([rock(186,478,60,34,11,0.14,0.17)]);
+  R([rock(204,424,36,26,17,-0.2,0.18)]);
+  // мох у основания
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const i=r*COLS+c;if(MAT[i]!==ms)continue;const x=c*CS,y=r*CS;const v=fbm(x/10,y/10);if(y>640&&y<690&&v>0.5){MAT[i]=mm;BR[i]=clamp(0.3+v*0.6,0,1);}}
+  // вода
+  field(0,700,W,H,SEA,(x,y)=>{const w=0.5+0.5*Math.sin(x/11+y/4);return 0.25+0.55*w*fbm(x/14,y/6);});
+  render({r:1.5,a:0.12});
+};
+
+SC.pond=()=>{
+  stars(100,GOLD,12);
+  // гладь воды
+  field(0,250,W,H,SEA,(x,y)=>{const n=fbm(x/40,y/12);return 0.12+0.25*n+0.08*Math.sin(y/7);});
+  const mp=mat({pal:LEAF}),mf=mat({pal:pal([[50,20,30],[140,70,90],[220,140,160],[250,210,220],[255,245,248]])});
+  // листья лотоса: круги с вырезом
+  const pad=(x,y,r,rot)=>{const n=[Math.cos(rot),Math.sin(rot)];paint({prims:[ell(x,y,r,r*0.38)],cut:[cap(x,y,x+n[0]*r*1.2,y+n[1]*r*0.46,r*0.06,r*0.22)]},{m:mp,amb:0.25,kd:0.3,kl:0.5,depth:10,rimB:0.7,light:[-0.4,-0.9],
+    pat:(px,py,d,b)=>{const a=Math.atan2((py-y)/0.38,px-x);return b*(0.8+0.25*Math.abs(Math.sin(a*9)));}});};
+  pad(110,560,78,0.6);pad(290,520,62,2.4);pad(260,660,90,-0.9);pad(70,700,48,1.8);pad(330,420,40,3.6);
+  // цветок
+  const fx=180,fy=470;const petal=(ang,len,wid,b)=>paint({prims:[ell(fx+Math.sin(ang)*len*0.5,fy-Math.cos(ang)*len*0.5,wid,len*0.55,ang)]},{m:mf,amb:0.3,kd:0.35,kl:0.5,depth:10,rimB:0.75,light:[-0.4,-0.8]});
+  for(const a of [-1.2,1.2,-0.8,0.8])petal(a,60,15,0);for(const a of [-0.4,0.4,0])petal(a,72,17,0);
+  paint({prims:[ell(fx,fy+6,34,10)]},{m:mp,amb:0.3,kd:0.3,kl:0.5});
+  // круги на воде
+  const mw=mat({pal:SEA});for(let k=1;k<=4;k++){const R=60+k*38;const P=[];for(let i=0;i<=120;i++){const t=i/120*Math.PI*2;P.push([fx+Math.cos(t)*R,fy+20+Math.sin(t)*R*0.28]);}curve(P,mw,0.7-k*0.12,false,CS*1.5);}
+  render({r:1.5,a:0.15});
+};
+
+SC.tree=()=>{
+  const mi=mat({pal:INK}),mf=mat({pal:INK});
+  SEED=21;const tips=[];
+  const branch=(x,y,a,len,r,dep)=>{const x2=x+Math.cos(a)*len,y2=y+Math.sin(a)*len;paint({prims:[cap(x,y,x2,y2,r,r*0.68)]},{m:mi,amb:0.25,kd:0.3,kl:0.5,depth:6,rimB:0.6,pat:(px,py,d,b)=>b*(0.75+0.5*vnoise(px/2,py/9))});
+    if(dep===0||r<0.9){tips.push([x2,y2]);return;}const n=dep>3?2:2+(rnd()<0.4?1:0);for(let i=0;i<n;i++){const da=(i-(n-1)/2)*(0.5+rnd()*0.35)+(rnd()-0.5)*0.3;branch(x2,y2,a+da,len*(0.72+rnd()*0.12),r*0.68,dep-1);}};
+  // ствол с изгибом
+  paint({prims:[cap(195,560,190,470,24,16),cap(190,470,198,400,16,12),ell(195,566,46,14)],k:12},{m:mi,amb:0.25,kd:0.3,kl:0.55,depth:12,pat:(x,y,d,b)=>b*(0.7+0.6*vnoise(x/1.6,y/14))});
+  branch(198,402,-Math.PI/2-0.75,58,10,6);branch(198,402,-Math.PI/2+0.75,58,10,6);branch(196,404,-Math.PI/2,52,9,6);branch(194,430,-Math.PI/2-1.25,46,7,5);branch(198,428,-Math.PI/2+1.2,48,7,5);
+  // листва: облака вокруг кончиков
+  const ml=mat({pal:INK});
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const x=c*CS,y=r*CS;if(y>470||y<70)continue;const i=r*COLS+c;
+    let near=1e9;for(let k=0;k<tips.length;k+=1){const t=tips[k];const dd=(t[0]-x)**2+(t[1]-y)**2;if(dd<near)near=dd;}
+    const dist=Math.sqrt(near),n=fbm(x/7,y/7);if(dist<26*(0.6+n)&&n>0.42){if(MAT[i]<0){MAT[i]=ml;BR[i]=clamp(0.25+0.9*(n-0.42)+0.2*(1-y/470),0,1);}}}
+  // корни
+  const root=(x,y,a,len,r,dep)=>{const x2=x+Math.cos(a)*len,y2=y+Math.sin(a)*len;paint({prims:[cap(x,y,x2,y2,r,r*0.7)]},{m:mi,amb:0.22,kd:0.3,kl:0.4,depth:5});
+    if(dep===0||r<0.7)return;const n=2;for(let i=0;i<n;i++)root(x2,y2,a+(i?1:-1)*(0.25+rnd()*0.35)+(rnd()-0.5)*0.2,len*(0.75+rnd()*0.15),r*0.66,dep-1);};
+  SEED=5;for(let k=0;k<5;k++){const a=Math.PI/2+(k-2)*0.5;root(195+(k-2)*6,568,a,24+rnd()*10,5-Math.abs(k-2),4);}
+  for(const s of [-1,1]){root(195,566,s>0?0.2:Math.PI-0.2,40,4.5,4);}
+  // трава по линии земли
+  const mg=mat({pal:INK});for(let x=40;x<350;x+=CS){const h=rnd()*6;curve([[x,568],[x+rnd()*2-1,568-h]],mg,0.4,false);}
+  render({r:1.5,a:0.18});
+};
+
+SC.village=()=>{
+  field(0,0,W,520,LEAF,(x,y)=>{const n=fbm(x/30,y/50);return n>0.5?(n-0.5)*0.8:null;});
+  const mb=mat({pal:INK});for(const tx of []){paint({prims:[cap(tx,0,tx+4,520,9,11)]},{m:mb,amb:0.35,kd:0.2,kl:0.3,pat:(x,y,d,b)=>vnoise(x/3,y/8)>0.7?0.15:b});}
+  const ms=mat({pal:STONE}),mm=mat({pal:MOSS});
+  const L=[-0.55,-0.75];
+  // дольмены вдалеке: меньше и темнее
+  const far=mat({pal:STONE});
+  for(const [x,y,k,b] of [[60,500,0.42,0.5],[345,490,0.36,0.45],[205,452,0.3,0.4]]){
+    for(const P of [[box(x-40*k,y,10*k*1.2,90*k,3)],[box(x+40*k,y,11*k*1.2,90*k,3)],[box(x,y-95*k,70*k,14*k,4)]])paint({prims:P},{m:far,amb:0.1,kd:0,kl:0.25,light:L,pat:(px,py,d,bb)=>bb*b*(0.8+0.4*fbm(px/5,py/5))});}
+  const legs=[{prims:[box(122,480,30,95,10)]},{prims:[box(272,482,34,93,10)]}];
+  const cap1={prims:[box(197,365,150,28,14)]};
+  for(const S of legs)paint(S,{m:ms,amb:0.15,kd:0.2,kl:0.6,depth:22,rimB:0.5,light:L,pat:(x,y,d,b)=>b*(0.8+0.35*fbm(x/7,y/7))});
+  // тень под плитой и проём
+  field(150,393,242,575,STONE,()=>0.05);
+  paint(cap1,{m:ms,amb:0.2,kd:0.25,kl:0.65,depth:20,rimB:0.65,light:L,pat:(x,y,d,b)=>b*(0.8+0.35*fbm(x/7,y/7))});
+  // мох на крыше
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const i=r*COLS+c;if(MAT[i]!==ms)continue;const x=c*CS,y=r*CS;const v=fbm(x/10,y/10);if((y<356&&v>0.4)||v>0.68){MAT[i]=mm;BR[i]=clamp(0.3+v*0.7,0,1);}}
+  // спираль на правой опоре
+  const P=[];for(let i=0;i<=150;i++){const t=i/50*Math.PI*2,r=22*i/150;P.push([272+Math.cos(t)*r,480+Math.sin(t)*r*1.15]);}curve(P,ms,0.08,false,CS);
+  // камни рядом: неровные
+  paint({prims:[rock(50,555,34,52,4)]},{m:ms,amb:0.15,kd:0.3,kl:0.6,depth:18,light:L,pat:(x,y,d,b)=>b*(0.75+0.45*fbm(x/5,y/5))});
+  paint({prims:[rock(342,582,42,30,9)]},{m:ms,amb:0.15,kd:0.3,kl:0.6,depth:18,light:L,pat:(x,y,d,b)=>b*(0.75+0.45*fbm(x/5,y/5))});
+  field(0,575,W,H,MOSS,(x,y)=>0.12+0.3*fbm(x/9,y/9));
+  render({r:1.5,a:0.12});
+};
+
+SC.snake=()=>{
+  // золотой диск
+  stars(180,GOLD,9);
+  const mg=mat({pal:GOLD});paint({prims:[ell(205,740,175,58)]},{m:mg,amb:0.4,kd:0.1,kl:0.3,rim:CS*1.5,rimB:0.7,light:[-0.3,-1],pat:(x,y,d,b)=>b*(0.6+0.6*fbm(x/9,y/9))});
+  paint({prims:[ell(205,752,175,58)],cut:[ell(205,740,175,58)]},{m:mg,amb:0.15,kd:0.05,kl:0.1,rim:0});
+  // ось змеи
+  const ctrl=[[85,215],[150,190],[250,215],[305,295],[285,385],[215,430],[165,490],[170,565]];
+  {const cx=205,cy0=705;for(let i=1;i<=22;i++){const u=i/10;const a=-Math.PI/2-0.35-u*Math.PI*2*(i>0?1:0)*-1;const rx=lerp(140,50,u/2.2),ry=lerp(62,24,u/2.2);ctrl.push([cx+Math.cos(a)*rx,cy0-u*12+Math.sin(a)*ry]);}}
+  const cr=(p0,p1,p2,p3,t)=>{const t2=t*t,t3=t2*t;return [0.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),0.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3)];};
+  const pts=[];for(let i=0;i<ctrl.length-1;i++){const p0=ctrl[Math.max(0,i-1)],p1=ctrl[i],p2=ctrl[i+1],p3=ctrl[Math.min(ctrl.length-1,i+2)];for(let k=0;k<12;k++)pts.push(cr(p0,p1,p2,p3,k/12));}
+  const N=pts.length,ms=mat({pal:SNAKE});
+  // рисуем от хвоста к голове, чтобы верхние витки перекрывали нижние
+  for(let i=N-2;i>=0;i--){const s=i/N;const r=s<0.06?lerp(13,18,s/0.06):s<0.3?lerp(18,24,(s-0.06)/0.24):s<0.85?lerp(24,17,(s-0.3)/0.55):lerp(17,5,(s-0.85)/0.15);
+    const [ax,ay]=pts[i],[bx,by]=pts[i+1];paint({prims:[cap(ax,ay,bx,by,r,r)]},{m:ms,amb:0.24,kd:0.45,kl:0.6,depth:r,rimB:0.06,rim:CS*1.3,light:[-0.3,-0.95],gap:true,over:true,
+      pat:(x,y,d,b)=>{const u=(i*7+Math.atan2(y-ay,x-ax)*6);const sc=Math.abs(Math.sin(u))*Math.abs(Math.sin((x+y)*0.35));return b*(0.55+0.55*sc);}});}
+  // голова
+  paint({prims:[ell(78,214,40,20,-0.25),ell(108,206,24,22)],k:8},{m:ms,amb:0.25,kd:0.4,kl:0.6,depth:16,light:[-0.5,-0.8]});
+  const me=mat({pal:GOLD});for(const [dx,dy] of [[0,0],[1,0],[0,1],[1,1],[-1,0],[0,-1]])dot(82+dx*CS,204+dy*CS,0.95,me,true);
+  render({r:2,a:0.25});
+};
+
+SC.temple=()=>{
+  stars(160,GOLD,14);
+  const mk=mat({pal:STONE}),L=[-0.75,-0.5];
+  // холм
+  field(0,640,W,H,LEAF,(x,y)=>{const top=640+0.0008*(x-195)**2*1.4;if(y<top)return null;return 0.18+0.35*fbm(x/14,y/14);});
+  const st=(prims,o)=>paint({prims,k:(o&&o.k)||0},Object.assign({m:mk,amb:0.15,kd:0.2,kl:0.7,depth:10,rimB:0.55,light:L,pat:(x,y,d,b)=>b*(0.82+0.3*fbm(x/5,y/5))},o||{}));
+  // ступенчатое основание
+  st([box(195,646,150,10,2)]);st([box(195,628,135,9,2)]);st([box(195,611,120,9,2)]);
+  // мандапа с колоннами
+  st([box(195,594,105,7,2)]);
+  for(let k=-4;k<=4;k++)st([box(195+k*24,560,5,28,2)],{kl:0.8});
+  st([box(195,526,112,8,3)]);st([box(195,514,100,6,3)]);
+  // шикхара: изогнутая башня из рёбер
+  let y=500;for(let i=0;i<11;i++){const t=i/10;const hw=88*Math.cos(t*1.25)+6;st([box(195,y,hw,8,6)],{kl:0.75});y-=18*(1-t*0.25);}
+  // амалака и калаша
+  st([ell(195,y-4,34,10)],{kl:0.8,depth:6,pat:(x,yy,d,b)=>b*(0.6+0.5*Math.abs(Math.sin((x-195)/4)))});
+  st([ell(195,y-24,14,13)],{kl:0.8,depth:8});st([cap(195,y-36,195,y-58,4,1.5)]);
+  // вход
+  paint({prims:[box(195,565,14,22,7)]},{m:mk,amb:0.02,kd:0,kl:0,rim:0});
+  render({r:1.5,a:0.12});
+};
+
+SC.body=()=>{
+  stars(90,GOLD,5);
+  paint(humanStanding(195,780,620,{arms:'down'}),{m:mat({pal:BRONZE}),amb:0.2,kd:0.35,kl:0.6,depth:20,rimB:0.6,light:[-0.55,-0.7],pat:(x,y,d,b)=>b*(0.85+0.3*fbm(x/8,y/8))});
+  render({r:1.5,a:0.15});
+};
+
+SC.potter=()=>{
+  stars(120,GOLD,6);
+  const ms=mat({pal:STONE}),mb=mat({pal:BRONZE}),mg=mat({pal:GOLD});
+  // дом: стены, крыша, дверной проём
+  paint({prims:[box(110,560,92,80,3)]},{m:ms,amb:0.18,kd:0.15,kl:0.6,light:[-0.7,-0.5],pat:(x,y,d,b)=>b*(0.8+0.3*fbm(x/5,y/5))});
+  paint({prims:[cap(0,480,110,410,6,6),cap(110,410,222,480,6,6),ell(110,455,120,40)],cut:[box(110,520,140,40)],k:10},{m:mb,amb:0.2,kd:0.3,kl:0.6,light:[-0.7,-0.5],pat:(x,y,d,b)=>b*(0.6+0.6*Math.abs(Math.sin((x-y)*0.6)))});
+  paint({prims:[box(110,592,22,46,10)]},{m:ms,amb:0.03,kd:0,kl:0,rim:0});
+  // гончарница с горшком у бедра
+  paint(humanStanding(240,742,330,{arms:'pot'}),{m:mb,amb:0.22,kd:0.35,kl:0.6,depth:12,rimB:0.6,light:[-0.6,-0.7]});
+  paint({prims:[ell(284,590,22,20),cap(284,568,284,575,10,12)],k:4},{m:mg,amb:0.25,kd:0.4,kl:0.6,depth:10,light:[-0.6,-0.7]});
+  for(const [x,y,r] of [[40,660,20],[72,668,14],[180,664,18]])paint({prims:[ell(x,y,r,r*0.9),cap(x,y-r*0.9,x,y-r*1.1,r*0.45,r*0.5)],k:3},{m:mg,amb:0.2,kd:0.4,kl:0.6,depth:8,light:[-0.6,-0.7]});
+  // собака
+  dog(335,742,0.5,mb);
+  field(0,742,W,H,MOSS,(x,y)=>0.12+0.25*fbm(x/9,y/9));
+  render({r:1.5,a:0.15});
+};
+SC.house=()=>{
+  const ms=mat({pal:STONE}),mb=mat({pal:BRONZE}),mg=mat({pal:GOLD});
+  paint({prims:[box(110,560,92,80,3)]},{m:ms,amb:0.18,kd:0.15,kl:0.6,light:[-0.7,-0.5],pat:(x,y,d,b)=>b*(0.8+0.3*fbm(x/5,y/5))});
+  paint({prims:[cap(0,480,110,410,6,6),cap(110,410,222,480,6,6),ell(110,455,120,40)],cut:[box(110,520,140,40)],k:10},{m:mb,amb:0.2,kd:0.3,kl:0.6,light:[-0.7,-0.5],pat:(x,y,d,b)=>b*(0.6+0.6*Math.abs(Math.sin((x-y)*0.6)))});
+  paint({prims:[box(110,592,22,46,10)]},{m:ms,amb:0.03,kd:0,kl:0,rim:0});
+  for(const [x,y,r] of [[40,660,20],[72,668,14],[180,664,18]])paint({prims:[ell(x,y,r,r*0.9),cap(x,y-r*0.9,x,y-r*1.1,r*0.45,r*0.5)],k:3},{m:mg,amb:0.2,kd:0.4,kl:0.6,depth:8,light:[-0.6,-0.7]});
+  render({r:1.5,a:0.12});
+};
+SC.woman=()=>{
+  const mb=mat({pal:BRONZE}),mg=mat({pal:GOLD});
+  paint(humanStanding(195,780,620,{arms:'pot'}),{m:mb,amb:0.22,kd:0.35,kl:0.6,depth:20,rimB:0.6,light:[-0.6,-0.7]});
+  paint({prims:[ell(278,495,40,37),cap(278,455,278,468,18,22)],k:6},{m:mg,amb:0.25,kd:0.4,kl:0.6,depth:16,light:[-0.6,-0.7]});
+  render({r:1.5,a:0.12});
+};
+function dog(x0,base,s,m){const X=v=>x0+v*s,Y=v=>base-(v-290)*s;
+  const D={k:14*s,prims:[ell(X(0),Y(470),88*s,26*s,0.08),ell(X(-55),Y(478),40*s,32*s,0.1),ell(X(58),Y(462),34*s,24*s),
+    cap(X(-70),Y(490),X(-112),Y(585),20*s,12*s),ell(X(-120),Y(598),20*s,14*s,-0.35),cap(X(-130),Y(604),X(-178),Y(624),11*s,5*s),cap(X(-108),Y(604),X(-78),Y(596),6*s,2*s),
+    cap(X(-62),Y(460),X(-64),Y(380),11*s,7*s),cap(X(-64),Y(380),X(-66),Y(290),7*s,5*s),cap(X(-50),Y(460),X(-50),Y(380),10*s,7*s),cap(X(-50),Y(380),X(-56),Y(290),7*s,5*s),
+    cap(X(64),Y(452),X(74),Y(380),14*s,7*s),cap(X(74),Y(380),X(80),Y(290),7*s,5*s),cap(X(80),Y(450),X(92),Y(380),13*s,7*s),cap(X(92),Y(380),X(96),Y(290),7*s,5*s),
+    cap(X(90),Y(470),X(118),Y(380),7*s,5*s),cap(X(118),Y(380),X(128),Y(330),5*s,3*s),cap(X(128),Y(330),X(142),Y(300),3*s,2*s)]};
+  paint(D,{m,amb:0.2,kd:0.35,kl:0.55,depth:10,rimB:0.55,light:[-0.6,-0.7],pat:(x,y,d,b)=>vnoise(x/3,y/10)>0.72?b*1.4:b});}
+
+SC.dog=()=>{stars(90,GOLD,8);dog(225,640,1.0,mat({pal:BRONZE}));render({r:1.5,a:0.15});};
+
+SC.treepose=()=>{
+  // лесной фон: вертикальные стволы
+  field(0,0,W,H,LEAF,(x,y)=>{const t=Math.sin(x/14)*0.5+0.5;const n=fbm(x/20,y/60);return (t>0.85?0.35:0.08)+0.25*n;});
+  const s=1,cx=195,b=790;const X=v=>cx+v,Y=v=>b-v;
+  const P=[ell(X(0),Y(560),24,30),cap(X(0),Y(528),X(0),Y(512),10,11),ell(X(0),Y(495),52,16),cap(X(0),Y(495),X(2),Y(410),36,26),ell(X(4),Y(372),40,34),
+    cap(X(14),Y(360),X(14),Y(200),22,14),cap(X(14),Y(200),X(10),Y(30),13,8),ell(X(14),Y(12),18,9),          // опорная нога
+    cap(X(-14),Y(362),X(-96),Y(250),22,14),cap(X(-96),Y(250),X(0),Y(230),13,9),ell(X(4),Y(232),14,8),     // согнутая нога, стопа у бедра
+    cap(X(-44),Y(500),X(-58),Y(600),12,10),cap(X(-58),Y(600),X(-6),Y(690),10,7),cap(X(44),Y(500),X(58),Y(600),12,10),cap(X(58),Y(600),X(6),Y(690),10,7),cap(X(0),Y(690),X(0),Y(735),7,4)];
+  paint({prims:P,k:16},{m:mat({pal:pal([[10,20,40],[30,70,120],[70,120,170],[150,190,220],[220,236,250]])}),amb:0.22,kd:0.35,kl:0.55,depth:18,rimB:0.65,light:[0,-1],glow:true});
+  render({r:2,a:0.25});radial(cx,b-740,90,'255,220,120',0.45);
+};
+
+function bake(name,z,dpr){
+  CS=2.75/z;COLS=Math.ceil(W/CS);ROWS=Math.ceil(H/CS);BR=new Float32Array(COLS*ROWS);MAT=new Int16Array(COLS*ROWS).fill(-1);GL=new Uint8Array(COLS*ROWS);MATS.length=0;SEED=7;
+  cv=document.createElement('canvas');const px=dpr*z;cv.width=Math.ceil(W*px);cv.height=Math.ceil(H*px);ctx=cv.getContext('2d');ctx.scale(px,px);
+  SC[name]();
+  const occ=new Uint8Array(COLS*ROWS);let c0=COLS,c1=0,r0=ROWS,r1=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(MAT[r*COLS+c]>=0){occ[r*COLS+c]=1;if(c<c0)c0=c;if(c>c1)c1=c;if(r<r0)r0=r;if(r>r1)r1=r;}
+  return {cv,occ,cols:COLS,rows:ROWS,cs:CS,bb:[c0*CS,r0*CS,(c1+1)*CS,(r1+1)*CS]};
+}
+return {bake,W,H};
+})();
+const SPRC=new Map();
+try{document.fonts.load("10px 'Tiro Devanagari Sanskrit'",'कॐ').then(()=>SPRC.clear());document.fonts.ready.then(()=>SPRC.clear());}catch(e){}
+function getSprite(name,zs){const zq=clamp(Math.round(zs*20)/20,0.1,1.6),key=name+'@'+zq;let sp=SPRC.get(key);
+  if(!sp){if(SPRC.size>40)SPRC.clear();sp=SPRB.bake(name,zq,Math.min(2,DPR));SPRC.set(key,sp);}return sp;}
+// рисует фигуру и занимает её клетки, чтобы фон не лез поверх. (X,Y) — экранная точка якоря (ax,ay) фигуры.
+function drawSprite(name,ax,ay,X,Y,zs,rot,alpha,flip,clipBottom){
+  if(!(zs>0.02))return;const sp=getSprite(name,zs),fx=flip?-1:1,ca=Math.cos(rot||0),sa=Math.sin(rot||0);
+  ctx.save();if(clipBottom!=null){ctx.beginPath();ctx.rect(0,0,W,clipBottom);ctx.clip();}
+  ctx.translate(X,Y);if(rot)ctx.rotate(rot);ctx.scale(fx,1);ctx.globalAlpha=alpha==null?1:alpha;ctx.drawImage(sp.cv,-ax*zs,-ay*zs,SPRB.W*zs,SPRB.H*zs);ctx.restore();
+  // маска
+  const bb=sp.bb,xs=[],ys=[];for(const [dx,dy] of [[bb[0],bb[1]],[bb[2],bb[1]],[bb[0],bb[3]],[bb[2],bb[3]]]){const lx=(dx-ax)*zs*fx,ly=(dy-ay)*zs;xs.push(X+lx*ca-ly*sa);ys.push(Y+lx*sa+ly*ca);}
+  const c0=Math.max(0,Math.floor(Math.min(...xs)/CW)),c1=Math.min(COLS-1,Math.ceil(Math.max(...xs)/CW)),r0=Math.max(0,Math.floor(Math.min(...ys)/CH)),r1=Math.min(ROWS-1,Math.ceil((clipBottom!=null?Math.min(Math.max(...ys),clipBottom):Math.max(...ys))/CH));
+  for(let r=r0;r<=r1;r++){const py=r*CH+CH/2-Y;for(let c=c0;c<=c1;c++){const px=c*CW+CW/2-X;const lx=(px*ca+py*sa)*fx,ly=-px*sa+py*ca;
+    const dx=lx/zs+ax,dy=ly/zs+ay;if(dx<0||dy<0)continue;const sc=Math.floor(dx/sp.cs),sr=Math.floor(dy/sp.cs);if(sc>=sp.cols||sr>=sp.rows)continue;
+    if(sp.occ[sr*sp.cols+sc]||sp.occ[sr*sp.cols+Math.min(sp.cols-1,sc+1)]||sp.occ[Math.min(sp.rows-1,sr+1)*sp.cols+sc])MASK[r*COLS+c]=1;}}
+}
+const sprAlpha=pal=>pal===PAL.shade?0.3:pal===PAL.stone?0.8:1;
+function omPulse(X,Y,zs,t){const ph=0.5+0.5*Math.sin(t*Math.PI*2/3),fs=Math.max(12,26*zs);ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let k=3;k>=1;k--){ctx.globalAlpha=0.10*ph/k*2;ctx.fillStyle='#f3cf8a';ctx.font=(fs+k*fs*0.22*ph)+"px 'Tiro Devanagari Sanskrit', serif";ctx.fillText('ॐ',X,Y);}
+  ctx.globalAlpha=0.75+0.25*ph;ctx.font=fs+"px 'Tiro Devanagari Sanskrit', serif";ctx.shadowColor='rgba(243,207,138,.85)';ctx.shadowBlur=4+12*ph;ctx.fillStyle='#f6dca0';ctx.fillText('ॐ',X,Y);ctx.restore();}
 function seatMarks(ox,oy,S){putB(px2c(ox)-1,py2r(oy-0.33*S),'ॐ',PAL.amberHi[7]);putB(px2c(ox)-1,py2r(oy-0.22*S),'△',PAL.amber[5]);}
 function drawFig(f,ox,oy,S,ang,pal,rp){S*=FIGK;
+  if(f.spr){const q=f.spr;drawSprite(q.n,q.ax,q.ay,ox,oy,S/q.u,-(ang||0),sprAlpha(pal),q.flip);return;}
   const R=f.R*S+CW*4;
   const c0=Math.max(0,Math.floor((ox-R)/CW)),c1=Math.min(COLS-1,Math.ceil((ox+R)/CW));
   const r0=Math.max(0,Math.floor((oy-R)/CH)),r1=Math.min(ROWS-1,Math.ceil((oy+R)/CH));
@@ -217,6 +552,7 @@ const FIG_SEAT=mkFig([
   ['c',-0.13,0.43,-0.24,0.27,0.028],['c',-0.24,0.27,-0.28,0.12,0.025],['o',-0.28,0.11,0.03],
   ['c',0.13,0.43,0.24,0.27,0.028],['c',0.24,0.27,0.28,0.12,0.025],['o',0.28,0.11,0.03]
 ],0.022);
+FIG_SEAT.spr={n:'seat',ax:195,ay:596,u:420};FIG_TREE.spr={n:'treepose',ax:207,ay:790,u:771};
 const ICON={
   tree:mkFig([['c',0,0,0,0.34,0.06],['o',0,0.58,0.25],['o',-0.19,0.43,0.17],['o',0.19,0.43,0.17]],0.04),
   breath:mkFig([['e',0,0.2,0.4,0.2],['e',-0.12,0.3,0.26,0.19],['e',0.16,0.28,0.22,0.16],['e',0.02,0.4,0.17,0.11],['e',-0.3,0.14,0.14,0.1]],0.05),
@@ -225,6 +561,7 @@ const ICON={
   temple:mkFig([['c',-0.38,0.5,0,0.84,0.055],['c',0.38,0.5,0,0.84,0.055],['c',-0.38,0.5,0.38,0.5,0.05],['c',-0.27,0.03,-0.27,0.47,0.055],['c',0.27,0.03,0.27,0.47,0.055],['c',-0.42,0.0,0.42,0.0,0.045]],0.02),
   village:mkFig([['e',-0.25,0.1,0.17,0.1],['c',-0.42,0.2,-0.25,0.38,0.035],['c',-0.08,0.2,-0.25,0.38,0.035],['e',0.25,0.09,0.15,0.09],['c',0.1,0.17,0.25,0.33,0.03],['c',0.4,0.17,0.25,0.33,0.03]],0.02)
 };
+ICON.tree.spr={n:'tree',ax:195,ay:568,u:540};ICON.breath.spr={n:'stone',ax:195,ay:705,u:500};ICON.pond.spr={n:'pond',ax:190,ay:640,u:390};ICON.snake.spr={n:'snake',ax:205,ay:790,u:910};ICON.temple.spr={n:'temple',ax:195,ay:656,u:465};
 function figCobra(L){
   const th=L*0.62,px=0,py=0.05,sx=px+Math.cos(th)*0.30,sy=py+Math.sin(th)*0.30;
   const hx=px+Math.cos(th+0.13)*0.40,hy=py+Math.sin(th+0.13)*0.40+0.012,ey=0.012+(sy-0.012)*0.45;
@@ -491,14 +828,16 @@ const sceneTitle={name:'title',
     panel(scrollHTML('ku')+(S.intro?'<button class="btn main" data-a="go">Продолжить путь</button><button class="btn" data-a="new">Начать заново</button>':'<button class="btn main" data-a="go">Развернуть коврик</button>')+'<p class="note" style="margin-top:10px">Лучше всего играть с телефона. Игра попросит доступ к датчикам движения; без них практики работают от касаний.</p>'+(STANDALONE()||!/Mobi|iPhone|Android/.test(navigator.userAgent)?'':'<p class="note">Чтобы играть во весь экран, добавь игру на экран «Домой»: в Safari — «Поделиться» → «На экран Домой», в Chrome — меню ⋮ → «Добавить на гл. экран».</p>'),
       {go:start,new:()=>{S=fresh();save();hud();start();}});},
   leave(){$('#title').classList.add('hidden');},
-  render(t){const S1=Math.min(H*0.29,W*0.6);seatLotus(W/2,H*0.53,S1);drawFig(FIG_SEAT,W/2,H*0.53,S1,0,PAL.amber,RD);landscape(t,{stars:0.5,river:[0.585,0.63],grass:0.63});},
-  post(t){omRing(W/2,H*0.53,Math.min(H*0.29,W*0.6),t);}
+  zs(){return Math.min(H*0.0006,W*0.0015);},
+  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.555,z);landscape(t,{stars:0.5,river:[0.6,0.64],grass:0.64});},
+  post(t){const z=this.zs();omPulse(W/2,H*0.555-(596-210)*z,z,t);}
 };
 const sceneRiver={name:'river',
   enter(){$('#hud').classList.add('hidden');vn(PROLOGUE(),()=>{S.intro=true;save();go(sceneMap);});},
   up(){if(vnAdv)vnAdv();},
-  render(t){const S1=Math.min(H*0.32,W*0.68);seatLotus(W*0.5,H*0.50,S1);drawFig(FIG_SEAT,W*0.5,H*0.50,S1,0,PAL.amber,RD);landscape(t,{stars:0.36,river:[0.38,0.45],grass:0.45});},
-  post(t){omRing(W*0.5,H*0.50,Math.min(H*0.32,W*0.68),t);}
+  zs(){return Math.min(H*0.0008,W*0.0018);},
+  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.55,z);landscape(t,{stars:0.36,river:[0.57,0.62],grass:0.62});},
+  post(t){const z=this.zs();omPulse(W/2,H*0.55-(596-210)*z,z,t);}
 };
 
 /* --- карта --- */
@@ -525,10 +864,9 @@ function mapCell(c,r,t){
   if(x<0.52&&y<0.47){const h=hash(c,r),dens=0.55-Math.abs(y-0.36)*1.6;if(h<dens){const ch='&*%#'[(hash(r,c)*4)|0];const b=clamp(0.08+0.35*hash(c+7,r)+0.1*Math.sin(t*0.8+c*0.3),0,1);putC(c,r,ch,PAL.grass[Math.round(b*6)]);return;}}
   bgGrass(c,r,t,Math.floor(0.22*ROWS),0.75);
 }
-const SN=()=>Math.min(W,H)*0.3;
+const SN=()=>Math.min(W,H)*0.36;
 let SNAKE_ICON=null;
 function nodeIcon(n,t,pal){const s=SN();const f=ICON[n.id];
-  if(n.id==='temple')putC(px2c(n.x*W),py2r(n.y*H-0.97*s),'ॐ',pal[7]);
   if(n.id==='breath'){for(let k=0;k<2;k++)for(let c=px2c(n.x*W-s*0.55);c<=px2c(n.x*W+s*0.55);c++)putC(c,py2r(n.y*H+s*0.02)+k,(c+k)%2?'~':'-',PAL.water[5-k]);}
   if(n.id==='pond'){for(let k=1;k<=2;k++){const rr=s*(0.5+0.18*k);for(let a=0;a<24;a++){const an=a/24*Math.PI*2;putC(px2c(n.x*W+Math.cos(an)*rr),py2r(n.y*H+s*0.02+Math.sin(an)*rr*0.35),'·',PAL.water[6-k]);}}}
   drawFig(f,n.x*W,n.y*H,s,n.id==='tree'?0.04*Math.sin(t*0.9):0,pal,RD);}
@@ -637,6 +975,7 @@ function makeTide(pi){
       const base=0.88,amp=0.52,sr=Math.round((base-B.lvl*amp)*ROWS),gr=Math.round((base-(B.started?B.guide:0)*amp)*ROWS);
       for(let c=0;c<COLS;c++)if(c%3!==2)putC(c,gr,'-',PAL.amber[B.ok||!B.started?6:4]);
       const mc=Math.round(COLS*0.74),mr=Math.round(ROWS*0.12);['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(mc+j-3,mr+i,s[j],PAL.sky[6]);});
+      drawSprite('stone',195,705,W*0.3,H*0.9,Math.min(H*0.0012,W*0.0026),0,1,false,sr*CH);
       eachCell((c,r)=>{if(r>sr)bgWater(c,r,t,0.4+0.4*(r-sr)/ROWS);else if(r===sr){const s=Math.sin(c*0.5-t*2.5);putC(c,r,s>0.3?'~':s>-0.3?'-':'~',PAL.water[7]);}else if(r===sr-1){if(Math.sin(c*0.5-t*2.5+1)>0.6)putC(c,r,'.',PAL.water[6]);}else if(r/ROWS<0.45)bgStars(c,r,t);});
     }
   };
@@ -710,9 +1049,9 @@ function makeSnake(){
         for(let r=rT;r<=rB;r++){const v=1-(r-rT)/(rB-rT),band=v>=0.55&&v<=0.85;putC(cg,r,band?'█':'│',band?PAL.amber[4]:PAL.stone[3]);}
         putC(cg-1,Math.round(lerp(rB,rT,L)),'◀',PAL.amber[7]);
         drawFig(figCobra(L),W*0.56,H*0.82,Math.min(W*0.82,H*0.6),0,L>=0.55&&L<=0.85?PAL.skin:PAL.stone,RD);
-        drawFig(figSnake(t,0,1),W*0.3,H*0.5,Math.min(W*0.5,H*0.32),0,PAL.snake,RS);
+        drawSprite('snake',205,790,W*0.24,H*0.56,H*0.00042,0.02*Math.sin(t*1.2));
       }else{
-        drawFig(figSnake(t,agi,low),W*0.5,H*0.74,Math.min(W*1.05,H*0.6),0,PAL.snake,RS);
+        drawSprite('snake',205,790,W*0.5+Math.sin(t*23)*CW*1.2*agi,H*0.84,Math.min(H*0.00088,W*0.0022),(0.015+0.07*agi)*Math.sin(t*(1.4+agi*5)));
         if(st==='calm'){const r0=py2r(H*0.86),r1=py2r(H*0.975),lv=Math.round(lerp(r1,r0,B.lvl)),gv=Math.round(lerp(r1,r0,B.started?B.guide:0));
           for(let c=0;c<COLS;c++)if(c%3!==2)putC(c,gv,'-',PAL.amber[B.ok||!B.started?6:4]);
           for(let r=r0;r<=r1;r++)for(let c=0;c<COLS;c++){if(r>lv)bgWater(c,r,t,0.35);else if(r===lv)putC(c,r,'~',PAL.water[6]);else mark(c,r);}}
@@ -766,9 +1105,11 @@ function makeChakra(){
 
 /* ---------- деревня: яма и нияма ---------- */
 const FIG_DOG=mkFig([['e',0,0.12,0.2,0.09],['o',0.24,0.2,0.075],['c',0.3,0.17,0.35,0.11,0.02],['c',-0.12,0.06,-0.12,-0.04,0.025],['c',0.1,0.06,0.1,-0.04,0.025],['c',-0.19,0.14,-0.3,0.26,0.02]],0.02);
+FIG_DOG.spr={n:'dog',ax:225,ay:620,u:860};
 const FIG_POT=mkFig([['e',0,0.0,0.19,0.23],['c',0,0.2,0,0.3,0.1],['e',0,0.31,0.13,0.03]],0.02);
 const FIG_BOAT=mkFig([['c',-0.42,0,0.42,0,0.05],['e',0,-0.03,0.44,0.085],['o',0.05,0.1,0.06],['c',0.05,0.12,0.05,0.26,0.03]],0.02);
 const FIG_HOUSE=mkFig([['e',0,-0.04,0.28,0.24],['c',-0.4,0.12,0,0.52,0.05],['c',0.4,0.12,0,0.52,0.05],['e',0,0.24,0.12,0.12]],0.02);
+FIG_HOUSE.spr={n:'house',ax:110,ay:575,u:300};
 const FIG_LAMP=mkFig([['e',0,0,0.12,0.05],['c',0,0.03,0,0.1,0.04],['e',0,0.12,0.06,0.02]],0.02);
 function stillMech(dur,draw){ // покой: без касаний и без тряски
   let still=0,tt=0;return {done:false,score:0,
@@ -961,11 +1302,12 @@ function flame(ox,oy,h,fl,t){for(let r=py2r(oy-h);r<py2r(oy-H*0.01);r++){const y
 function moon(cx,cy,b){['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(px2c(cx)+j-3,py2r(cy)+i,s[j],PAL.sky[b]);});}
 const FIG_LOOM=mkFig([['c',-0.36,-0.3,-0.36,0.4,0.035],['c',0.36,-0.3,0.36,0.4,0.035],['c',-0.4,0.4,0.4,0.4,0.03],['c',-0.4,-0.3,0.4,-0.3,0.03]],0.02);
 const FIG_STAND=mkFig([['o',0,0.64,0.085],['c',0,0.53,0,0.22,0.09],['c',-0.05,0.22,-0.09,-0.22,0.05],['c',0.05,0.22,0.09,-0.22,0.05],['c',-0.1,0.48,-0.19,0.2,0.035],['c',0.1,0.48,0.19,0.2,0.035]],0.015);
+FIG_STAND.spr={n:'body',ax:195,ay:635,u:660};const FIG_WOMAN={spr:{n:'woman',ax:195,ay:635,u:660}};
 const ISTG={s:'t'};
 const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вступления, 'q' вопрос, 'bad' неверный ответ, 'ok' верный
   ahimsa:(t,st)=>{const S1=Math.min(W*0.55,H*0.32),porch=py2r(H*0.55);drawFig(FIG_HOUSE,W*0.3,H*0.5,S1,0,PAL.stone,RD);
     for(let c=px2c(W*0.42);c<px2c(W*0.95);c++)putC(c,porch,'॓',PAL.stone[4]);
-    if(st===1||st==='q'||st==='bad'||st==='ok')drawFig(FIG_STAND,W*0.5,H*0.62,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    if(st===1||st==='q'||st==='bad'||st==='ok')drawFig(FIG_WOMAN,W*0.5,H*0.62,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
     if(st==='ok'){drawFig(FIG_DOG,W*0.74,H*0.66,Math.min(W*0.5,H*0.3),0,PAL.skin,RD);}
     else if(st==='t'||st===0){const bl=Math.sin(t*2)>0.9?' ':'ः';putC(px2c(W*0.78),porch+1,bl,PAL.amber[6]);putC(px2c(W*0.78)+2,porch+1,bl,PAL.amber[6]);}
     else{const k=st==='bad'?1.6:st==='q'?1:0.5,sh=Math.sin(t*22)*CW*0.4*k;drawFig(FIG_DOG,W*0.74+sh,H*0.64,Math.min(W*0.5,H*0.3),0,PAL.path,RD);
@@ -1035,6 +1377,7 @@ const GROUPS=[{id:'yama',n:'Яма',d:'как жить с другими',y:0.32
               {id:'niyama',n:'Нияма',d:'как жить с собой',y:0.72,from:5,scroll:'ys2_32',sum:'Пять домов ниямы пройдены. Чистота, довольство, тапас, самоизучение, посвящение Ишваре — так живут с собой.'}];
 const groupDone=g=>HOUSES.slice(g.from,g.from+5).filter(h=>S.houses[h.id]).length;
 const FIG_GATE=mkFig([['c',-0.36,-0.3,-0.36,0.38,0.11],['c',0.36,-0.3,0.36,0.38,0.11],['c',-0.5,0.42,0.5,0.42,0.09],['e',0,0.56,0.26,0.1],['o',-0.36,-0.32,0.13],['o',0.36,-0.32,0.13]],0.03);
+FIG_GATE.spr={n:'village',ax:197,ay:492,u:300};
 const sceneVillage={name:'village',back:()=>sceneMap,
   enter(){$('#hud').classList.remove('hidden');const k=housesDone();hint(k>=10?'Деревня пройдена. Дальше — карта.':k<5?'Войди в <span style="color:var(--amber)">ворота ямы</span>':'Войди в <span style="color:var(--amber)">ворота ниямы</span>');
     if(k===0&&!S.vilIntro){S.vilIntro=true;save();vn([{who:'',text:'Деревня у реки. Двое ворот: за одними пять домов ямы, за другими пять домов ниямы.'},{who:'Наставница',text:'Первая земля начинается не с асаны. Яма — как жить с другими. Нияма — как жить с собой.'},{who:'Наставница',text:'За воротами дома идут один за другим. В каждом будет выбор. Ошибка ничего не отнимает: сцена начнётся заново, и я подскажу.'}],()=>{});}},
@@ -1042,14 +1385,14 @@ const sceneVillage={name:'village',back:()=>sceneMap,
     for(const g of GROUPS){if(Math.hypot(W/2-e.clientX,g.y*H-e.clientY)<Math.min(W,H)*0.3){const d=groupDone(g);
       if(g.from===5&&k<5){toast('Сначала яма');return;}if(d>=5){toast(g.n+' пройдена');return;}go(makeHouse(g.from+d));return;}}
     if(e.clientY<H*0.14)go(sceneMap);},
-  render(t){const k=housesDone(),s=Math.min(W,H)*0.3;
+  render(t){const k=housesDone(),s=Math.min(W,H)*0.55;
     for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,cur=!lk&&d<5,hi=cur&&Math.sin(t*3.2)>0;
-      drawFig(FIG_GATE,W/2,g.y*H,s,0,d>=5?PAL.sky:lk?PAL.stone:(hi?PAL.amberHi:PAL.amber),RD);
-      for(let i=0;i<5;i++){const dn=S.houses[HOUSES[g.from+i].id];putC(px2c(W/2)+(i-2)*3,py2r(g.y*H+s*0.45),dn?'◆':'◇',dn?PAL.amberHi[7]:PAL.stone[5]);}}
+      drawFig(FIG_GATE,W/2,g.y*H,s,0,lk?PAL.shade:PAL.amber,RD);
+      for(let i=0;i<5;i++){const dn=S.houses[HOUSES[g.from+i].id];putC(px2c(W/2)+(i-2)*3,py2r(g.y*H+s*0.36),dn?'◆':'◇',dn?PAL.amberHi[7]:PAL.stone[5]);}}
     const rr=py2r(H*0.52);for(let c=0;c<COLS;c++)if(c%2)putC(c,rr,'·',PAL.path[5]);
     landscape(t,{stars:0.18,river:[0.9,0.97],grass:0.2});},
   post(){ctx.textAlign='center';ctx.textBaseline='top';ctx.font="500 12px 'IBM Plex Mono', monospace";const k=housesDone();
-    for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,yy=g.y*H-Math.min(W,H)*0.3;ctx.fillStyle='rgba(5,7,6,.8)';ctx.fillRect(W/2-90,yy,180,30);
+    for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,yy=g.y*H-Math.min(W,H)*0.47;ctx.fillStyle='rgba(5,7,6,.8)';ctx.fillRect(W/2-90,yy,180,30);
       ctx.fillStyle=d>=5?'#c9d3e4':lk?'#77736a':'#e8b86a';ctx.fillText(g.n.toUpperCase()+' · '+d+'/5',W/2,yy+2);ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillStyle='#b3a88f';ctx.fillText(g.d,W/2,yy+16);ctx.font="500 12px 'IBM Plex Mono', monospace";}
     ctx.fillStyle='#8d8676';ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillText('▲ на карту',W/2,H*0.05+12);}
 };
@@ -1083,7 +1426,7 @@ window.addEventListener('resize',resize);
 resize();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(resize);
 checkDay();hud();go(sceneTitle);requestAnimationFrame(loop);
 try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
-window.__game={lab:{LABX,RDW,RIM,mandala,drawFig,mkFig,putC,putB,mark,PAL,landscape,px2c,py2r,get W(){return W;},get H(){return H;},get CW(){return CW;},get CH(){return CH;},get COLS(){return COLS;},get ROWS(){return ROWS;},get ctx(){return ctx;},FIG_SEAT,FIG_TREE,FIG_GATE,FIG_HOUSE,ICON,NODES,RD,RS,hash,lerp,clamp,bgStars,eachCell},show(fn){go({name:'lab',render:fn,post:fn.post});},go,get S(){return S;},get scene(){return scene;},scenes:{sceneMap,sceneTitle,sceneVillage},makeTree,makeTide,makePond,makeSnake,makeChakra,makeHouse};
+window.__game={get houses(){return HOUSES;},lab:{LABX,RDW,RIM,mandala,drawFig,mkFig,putC,putB,mark,PAL,landscape,px2c,py2r,get W(){return W;},get H(){return H;},get CW(){return CW;},get CH(){return CH;},get COLS(){return COLS;},get ROWS(){return ROWS;},get ctx(){return ctx;},FIG_SEAT,FIG_TREE,FIG_GATE,FIG_HOUSE,ICON,NODES,RD,RS,hash,lerp,clamp,bgStars,eachCell},show(fn){go({name:'lab',render:fn,post:fn.post});},go,get S(){return S;},get scene(){return scene;},scenes:{sceneMap,sceneTitle,sceneVillage},makeTree,makeTide,makePond,makeSnake,makeChakra,makeHouse};
 })();
 </script>
 </body>
