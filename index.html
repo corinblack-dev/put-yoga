@@ -158,7 +158,7 @@ const BUF=new Map(),BUF2=new Map();
 function resize(){
   DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;
   cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);
-  FS=clamp(Math.round(W/115),3,10);FONT=FS+"px 'IBM Plex Mono', 'Tiro Devanagari Sanskrit', ui-monospace, Menlo, monospace";ctx.font=FONT;
+  FS=clamp(Math.round(W/105),3,10);FONT=FS+"px 'IBM Plex Mono', 'Tiro Devanagari Sanskrit', ui-monospace, Menlo, monospace";ctx.font=FONT;
   CW=ctx.measureText('M').width||FS*0.6;CH=Math.round(FS*1.22);
   COLS=Math.ceil(W/CW)+1;ROWS=Math.ceil(H/CH)+1;MASK=new Uint8Array(COLS*ROWS);
 }
@@ -298,10 +298,10 @@ SC.meditation=(plain)=>{
   for(let k=-4;k<=4;k++){petal(cx+k*34,642,k*0.14,48,15,0.4);}
   curve([[cx-185,644],[cx+185,644]],ml,0.3,false);
   }
-  paint(F,{m:mat({pal:GOLD}),light:[-0.4,-0.8],amb:0.3,kd:0.3,kl:0.4,rimB:0.7,depth:30,glow:true,
-    emit:(x,y)=>0.35*Math.exp(-((x-cx)**2+(y-440)**2)/(2*36*36))+0.35*Math.exp(-((x-cx)**2+(y-318)**2)/(2*10*10))});
-  render({r:2,a:0.3});
-  if(!plain){radial(cx,440,110,'255,210,120',0.18);radial(cx,318,30,'255,240,200',0.3);}
+  paint(F,{m:mat({pal:GOLD}),light:[-0.4,-0.8],amb:0.16,kd:0.26,kl:0.36,rimB:0.5,depth:30,glow:true,
+    emit:(x,y)=>0.18*Math.exp(-((x-cx)**2+(y-440)**2)/(2*32*32))+0.2*Math.exp(-((x-cx)**2+(y-318)**2)/(2*9*9))});
+  render({r:2,a:0.12});
+  if(!plain){radial(cx,440,90,'255,210,120',0.07);radial(cx,318,24,'255,240,200',0.12);}
 };
 SC.seat=()=>SC.meditation(true);
 
@@ -490,7 +490,7 @@ SC.treepose=()=>{
 };
 
 function bake(name,z,dpr){
-  CS=2.75/z;COLS=Math.ceil(W/CS);ROWS=Math.ceil(H/CS);BR=new Float32Array(COLS*ROWS);MAT=new Int16Array(COLS*ROWS).fill(-1);GL=new Uint8Array(COLS*ROWS);MATS.length=0;SEED=7;
+  CS=3.0/z;COLS=Math.ceil(W/CS);ROWS=Math.ceil(H/CS);BR=new Float32Array(COLS*ROWS);MAT=new Int16Array(COLS*ROWS).fill(-1);GL=new Uint8Array(COLS*ROWS);MATS.length=0;SEED=7;
   cv=document.createElement('canvas');const px=dpr*z;cv.width=Math.ceil(W*px);cv.height=Math.ceil(H*px);ctx=cv.getContext('2d');ctx.scale(px,px);
   SC[name]();
   const occ=new Uint8Array(COLS*ROWS);let c0=COLS,c1=0,r0=ROWS,r1=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(MAT[r*COLS+c]>=0){occ[r*COLS+c]=1;if(c<c0)c0=c;if(c>c1)c1=c;if(r<r0)r0=r;if(r>r1)r1=r;}
@@ -503,10 +503,26 @@ try{document.fonts.load("10px 'Tiro Devanagari Sanskrit'",'कॐ').then(()=>SPR
 function getSprite(name,zs){const zq=clamp(Math.round(zs*20)/20,0.1,1.6),key=name+'@'+zq;let sp=SPRC.get(key);
   if(!sp){if(SPRC.size>40)SPRC.clear();sp=SPRB.bake(name,zq,Math.min(2,DPR));SPRC.set(key,sp);}return sp;}
 // рисует фигуру и занимает её клетки, чтобы фон не лез поверх. (X,Y) — экранная точка якоря (ax,ay) фигуры.
-function drawSprite(name,ax,ay,X,Y,zs,rot,alpha,flip,clipBottom){
-  if(!(zs>0.02))return;const sp=getSprite(name,zs),fx=flip?-1:1,ca=Math.cos(rot||0),sa=Math.sin(rot||0);
+let SHIM=null;
+function drawSprite(name,ax,ay,X,Y,zs,rot,alpha,flip,clipBottom,anim,amp){
+  if(!(zs>0.02))return;const sp=getSprite(name,zs),fx=flip?-1:1,ca=Math.cos(rot||0),sa=Math.sin(rot||0),tn=performance.now()/1000;amp=amp==null?1:amp;
   ctx.save();if(clipBottom!=null){ctx.beginPath();ctx.rect(0,0,W,clipBottom);ctx.clip();}
-  ctx.translate(X,Y);if(rot)ctx.rotate(rot);ctx.scale(fx,1);ctx.globalAlpha=alpha==null?1:alpha;ctx.drawImage(sp.cv,-ax*zs,-ay*zs,SPRB.W*zs,SPRB.H*zs);ctx.restore();
+  ctx.translate(X,Y);if(rot)ctx.rotate(rot);ctx.scale(fx,1);ctx.globalAlpha=alpha==null?1:alpha;
+  if(anim==='breath'){const k=0.012*Math.sin(tn*1.3+ax);ctx.scale(1-k*0.4,1+k);}
+  if(anim==='wave'||anim==='ripple'||anim==='sway'){
+    let src=sp.cv;const pxs=sp.cv.width/SPRB.W,bb=sp.bb,hD=Math.max(1.5,2.5/zs);
+    if(anim==='wave'){ // перелив: полоса света бежит по телу от хвоста к голове
+      if(!SHIM)SHIM=document.createElement('canvas');if(SHIM.width!==sp.cv.width||SHIM.height!==sp.cv.height){SHIM.width=sp.cv.width;SHIM.height=sp.cv.height;}
+      const sc=SHIM.getContext('2d');sc.globalCompositeOperation='source-over';sc.clearRect(0,0,SHIM.width,SHIM.height);sc.drawImage(sp.cv,0,0);sc.globalCompositeOperation='source-atop';
+      const span=(bb[3]-bb[1]);for(let q=0;q<2;q++){const u=((tn*0.22+q*0.5)%1),yc=(bb[3]-u*span*1.3+span*0.15)*pxs,hw=span*0.12*pxs;const g=sc.createLinearGradient(0,yc-hw,0,yc+hw);g.addColorStop(0,'rgba(210,255,170,0)');g.addColorStop(0.5,'rgba(220,255,180,0.5)');g.addColorStop(1,'rgba(210,255,170,0)');sc.fillStyle=g;sc.fillRect(0,yc-hw,SHIM.width,hw*2);}
+      src=SHIM;}
+    for(let y=bb[1]-6;y<bb[3]+6;y+=hD){let off=0;const hgt=clamp((ay-y)/(ay-bb[1]),0,1);
+      if(anim==='wave')off=(10+8*amp)*amp*Math.sin(tn*(1.5+amp*0.6)-y*0.011)*Math.pow(clamp((hgt-0.18)/0.82,0,1),1.1);
+      else if(anim==='ripple')off=2.2*Math.sin(tn*1.4+y*0.06);
+      else off=7*Math.sin(tn*0.9)*hgt*hgt;
+      ctx.drawImage(src,0,y*pxs,sp.cv.width,hD*pxs+1,(-ax+off)*zs,(y-ay)*zs,SPRB.W*zs,hD*zs+0.6);}
+  }else ctx.drawImage(sp.cv,-ax*zs,-ay*zs,SPRB.W*zs,SPRB.H*zs);
+  ctx.restore();
   // маска
   const bb=sp.bb,xs=[],ys=[];for(const [dx,dy] of [[bb[0],bb[1]],[bb[2],bb[1]],[bb[0],bb[3]],[bb[2],bb[3]]]){const lx=(dx-ax)*zs*fx,ly=(dy-ay)*zs;xs.push(X+lx*ca-ly*sa);ys.push(Y+lx*sa+ly*ca);}
   const c0=Math.max(0,Math.floor(Math.min(...xs)/CW)),c1=Math.min(COLS-1,Math.ceil(Math.max(...xs)/CW)),r0=Math.max(0,Math.floor(Math.min(...ys)/CH)),r1=Math.min(ROWS-1,Math.ceil((clipBottom!=null?Math.min(Math.max(...ys),clipBottom):Math.max(...ys))/CH));
@@ -520,7 +536,7 @@ function omPulse(X,Y,zs,t){const ph=0.5+0.5*Math.sin(t*Math.PI*2/3),fs=Math.max(
   ctx.globalAlpha=0.75+0.25*ph;ctx.font=fs+"px 'Tiro Devanagari Sanskrit', serif";ctx.shadowColor='rgba(243,207,138,.85)';ctx.shadowBlur=4+12*ph;ctx.fillStyle='#f6dca0';ctx.fillText('ॐ',X,Y);ctx.restore();}
 function seatMarks(ox,oy,S){putB(px2c(ox)-1,py2r(oy-0.33*S),'ॐ',PAL.amberHi[7]);putB(px2c(ox)-1,py2r(oy-0.22*S),'△',PAL.amber[5]);}
 function drawFig(f,ox,oy,S,ang,pal,rp){S*=FIGK;
-  if(f.spr){const q=f.spr;drawSprite(q.n,q.ax,q.ay,ox,oy,S/q.u,-(ang||0),sprAlpha(pal),q.flip);return;}
+  if(f.spr){const q=f.spr;drawSprite(q.n,q.ax,q.ay,ox,oy,S/q.u,-(ang||0),sprAlpha(pal),q.flip,null,q.anim);return;}
   const R=f.R*S+CW*4;
   const c0=Math.max(0,Math.floor((ox-R)/CW)),c1=Math.min(COLS-1,Math.ceil((ox+R)/CW));
   const r0=Math.max(0,Math.floor((oy-R)/CH)),r1=Math.min(ROWS-1,Math.ceil((oy+R)/CH));
@@ -552,7 +568,7 @@ const FIG_SEAT=mkFig([
   ['c',-0.13,0.43,-0.24,0.27,0.028],['c',-0.24,0.27,-0.28,0.12,0.025],['o',-0.28,0.11,0.03],
   ['c',0.13,0.43,0.24,0.27,0.028],['c',0.24,0.27,0.28,0.12,0.025],['o',0.28,0.11,0.03]
 ],0.022);
-FIG_SEAT.spr={n:'seat',ax:195,ay:596,u:420};FIG_TREE.spr={n:'treepose',ax:207,ay:790,u:771};
+FIG_SEAT.spr={n:'seat',ax:195,ay:596,u:420,anim:'breath'};FIG_TREE.spr={n:'treepose',ax:207,ay:790,u:771,anim:'breath'};
 const ICON={
   tree:mkFig([['c',0,0,0,0.34,0.06],['o',0,0.58,0.25],['o',-0.19,0.43,0.17],['o',0.19,0.43,0.17]],0.04),
   breath:mkFig([['e',0,0.2,0.4,0.2],['e',-0.12,0.3,0.26,0.19],['e',0.16,0.28,0.22,0.16],['e',0.02,0.4,0.17,0.11],['e',-0.3,0.14,0.14,0.1]],0.05),
@@ -561,7 +577,7 @@ const ICON={
   temple:mkFig([['c',-0.38,0.5,0,0.84,0.055],['c',0.38,0.5,0,0.84,0.055],['c',-0.38,0.5,0.38,0.5,0.05],['c',-0.27,0.03,-0.27,0.47,0.055],['c',0.27,0.03,0.27,0.47,0.055],['c',-0.42,0.0,0.42,0.0,0.045]],0.02),
   village:mkFig([['e',-0.25,0.1,0.17,0.1],['c',-0.42,0.2,-0.25,0.38,0.035],['c',-0.08,0.2,-0.25,0.38,0.035],['e',0.25,0.09,0.15,0.09],['c',0.1,0.17,0.25,0.33,0.03],['c',0.4,0.17,0.25,0.33,0.03]],0.02)
 };
-ICON.tree.spr={n:'tree',ax:195,ay:568,u:540};ICON.breath.spr={n:'stone',ax:195,ay:705,u:500};ICON.pond.spr={n:'pond',ax:190,ay:640,u:390};ICON.snake.spr={n:'snake',ax:205,ay:790,u:910};ICON.temple.spr={n:'temple',ax:195,ay:656,u:465};
+ICON.tree.spr={n:'tree',ax:195,ay:568,u:540,anim:'sway'};ICON.breath.spr={n:'stone',ax:195,ay:705,u:500};ICON.pond.spr={n:'pond',ax:190,ay:640,u:390,anim:'ripple'};ICON.snake.spr={n:'snake',ax:205,ay:790,u:910,anim:'wave'};ICON.temple.spr={n:'temple',ax:195,ay:656,u:465};
 function figCobra(L){
   const th=L*0.62,px=0,py=0.05,sx=px+Math.cos(th)*0.30,sy=py+Math.sin(th)*0.30;
   const hx=px+Math.cos(th+0.13)*0.40,hy=py+Math.sin(th+0.13)*0.40+0.012,ey=0.012+(sy-0.012)*0.45;
@@ -829,14 +845,14 @@ const sceneTitle={name:'title',
       {go:start,new:()=>{S=fresh();save();hud();start();}});},
   leave(){$('#title').classList.add('hidden');},
   zs(){return Math.min(H*0.0006,W*0.0015);},
-  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.555,z);landscape(t,{stars:0.5,river:[0.6,0.64],grass:0.64});},
+  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.555,z,0,1,false,null,'breath');landscape(t,{stars:0.5,river:[0.6,0.64],grass:0.64});},
   post(t){const z=this.zs();omPulse(W/2,H*0.555-(596-210)*z,z,t);}
 };
 const sceneRiver={name:'river',
   enter(){$('#hud').classList.add('hidden');vn(PROLOGUE(),()=>{S.intro=true;save();go(sceneMap);});},
   up(){if(vnAdv)vnAdv();},
   zs(){return Math.min(H*0.0008,W*0.0018);},
-  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.55,z);landscape(t,{stars:0.36,river:[0.57,0.62],grass:0.62});},
+  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.55,z,0,1,false,null,'breath');landscape(t,{stars:0.36,river:[0.57,0.62],grass:0.62});},
   post(t){const z=this.zs();omPulse(W/2,H*0.55-(596-210)*z,z,t);}
 };
 
@@ -869,7 +885,7 @@ let SNAKE_ICON=null;
 function nodeIcon(n,t,pal){const s=SN();const f=ICON[n.id];
   if(n.id==='breath'){for(let k=0;k<2;k++)for(let c=px2c(n.x*W-s*0.55);c<=px2c(n.x*W+s*0.55);c++)putC(c,py2r(n.y*H+s*0.02)+k,(c+k)%2?'~':'-',PAL.water[5-k]);}
   if(n.id==='pond'){for(let k=1;k<=2;k++){const rr=s*(0.5+0.18*k);for(let a=0;a<24;a++){const an=a/24*Math.PI*2;putC(px2c(n.x*W+Math.cos(an)*rr),py2r(n.y*H+s*0.02+Math.sin(an)*rr*0.35),'·',PAL.water[6-k]);}}}
-  drawFig(f,n.x*W,n.y*H,s,n.id==='tree'?0.04*Math.sin(t*0.9):0,pal,RD);}
+  drawFig(f,n.x*W,n.y*H,s,0,pal,RD);}
 function drawPath(a,b){const A=typeof a==='string'?NB(a):a,B=typeof b==='string'?NB(b):b;const x1=A.x*W,y1=A.y*H,x2=B.x*W,y2=B.y*H,L=Math.hypot(x2-x1,y2-y1),n=Math.ceil(L/(CW*1.5));
   for(let i=1;i<n;i++){const s=i/n,x=lerp(x1,x2,s)+Math.sin(s*Math.PI*2)*CW*1.5,y=lerp(y1,y2,s),c=px2c(x),r=py2r(y);if(isRiver(c,r))putC(c,r,'=',PAL.stone[6]);else putC(c,r,(i%4)?'·':'◦',PAL.path[6]);}}
 const DESC={
@@ -1049,9 +1065,9 @@ function makeSnake(){
         for(let r=rT;r<=rB;r++){const v=1-(r-rT)/(rB-rT),band=v>=0.55&&v<=0.85;putC(cg,r,band?'█':'│',band?PAL.amber[4]:PAL.stone[3]);}
         putC(cg-1,Math.round(lerp(rB,rT,L)),'◀',PAL.amber[7]);
         drawFig(figCobra(L),W*0.56,H*0.82,Math.min(W*0.82,H*0.6),0,L>=0.55&&L<=0.85?PAL.skin:PAL.stone,RD);
-        drawSprite('snake',205,790,W*0.24,H*0.56,H*0.00042,0.02*Math.sin(t*1.2));
+        drawSprite('snake',205,790,W*0.24,H*0.56,H*0.00042,0,1,false,null,'wave',0.5);
       }else{
-        drawSprite('snake',205,790,W*0.5+Math.sin(t*23)*CW*1.2*agi,H*0.84,Math.min(H*0.00088,W*0.0022),(0.015+0.07*agi)*Math.sin(t*(1.4+agi*5)));
+        drawSprite('snake',205,790,W*0.5,H*0.84,Math.min(H*0.00088,W*0.0022),0,1,false,null,'wave',0.6+1.6*agi);
         if(st==='calm'){const r0=py2r(H*0.86),r1=py2r(H*0.975),lv=Math.round(lerp(r1,r0,B.lvl)),gv=Math.round(lerp(r1,r0,B.started?B.guide:0));
           for(let c=0;c<COLS;c++)if(c%3!==2)putC(c,gv,'-',PAL.amber[B.ok||!B.started?6:4]);
           for(let r=r0;r<=r1;r++)for(let c=0;c<COLS;c++){if(r>lv)bgWater(c,r,t,0.35);else if(r===lv)putC(c,r,'~',PAL.water[6]);else mark(c,r);}}
@@ -1105,7 +1121,7 @@ function makeChakra(){
 
 /* ---------- деревня: яма и нияма ---------- */
 const FIG_DOG=mkFig([['e',0,0.12,0.2,0.09],['o',0.24,0.2,0.075],['c',0.3,0.17,0.35,0.11,0.02],['c',-0.12,0.06,-0.12,-0.04,0.025],['c',0.1,0.06,0.1,-0.04,0.025],['c',-0.19,0.14,-0.3,0.26,0.02]],0.02);
-FIG_DOG.spr={n:'dog',ax:225,ay:620,u:860};
+FIG_DOG.spr={n:'dog',ax:225,ay:620,u:860,anim:'breath'};
 const FIG_POT=mkFig([['e',0,0.0,0.19,0.23],['c',0,0.2,0,0.3,0.1],['e',0,0.31,0.13,0.03]],0.02);
 const FIG_BOAT=mkFig([['c',-0.42,0,0.42,0,0.05],['e',0,-0.03,0.44,0.085],['o',0.05,0.1,0.06],['c',0.05,0.12,0.05,0.26,0.03]],0.02);
 const FIG_HOUSE=mkFig([['e',0,-0.04,0.28,0.24],['c',-0.4,0.12,0,0.52,0.05],['c',0.4,0.12,0,0.52,0.05],['e',0,0.24,0.12,0.12]],0.02);
@@ -1302,7 +1318,7 @@ function flame(ox,oy,h,fl,t){for(let r=py2r(oy-h);r<py2r(oy-H*0.01);r++){const y
 function moon(cx,cy,b){['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(px2c(cx)+j-3,py2r(cy)+i,s[j],PAL.sky[b]);});}
 const FIG_LOOM=mkFig([['c',-0.36,-0.3,-0.36,0.4,0.035],['c',0.36,-0.3,0.36,0.4,0.035],['c',-0.4,0.4,0.4,0.4,0.03],['c',-0.4,-0.3,0.4,-0.3,0.03]],0.02);
 const FIG_STAND=mkFig([['o',0,0.64,0.085],['c',0,0.53,0,0.22,0.09],['c',-0.05,0.22,-0.09,-0.22,0.05],['c',0.05,0.22,0.09,-0.22,0.05],['c',-0.1,0.48,-0.19,0.2,0.035],['c',0.1,0.48,0.19,0.2,0.035]],0.015);
-FIG_STAND.spr={n:'body',ax:195,ay:635,u:660};const FIG_WOMAN={spr:{n:'woman',ax:195,ay:635,u:660}};
+FIG_STAND.spr={n:'body',ax:195,ay:635,u:660,anim:'breath'};const FIG_WOMAN={spr:{n:'woman',ax:195,ay:635,u:660,anim:'breath'}};
 const ISTG={s:'t'};
 const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вступления, 'q' вопрос, 'bad' неверный ответ, 'ok' верный
   ahimsa:(t,st)=>{const S1=Math.min(W*0.55,H*0.32),porch=py2r(H*0.55);drawFig(FIG_HOUSE,W*0.3,H*0.5,S1,0,PAL.stone,RD);
@@ -1385,14 +1401,14 @@ const sceneVillage={name:'village',back:()=>sceneMap,
     for(const g of GROUPS){if(Math.hypot(W/2-e.clientX,g.y*H-e.clientY)<Math.min(W,H)*0.3){const d=groupDone(g);
       if(g.from===5&&k<5){toast('Сначала яма');return;}if(d>=5){toast(g.n+' пройдена');return;}go(makeHouse(g.from+d));return;}}
     if(e.clientY<H*0.14)go(sceneMap);},
-  render(t){const k=housesDone(),s=Math.min(W,H)*0.55;
+  render(t){const k=housesDone(),s=Math.min(W,H)*0.36;
     for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,cur=!lk&&d<5,hi=cur&&Math.sin(t*3.2)>0;
       drawFig(FIG_GATE,W/2,g.y*H,s,0,lk?PAL.shade:PAL.amber,RD);
       for(let i=0;i<5;i++){const dn=S.houses[HOUSES[g.from+i].id];putC(px2c(W/2)+(i-2)*3,py2r(g.y*H+s*0.36),dn?'◆':'◇',dn?PAL.amberHi[7]:PAL.stone[5]);}}
     const rr=py2r(H*0.52);for(let c=0;c<COLS;c++)if(c%2)putC(c,rr,'·',PAL.path[5]);
     landscape(t,{stars:0.18,river:[0.9,0.97],grass:0.2});},
   post(){ctx.textAlign='center';ctx.textBaseline='top';ctx.font="500 12px 'IBM Plex Mono', monospace";const k=housesDone();
-    for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,yy=g.y*H-Math.min(W,H)*0.47;ctx.fillStyle='rgba(5,7,6,.8)';ctx.fillRect(W/2-90,yy,180,30);
+    for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,yy=g.y*H-Math.min(W,H)*0.34;ctx.fillStyle='rgba(5,7,6,.8)';ctx.fillRect(W/2-90,yy,180,30);
       ctx.fillStyle=d>=5?'#c9d3e4':lk?'#77736a':'#e8b86a';ctx.fillText(g.n.toUpperCase()+' · '+d+'/5',W/2,yy+2);ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillStyle='#b3a88f';ctx.fillText(g.d,W/2,yy+16);ctx.font="500 12px 'IBM Plex Mono', monospace";}
     ctx.fillStyle='#8d8676';ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillText('▲ на карту',W/2,H*0.05+12);}
 };
