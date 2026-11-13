@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#050706">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Путь йога">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Путь йога — прототип</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050706;--ink:#e6dfcf;--dim:#8d8676;--amber:#e8b86a;--amber2:rgba(232,184,106,.38);--line:rgba(230,223,207,.16)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#ui{position:fixed;inset:0;pointer-events:none}
+.hidden{display:none!important}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 22px;background:linear-gradient(#050706f2,#05070600);font-size:11px;letter-spacing:.03em;pointer-events:auto}
+.hud button{background:rgba(5,7,6,.7);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:13px;padding:10px 13px;min-height:42px;border-radius:10px;cursor:pointer}
+.hud .l{display:flex;gap:6px}
+#btnBack{color:var(--amber);border-color:rgba(232,184,106,.5)}
+#btnBack.hidden{display:none}
+.hud .r{display:flex;gap:6px}
+.stage{color:var(--amber)}
+.panel{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;padding:22px 12px calc(env(safe-area-inset-bottom) + 12px);pointer-events:auto}
+.card{border:1px solid var(--amber2);background:rgba(7,9,8,.94);padding:16px;border-radius:10px;max-height:72vh;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;box-shadow:0 0 40px #000}
+.who{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+.tag{margin-left:6px;color:var(--dim);text-transform:none;letter-spacing:.02em}
+.txt{font-size:15px;line-height:1.55;min-height:3.1em}
+.tap{margin-top:10px;font-size:11px;color:var(--dim);text-align:right}
+.btn{display:block;width:100%;margin-top:8px;padding:12px 14px;background:rgba(232,184,106,.06);border:1px solid var(--amber2);color:var(--ink);font:inherit;font-size:14px;line-height:1.35;text-align:left;border-radius:8px;cursor:pointer}
+.btn:active{background:rgba(232,184,106,.22)}
+.btn.main{border-color:var(--amber);color:var(--amber)}
+.row{display:flex;gap:8px;margin-top:6px}.row .btn{flex:1;text-align:center}
+.h{font-size:17px;font-weight:600;margin-bottom:8px}
+.sub{font-size:11px;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.p{font-size:14px;line-height:1.55;margin-bottom:10px}
+.note{font-size:12px;line-height:1.5;color:var(--dim);margin-bottom:8px}
+.scroll{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0;margin:8px 0 10px}
+.deva{font-family:'Tiro Devanagari Sanskrit',serif;font-size:20px;line-height:1.5;color:var(--amber);overflow-wrap:anywhere}
+.iast{font-style:italic;font-size:13px;color:var(--dim);margin:4px 0 8px;line-height:1.45}
+.ru{font-size:15px;line-height:1.55}
+.src{font-size:11px;color:var(--dim);margin-top:8px;letter-spacing:.03em}
+.center{position:absolute;left:0;right:0;top:21%;text-align:center;text-shadow:0 0 14px #000,0 0 4px #000}
+.big{font-size:30px;letter-spacing:.22em;padding-left:.22em;color:var(--amber)}
+.mid{font-size:13px;margin-top:8px;letter-spacing:.06em}
+.toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 64px);transform:translateX(-50%);background:rgba(7,9,8,.96);border:1px solid var(--amber2);padding:8px 12px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .4s;max-width:88vw;text-align:center}
+.toast.on{opacity:1}
+.title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 7%);text-align:center;text-shadow:0 0 18px #000}
+.om{font-family:'Tiro Devanagari Sanskrit',serif;font-size:54px;color:var(--amber);line-height:1}
+.t1{font-size:25px;letter-spacing:.42em;padding-left:.42em;margin-top:10px}
+.t2{font-size:10px;color:var(--dim);letter-spacing:.2em;margin-top:10px;text-transform:uppercase}
+.q{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px;margin:6px 0 12px;align-items:baseline}
+.q .bar{color:var(--amber);white-space:nowrap;font-size:12px}
+.opts{display:flex;gap:6px;margin:6px 0 10px}
+.opts button{flex:1;padding:9px 4px;background:none;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:12px;border-radius:6px;cursor:pointer}
+.opts button.on{border-color:var(--amber);color:var(--amber)}
+.close{float:right;background:none;border:none;color:var(--dim);font:inherit;font-size:22px;line-height:1;padding:0 4px;cursor:pointer}
+a{color:var(--amber)}
+.hint{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom) + 14px);text-align:center;font-size:12px;line-height:1.45;text-shadow:0 0 10px #000,0 0 4px #000,0 0 2px #000}
+.info{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);max-width:560px;margin:0 auto;background:rgba(7,9,8,.9);border:1px solid var(--amber2);border-radius:10px;padding:12px 14px}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="ui">
+  <div id="hud" class="hud hidden">
+    <div class="l"><button id="btnBack" class="hidden">◀ назад</button><button id="who"><span class="stage">Ищущий</span></button></div>
+    <div class="r"><button id="btnScrolls">Свитки · 0</button><button id="btnSound">звук</button></div>
+  </div>
+  <div id="title" class="title hidden"></div>
+  <div id="center" class="center hidden"></div>
+  <div id="hint" class="hint hidden"></div>
+  <div id="info" class="info hidden"></div>
+  <div id="panel" class="panel hidden"></div>
+  <div id="toast" class="toast"></div>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+function hash(x,y){let h=(x|0)*374761393+(y|0)*668265263;h=(h^(h>>>13))*1274126177;h=h^(h>>>16);return (h>>>0)/4294967296;}
+const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const FAST=/[?&]fast/.test(location.search);
+const STANDALONE=()=>{try{return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}catch(e){return false;}};
+
+/* ---------- палитры и символы ---------- */
+function hexRgb(h){const n=parseInt(h.slice(1),16);return [n>>16&255,n>>8&255,n&255];}
+function ramp(a,b,n=8){const A=hexRgb(a),B=hexRgb(b);return Array.from({length:n},(_,i)=>{const t=i/(n-1);return 'rgb('+A.map((v,k)=>Math.round(v+(B[k]-v)*t)).join(',')+')';});}
+const PAL={
+  grass:ramp('#0a160c','#6ea765'), water:ramp('#06121c','#6fb0d6'), sky:ramp('#0b0e13','#c9d3e4'),
+  stone:ramp('#141311','#b3a88f'), skin:ramp('#2e2418','#fbefd6'), amber:ramp('#2a1b08','#f6c87c'), amberHi:ramp('#3a2810','#fff3d2'),
+  snake:ramp('#111a09','#d4e086'), path:ramp('#1d1508','#c39350'), shade:ramp('#0f0f0d','#5d574b')
+};
+const RD=[' ','·','ः','ऽ','।','र','॥','म','ष','क्ष'];
+const RS=[' ','·','ः','ऽ','व','स','श','ष','क्ष'];
+const RDV=[' ','ः','ऽ','र','न','त','क','म','भ','ष','क्ष','ॐ'];RDV.big=true;
+const RSV=[' ','ः','ऽ','व','स','श','ष','क्ष'];RSV.big=true;
+const RIM=['·','·'];
+const FIGK=1;
+const RDW={word:['क','रु','णे','श्व','री']}; // слово, зашифрованное в фигуре: करुणेश्वरी
+const LABX={pre:null,post:null};
+const RG=[' ','·','ः','◦','○','△','▽','◇','▲','◆','●'];
+const RGS=[' ','·','ः','◦','○','▽','◇','◆','●'];
+/* воронка из знаков: рисуется под символьной сеткой */
+const FUN={
+  om:{g:['ॐ'],rgb:'232,184,106'},
+  map:{g:['ॐ'],rgb:'232,184,106',a:0.45,slow:0.5},
+  village:{g:['यम','नियम'],rgb:'232,184,106',a:0.7},
+  tree:{g:['लं'],rgb:'200,160,90',slow:0.25,cy:0.46},
+  tide:{g:['यं'],rgb:'130,190,235',cy:0.55},
+  pond:{g:['·','◦','○'],rgb:'215,225,240',slow:0.4,a:0.8},
+  snake:{g:['व','श','ष','स'],rgb:'170,210,120',cy:0.55}
+};
+const segG=(()=>{try{const sg=new Intl.Segmenter('hi',{granularity:'grapheme'});return s=>[...sg.segment(s)].map(q=>q.segment);}catch(e){return s=>s.split('');}})();
+/* мандала из знаков: раскрывается кольцами, кольца вращаются в разные стороны */
+function mandala(t,cfg){
+  const cx=W/2,cy=(cfg.cy||0.4)*H,k=Math.min(W,H)/390,g=cfg.g,K=cfg.rings||8,P=cfg.petals||6,bloom=clamp(t/3,0,1),br=0.5+0.5*Math.sin(t*0.5),A=cfg.a||1;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let i=0;i<K;i++){const open=clamp(bloom*K*1.3-i,0,1);if(open<=0)break;const e=1-Math.pow(1-open,3);
+    const r0=(18+i*23)*k*e,n=8*(i+1),dir=i%2?1:-1,rot=t*0.1*dir/(1+i*0.3),fs=clamp((8+i*0.9)*k,7,15),fade=1-i/(K+2);
+    ctx.font=fs.toFixed(1)+"px 'Tiro Devanagari Sanskrit', serif";
+    for(let j=0;j<n;j++){const a=j/n*Math.PI*2+rot,w=0.5+0.5*Math.sin(a*P-t*0.6),r=r0*(1+0.1*w),X=cx+Math.cos(a)*r,Y=cy+Math.sin(a)*r;
+      const al=(0.16+0.5*w*w)*e*fade*(0.8+0.2*br)*A;ctx.fillStyle='rgba('+cfg.rgb+','+al.toFixed(3)+')';ctx.fillText(g[(j+i)%g.length],X,Y);}
+    // лепестковое кольцо между рядами
+    const rp=r0+11*k*e,m=P*12;ctx.font=(6*k).toFixed(1)+"px 'IBM Plex Mono', monospace";
+    for(let j=0;j<m;j++){const a=j/m*Math.PI*2-rot*0.5,w=Math.pow(0.5+0.5*Math.sin(a*P+t*0.4),3),r=rp*(1+0.16*w),X=cx+Math.cos(a)*r,Y=cy+Math.sin(a)*r;
+      ctx.fillStyle='rgba('+cfg.rgb+','+((0.05+0.3*w)*e*fade*A).toFixed(3)+')';ctx.fillText('·',X,Y);}}
+  
+  ctx.textAlign='left';ctx.textBaseline='top';
+}
+function funnel(t,cfg){
+  const cx=W/2,cy=(cfg.cy||0.5)*H,k=Math.min(W,H)/560,sh=((t*(cfg.slow||1))/5)%1,maxR=Math.hypot(W,H)*0.6,A=cfg.a||1;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let n=-2;n<32;n++){const u=n-sh,r=14*k*Math.exp(u*0.2);if(r<8)continue;if(r>maxR)break;const fs=clamp(r*0.115,4,34*k);ctx.font=fs.toFixed(1)+"px 'Tiro Devanagari Sanskrit', serif";const tw=u*0.16,dep=clamp((r-20*k)/(380*k),0,1);
+    for(let q=0;q<36;q++){const a=q/36*Math.PI*2+tw,X=cx+Math.cos(a)*r,Y=cy+Math.sin(a)*r*1.15;if(X<-24||X>W+24||Y<-24||Y>H+24)continue;
+      const arm=0.5+0.5*Math.sin(3*a-u*0.9),al=(0.018+0.17*Math.pow(arm,3))*Math.pow(dep,0.7)*A;if(al<0.01)continue;
+      ctx.fillStyle='rgba('+cfg.rgb+','+al.toFixed(3)+')';ctx.fillText(cfg.g[(q+((n%3)+3)%3)%cfg.g.length],X,Y);}}
+  const gr=ctx.createRadialGradient(cx,cy,40*k,cx,cy,330*k);gr.addColorStop(0,'rgba(5,7,6,.9)');gr.addColorStop(0.75,'rgba(5,7,6,.45)');gr.addColorStop(1,'rgba(5,7,6,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  ctx.textAlign='left';ctx.textBaseline='top';
+}
+const GR=[',','\'','`','.',',','"',';'];
+
+/* ---------- сетка символов ---------- */
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1,FS=12,CW=7,CH=14,COLS=0,ROWS=0,MASK=new Uint8Array(0),FONT='12px monospace';
+const BUF=new Map(),BUF2=new Map();
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);
+  FS=clamp(Math.round(W/115),3,10);FONT=FS+"px 'IBM Plex Mono', 'Tiro Devanagari Sanskrit', ui-monospace, Menlo, monospace";ctx.font=FONT;
+  CW=ctx.measureText('M').width||FS*0.6;CH=Math.round(FS*1.22);
+  COLS=Math.ceil(W/CW)+1;ROWS=Math.ceil(H/CH)+1;MASK=new Uint8Array(COLS*ROWS);
+}
+function putC(c,r,ch,col){if(c<0||r<0||c>=COLS||r>=ROWS)return;const i=r*COLS+c;if(MASK[i])return;MASK[i]=1;let a=BUF.get(col);if(!a){a=[];BUF.set(col,a);}a.push(c,r,ch);}
+function putB(c,r,ch,col){if(c<0||r<0||c+1>=COLS||r>=ROWS)return;const i=r*COLS+c;if(MASK[i]||MASK[i+1])return;MASK[i]=MASK[i+1]=1;let a=BUF2.get(col);if(!a){a=[];BUF2.set(col,a);}a.push(c,r,ch);}
+function mark(c,r){if(c<0||r<0||c>=COLS||r>=ROWS)return;MASK[r*COLS+c]=1;}
+function flush(){ctx.font=FONT;ctx.textBaseline='top';ctx.textAlign='left';const oy=(CH-FS)/2;for(const [col,a] of BUF){if(!a.length)continue;ctx.fillStyle=col;for(let i=0;i<a.length;i+=3)ctx.fillText(a[i+2],a[i]*CW,a[i+1]*CH+oy);a.length=0;}
+  ctx.font=(FS*1.5).toFixed(1)+"px 'Tiro Devanagari Sanskrit', serif";ctx.textAlign='center';ctx.textBaseline='middle';for(const [col,a] of BUF2){if(!a.length)continue;ctx.fillStyle=col;for(let i=0;i<a.length;i+=3)ctx.fillText(a[i+2],a[i]*CW+CW,a[i+1]*CH+CH*0.55);a.length=0;}ctx.textAlign='left';ctx.textBaseline='top';}
+function eachCell(fn){for(let r=0;r<ROWS;r++){const o=r*COLS;for(let c=0;c<COLS;c++){if(!MASK[o+c])fn(c,r);}}}
+const px2c=x=>Math.floor(x/CW), py2r=y=>Math.floor(y/CH);
+
+/* ---------- фигуры из символов (SDF) ---------- */
+function smin(a,b,k){const h=clamp(0.5+0.5*(b-a)/k,0,1);return lerp(b,a,h)-k*h*(1-h);}
+function sdCap(x,y,ax,ay,bx,by,r){const pax=x-ax,pay=y-ay,bax=bx-ax,bay=by-ay;const h=clamp((pax*bax+pay*bay)/((bax*bax+bay*bay)||1e-9),0,1);const dx=pax-bax*h,dy=pay-bay*h;return Math.sqrt(dx*dx+dy*dy)-r;}
+function mkFig(list,k=0.025){
+  const s=list.map(q=>[q[0]==='c'?0:q[0]==='o'?1:2,...q.slice(1)]);let R=0;
+  for(const q of s){if(q[0]===0)R=Math.max(R,Math.hypot(q[1],q[2])+q[5],Math.hypot(q[3],q[4])+q[5]);else if(q[0]===1)R=Math.max(R,Math.hypot(q[1],q[2])+q[3]);else R=Math.max(R,Math.hypot(q[1],q[2])+Math.max(q[3],q[4]));}
+  return {s,R,k};
+}
+function sdf(f,x,y){let m=1e9;const s=f.s;for(let i=0;i<s.length;i++){const q=s[i];let d;
+  if(q[0]===0)d=sdCap(x,y,q[1],q[2],q[3],q[4],q[5]);
+  else if(q[0]===1){const dx=x-q[1],dy=y-q[2];d=Math.sqrt(dx*dx+dy*dy)-q[3];}
+  else{const dx=(x-q[1])/q[3],dy=(y-q[2])/q[4];d=(Math.sqrt(dx*dx+dy*dy)-1)*Math.min(q[3],q[4]);}
+  m=i?smin(m,d,f.k):d;}return m;}
+let FRAME=0;
+function seatMarks(ox,oy,S){putB(px2c(ox)-1,py2r(oy-0.33*S),'ॐ',PAL.amberHi[7]);putB(px2c(ox)-1,py2r(oy-0.22*S),'△',PAL.amber[5]);}
+function drawFig(f,ox,oy,S,ang,pal,rp){S*=FIGK;
+  const R=f.R*S+CW*4;
+  const c0=Math.max(0,Math.floor((ox-R)/CW)),c1=Math.min(COLS-1,Math.ceil((ox+R)/CW));
+  const r0=Math.max(0,Math.floor((oy-R)/CH)),r1=Math.min(ROWS-1,Math.ceil((oy+R)/CH));
+  const bigR=!!rp.big,ca=Math.cos(ang),sa=Math.sin(ang),e=0.006,Lx=-0.42,Ly=0.91,edge=Math.min(0.01,CW*0.35/S),gap=CW*1.2/S;
+  const fl=(FRAME>>2),big=!!rp.big,st=big?2:1,put=big?putB:putC,wd=rp.word;let wi=0;
+  for(let r=r0;r<=r1;r++){const py=r*CH+CH/2;for(let c=c0&~(st-1);c<=c1;c+=st){
+    if(MASK[r*COLS+c])continue;
+    const px=c*CW+CW*st/2,wx=(px-ox)/S,wy=(oy-py)/S,x=wx*ca-wy*sa,y=wx*sa+wy*ca;
+    const d=sdf(f,x,y);if(d>edge+gap)continue;
+    if(d>edge){mark(c,r);if(big)mark(c+1,r);continue;}
+    if(d>0){put(c,r,'·',pal[2]);continue;}
+    const gx=sdf(f,x+e,y)-sdf(f,x-e,y),gy=sdf(f,x,y+e)-sdf(f,x,y-e),gl=Math.hypot(gx,gy)||1;
+    const ndl=(gx*Lx+gy*Ly)/gl;
+    let b=0.16+0.44*Math.sqrt(clamp(-d/0.06,0,1))+0.4*Math.max(0,ndl)+(hash(c,r+fl)-0.5)*0.05;b=clamp(b,0,1);
+    put(c,r,wd?(b<0.22?'·':wd[(wi++)%wd.length]):rp[1+Math.round(b*(rp.length-2))],pal[Math.round(Math.pow(b,0.65)*(pal.length-1))]);
+  }}
+}
+const FIG_TREE=mkFig([
+  ['c',0,0.03,0,0.47,0.034],['c',-0.045,0.012,0.06,0.012,0.02],
+  ['c',0.01,0.47,0.20,0.355,0.034],['c',0.20,0.355,0.045,0.30,0.028],
+  ['e',0,0.50,0.085,0.05],['c',0,0.50,0,0.74,0.062],['e',0,0.70,0.09,0.06],['c',0,0.77,0,0.82,0.028],['o',0,0.885,0.062],
+  ['c',-0.08,0.745,-0.15,0.63,0.025],['c',-0.15,0.63,-0.015,0.665,0.022],
+  ['c',0.08,0.745,0.15,0.63,0.025],['c',0.15,0.63,0.015,0.665,0.022],['e',0,0.69,0.022,0.055]
+],0.018);
+const FIG_SEAT=mkFig([
+  ['e',0,0.065,0.33,0.062],['o',-0.29,0.085,0.055],['o',0.29,0.085,0.055],
+  ['e',0,0.15,0.13,0.06],['c',0,0.15,0,0.41,0.072],['c',-0.12,0.44,0.12,0.44,0.045],['c',0,0.46,0,0.54,0.026],
+  ['e',0,0.615,0.066,0.082],['o',0,0.715,0.03],
+  ['c',-0.13,0.43,-0.24,0.27,0.028],['c',-0.24,0.27,-0.28,0.12,0.025],['o',-0.28,0.11,0.03],
+  ['c',0.13,0.43,0.24,0.27,0.028],['c',0.24,0.27,0.28,0.12,0.025],['o',0.28,0.11,0.03]
+],0.022);
+const ICON={
+  tree:mkFig([['c',0,0,0,0.34,0.06],['o',0,0.58,0.25],['o',-0.19,0.43,0.17],['o',0.19,0.43,0.17]],0.04),
+  breath:mkFig([['e',0,0.2,0.4,0.2],['e',-0.12,0.3,0.26,0.19],['e',0.16,0.28,0.22,0.16],['e',0.02,0.4,0.17,0.11],['e',-0.3,0.14,0.14,0.1]],0.05),
+  snake:mkFig([['c',0.300,0.100,0.260,0.170,0.05],['c',0.260,0.170,0.150,0.221,0.05],['c',0.150,0.221,-0.000,0.240,0.05],['c',-0.000,0.240,-0.150,0.221,0.05],['c',-0.150,0.221,-0.260,0.170,0.05],['c',-0.260,0.170,-0.300,0.100,0.05],['c',-0.300,0.100,-0.260,0.030,0.05],['c',-0.260,0.030,-0.150,-0.021,0.05],['c',-0.150,-0.021,0.000,-0.040,0.05],['c',0.000,-0.040,0.150,-0.021,0.05],['c',0.150,-0.021,0.260,0.030,0.05],['c',0.260,0.030,0.300,0.100,0.05],['c',0.0,0.2,0.0,0.46,0.045],['e',0,0.53,0.16,0.11],['o',0,0.6,0.07]],0.03),
+  pond:mkFig([['e',0,0.02,0.42,0.06],['c',0,0.1,0,0.38,0.05],['c',-0.08,0.1,-0.2,0.3,0.042],['c',0.08,0.1,0.2,0.3,0.042],['c',-0.14,0.08,-0.3,0.2,0.032],['c',0.14,0.08,0.3,0.2,0.032]],0.03),
+  temple:mkFig([['c',-0.38,0.5,0,0.84,0.055],['c',0.38,0.5,0,0.84,0.055],['c',-0.38,0.5,0.38,0.5,0.05],['c',-0.27,0.03,-0.27,0.47,0.055],['c',0.27,0.03,0.27,0.47,0.055],['c',-0.42,0.0,0.42,0.0,0.045]],0.02),
+  village:mkFig([['e',-0.25,0.1,0.17,0.1],['c',-0.42,0.2,-0.25,0.38,0.035],['c',-0.08,0.2,-0.25,0.38,0.035],['e',0.25,0.09,0.15,0.09],['c',0.1,0.17,0.25,0.33,0.03],['c',0.4,0.17,0.25,0.33,0.03]],0.02)
+};
+function figCobra(L){
+  const th=L*0.62,px=0,py=0.05,sx=px+Math.cos(th)*0.30,sy=py+Math.sin(th)*0.30;
+  const hx=px+Math.cos(th+0.13)*0.40,hy=py+Math.sin(th+0.13)*0.40+0.012,ey=0.012+(sy-0.012)*0.45;
+  return mkFig([
+    ['c',-0.58,0.04,-0.28,0.045,0.04],['c',-0.28,0.045,0,0.055,0.055],['e',0,0.06,0.085,0.06],
+    ['c',px,py,sx,sy,0.075],['o',hx,hy,0.066],['c',sx,sy,sx+0.02,ey,0.032],['c',sx+0.02,ey,sx+0.05,0.014,0.028]
+  ],0.015);
+}
+function figSnake(t,agi,low){
+  const sh=[];
+  for(let i=0;i<10;i++){const a0=i/10*Math.PI*2,a1=(i+1)/10*Math.PI*2;sh.push(['c',Math.cos(a0)*0.27,0.06+Math.sin(a0)*0.055,Math.cos(a1)*0.27,0.06+Math.sin(a1)*0.055,0.044]);}
+  sh.push(['c',-0.27,0.06,-0.43,0.035,0.038]);sh.push(['c',-0.43,0.035,-0.55,0.04,0.02]);
+  const top=lerp(0.62,0.28,low),sway=(0.025+0.16*agi)*Math.sin(t*(2+agi*2.5));
+  let px=0.18,py=0.08;
+  for(let i=1;i<=7;i++){const s=i/7;const x=0.18-0.16*s+sway*s*s+0.03*Math.sin(t*1.3+s*3)*agi;const y=0.08+(top-0.08)*s;sh.push(['c',px,py,x,y,lerp(0.048,0.034,s)]);px=x;py=y;}
+  sh.push(['e',px,py-0.055,lerp(0.1,0.065,low),0.08]);sh.push(['e',px+0.03,py+0.02,0.058,0.04]);
+  return mkFig(sh,0.018);
+}
+
+/* ---------- фон ---------- */
+function bgStars(c,r,t){const h=hash(c,r);if(h>0.982){const tw=0.5+0.5*Math.sin(t*1.5+h*40);putC(c,r,h>0.995?'+':'.',PAL.sky[1+Math.round(tw*4)]);}}
+function bgGrass(c,r,t,r0,dim=1){
+  const k=(r-r0)/Math.max(1,ROWS-r0),h=hash(c,r);if(h>0.30+0.5*k)return;
+  const w=Math.sin(c*0.33-t*1.4+r*0.21)+0.4*Math.sin(c*0.11+t*0.6);
+  const ch=w>0.95?'/':w<-0.95?'\\':GR[(hash(r,c)*GR.length)|0];
+  const b=clamp((0.12+0.45*hash(r+5,c)+0.35*k+0.08*w)*dim,0,1);putC(c,r,ch,PAL.grass[Math.round(b*7)]);
+}
+function bgWater(c,r,t,b0){
+  const s=Math.sin(c*0.45-t*2.0+r*1.7)+0.5*Math.sin(c*0.13+t*0.9+r*0.4);
+  const ch=s>1.0?'~':s>0.3?'-':s>-0.4?'.':'';if(!ch)return;
+  const b=clamp(b0+0.25*(s+1.5)/3,0,1);putC(c,r,ch,PAL.water[Math.round(b*7)]);
+}
+function landscape(t,o){
+  const st=o.stars,rv=o.river,gr=o.grass,g0=Math.floor(gr*ROWS);
+  const dm=o.dim||1;eachCell((c,r)=>{const y=r/ROWS;if(rv&&y>=rv[0]&&y<=rv[1])bgWater(c,r,t,0.12);else if(y>=gr)bgGrass(c,r,t,g0,dm);else if(y<st)bgStars(c,r,t);});
+}
+function bgForest(c,r,t){
+  const y=r/ROWS;
+  if(y<0.58){const h=hash(c,r),d=0.28+0.16*Math.sin(c*0.21+1.3)+0.1*Math.sin(r*0.4);
+    if(h<d){const ch='&*%#'[(hash(r,c)*4)|0];const b=clamp(0.06+0.32*hash(c+3,r)+0.08*Math.sin(t*0.7+c*0.2),0,0.7);putC(c,r,ch,PAL.grass[Math.round(b*7)]);}
+    else if(hash(c,r+99)<0.02)putC(c,r,'.',PAL.sky[2]);return;}
+  bgGrass(c,r,t,Math.floor(0.58*ROWS));
+}
+
+/* ---------- звук, вибрация, датчики ---------- */
+let AC=null,muted=false;
+function audioInit(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}}
+function tone(f,dur=1.2,vol=0.05){if(!AC||muted)return;try{const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(vol,n+0.02);g.gain.exponentialRampToValueAtTime(0.0001,n+dur);o.connect(g).connect(AC.destination);o.start(n);o.stop(n+dur+0.05);}catch(e){}}
+function bell(){tone(392,3.4,0.07);tone(588,2.6,0.03);tone(784,1.8,0.015);}
+function tick(f=480){tone(f,0.25,0.03);}
+/* 8‑битная медитативная музыка: дрон, пентатоника, редкий колокольчик */
+const MUS={on:false,g:null,timer:null,step:0,idx:3};
+const PENTA=[220,261.63,293.66,329.63,392,440,523.25,587.33,659.26];
+function musicStart(){if(!AC||MUS.on)return;MUS.on=true;try{
+  const g=AC.createGain();g.gain.value=muted?0:0.08;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1500;
+  const dl=AC.createDelay(1.5);dl.delayTime.value=0.45;const fb=AC.createGain();fb.gain.value=0.32;const wet=AC.createGain();wet.gain.value=0.5;
+  lp.connect(g);lp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(g);g.connect(AC.destination);MUS.g=g;MUS.lp=lp;
+  const drone=(f,v,rate)=>{const o=AC.createOscillator(),og=AC.createGain(),lfo=AC.createOscillator(),lg=AC.createGain();o.type='triangle';o.frequency.value=f;og.gain.value=v;lfo.type='sine';lfo.frequency.value=rate;lg.gain.value=v*0.4;lfo.connect(lg).connect(og.gain);o.connect(og).connect(lp);o.start();lfo.start();};
+  drone(110,0.22,0.07);drone(164.81,0.1,0.05);drone(55,0.14,0.03);
+  const note=(f,at,dur,vol,type)=>{const o=AC.createOscillator(),og=AC.createGain();o.type=type||'square';o.frequency.value=f;og.gain.setValueAtTime(0,at);og.gain.linearRampToValueAtTime(vol,at+0.03);og.gain.exponentialRampToValueAtTime(0.0001,at+dur);o.connect(og).connect(lp);o.start(at);o.stop(at+dur+0.05);};
+  const STEP=0.75;let next=AC.currentTime+0.1;
+  MUS.timer=setInterval(()=>{if(!AC||AC.state!=='running')return;while(next<AC.currentTime+0.6){const k=MUS.step++;
+    if(k%4===0)note(k%16===8?82.41:110,next,1.6,0.14,'triangle');
+    if(Math.random()<0.68){let d=[-2,-1,-1,0,1,1,2][(Math.random()*7)|0];MUS.idx=clamp(MUS.idx+d,0,PENTA.length-1);note(PENTA[MUS.idx],next,0.9+Math.random()*0.6,0.07);}
+    if(k%16===14)note(PENTA[MUS.idx]*2,next,2.4,0.05,'sine');
+    next+=STEP;}},200);
+}catch(e){}}
+function musicGain(){if(MUS.g&&AC)MUS.g.gain.setTargetAtTime(muted||document.hidden?0:0.08,AC.currentTime,0.15);}
+document.addEventListener('visibilitychange',musicGain);
+function vib(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
+const M={ok:false,last:0,gs:{x:0,y:0,z:0},jolt:0,lastG:null,init:false};
+function onMotion(e){
+  const a=e.accelerationIncludingGravity;if(!a||a.x==null)return;
+  if(!M.init){M.gs={x:a.x,y:a.y,z:a.z};M.init=true;}
+  M.ok=true;M.last=performance.now();const k=0.18;
+  M.gs.x+=(a.x-M.gs.x)*k;M.gs.y+=(a.y-M.gs.y)*k;M.gs.z+=(a.z-M.gs.z)*k;
+  const ac=e.acceleration;let j=0;
+  if(ac&&ac.x!=null)j=Math.hypot(ac.x,ac.y,ac.z);else if(M.lastG)j=Math.hypot(a.x-M.lastG.x,a.y-M.lastG.y,a.z-M.lastG.z);
+  M.lastG={x:a.x,y:a.y,z:a.z};M.jolt=Math.max(M.jolt*0.9,j);
+}
+let motionAsked=false;
+function askMotion(){
+  if(motionAsked)return Promise.resolve();motionAsked=true;
+  let p=Promise.resolve();
+  try{if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function')p=DeviceMotionEvent.requestPermission().catch(()=>'denied');}catch(e){}
+  return p.then(()=>{try{window.addEventListener('devicemotion',onMotion);}catch(e){}});
+}
+const sensorsLive=()=>M.ok&&performance.now()-M.last<1000;
+function tiltFromBase(g0){
+  const g=M.gs,n1=Math.hypot(g.x,g.y,g.z)||1,n0=Math.hypot(g0.x,g0.y,g0.z)||1;
+  const dot=(g.x*g0.x+g.y*g0.y+g.z*g0.z)/(n1*n0);
+  return {dev:Math.acos(clamp(dot,-1,1))*57.2958,lat:Math.asin(clamp(g.x/n1-g0.x/n0,-1,1))*57.2958*(IOS?-1:1)};
+}
+
+/* ---------- состояние ---------- */
+const KEY='putyoga.v1';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+function fresh(){return {mood:null,ashram:null,q:{sthira:0,sukha:0,prana:0,dharana:0,abhyasa:10,shraddha:0},done:{},houses:{},img:null,scrolls:[],stage:0,lastDay:today(),days:1,intro:false,sec:0,returning:false};}
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&j.q)return Object.assign(fresh(),j);}catch(e){}return fresh();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+let S=load();
+function checkDay(){const d=today();if(S.intro&&S.lastDay!==d){S.lastDay=d;S.days=(S.days||1)+1;addQ('abhyasa',10);S.returning=true;save();}}
+const QN={sthira:'Стхира',sukha:'Сукха',prana:'Прана',dharana:'Дхарана',abhyasa:'Абхьяса',shraddha:'Шраддха'};
+const QD={sthira:'устойчивость',sukha:'лёгкость',prana:'дыхание',dharana:'внимание',abhyasa:'регулярность',shraddha:'доверие'};
+function addQ(k,v){S.q[k]=clamp(Math.round((S.q[k]||0)+v),0,100);}
+function bar(v,n=10){const f=clamp(Math.round(v/100*n),0,n);return '█'.repeat(f)+'░'.repeat(n-f);}
+const STAGES=['Ищущий','Ученик · шишья'];
+const housesDone=()=>Object.keys(S.houses||{}).length;
+const ASH={
+  hatha:{n:'Ашрам тела',d:'хатха',q:'sthira',r:'Тело — первая дверь. Через него приходят и дыхание, и тишина.'},
+  raja:{n:'Ашрам ума',d:'Патанджали',q:'dharana',r:'Внимание — твой первый инструмент. Восемь ступеней начинаются здесь.'},
+  shakti:{n:'Ашрам Шакти',d:'кундалини',q:'prana',r:'Энергия любит дыхание и внимание. С них и начнём.'},
+  shaiva:{n:'Ашрам созерцания',d:'кашмирский шиваизм',q:'sukha',r:'Созерцание начинается с лёгкости. Ничего не нужно делать силой.'}
+};
+
+/* ---------- свитки ---------- */
+const SCROLLS={
+  ku:{deva:'उत्तिष्ठत जाग्रत प्राप्य वरान्निबोधत',iast:'uttiṣṭhata jāgrata prāpya varān nibodhata',ru:'Встаньте, пробудитесь! Найдя достойных учителей, постигайте.',src:'Катха‑упанишад 1.3.14'},
+  me_intro:{book:true,ru:'Я хочу говорить с тобой так же, как говорю с близкими и учениками, когда они не знают, что с собой делать: протягиваю руку, и мы разбираемся вместе.',src:'Карунешвари · из вступления к книге'},
+  ys1_2:{deva:'योगश्चित्तवृत्तिनिरोधः',iast:'yogaś citta-vṛtti-nirodhaḥ',ru:'Йога — это успокоение колебаний ума.',src:'Йога‑сутры Патанджали 1.2'},
+  ys2_46:{deva:'स्थिरसुखमासनम्',iast:'sthira-sukham āsanam',ru:'Асана — устойчивая и удобная.',src:'Йога‑сутры Патанджали 2.46'},
+  hyp2_2:{deva:'चले वाते चलं चित्तं निश्चले निश्चलं भवेत्',iast:'cale vāte calaṃ cittaṃ niścale niścalaṃ bhavet',ru:'Когда дыхание движется, движется и ум. Когда дыхание неподвижно, неподвижен и ум.',src:'Хатха‑йога‑прадипика 2.2'},
+  book_breath:{book:true,ru:'На вдохе я чувствую лёгкое, едва уловимое усилие, а затем — будто с волной прилива происходит наполнение, которое уже задано направлением и движением.',src:'Карунешвари · из главы «Два направления одного движения: пурака и речака»'},
+  bg2_58:{deva:'यदा संहरते चायं कूर्मोऽङ्गानीव सर्वशः',iast:"yadā saṃharate cāyaṃ kūrmo 'ṅgānīva sarvaśaḥ / indriyāṇīndriyārthebhyas tasya prajñā pratiṣṭhitā",ru:'Когда человек отводит чувства от их предметов, как черепаха втягивает лапы, — его мудрость утверждена.',src:'Бхагавад‑гита 2.58'},
+  hyp3_1:{deva:'सशैलवनधात्रीणां यथाधारोऽहिनायकः । सर्वेषां योगतन्त्राणां तथाधारो हि कुण्डली ॥',iast:"saśaila-vana-dhātrīṇāṃ yathādhāro 'hi-nāyakaḥ / sarveṣāṃ yoga-tantrāṇāṃ tathādhāro hi kuṇḍalī",ru:'Как владыка змей — опора земли с её горами и лесами, так Кундалини — опора всех практик йоги.',src:'Хатха‑йога‑прадипика 3.1'},
+  ys1_14:{deva:'स तु दीर्घकालनैरन्तर्यसत्कारासेवितो दृढभूमिः',iast:'sa tu dīrgha-kāla-nairantarya-satkārāsevito dṛḍha-bhūmiḥ',ru:'Практика становится прочной опорой, когда её выполняют долго, без перерывов и с почтением.',src:'Йога‑сутры Патанджали 1.14'},
+  ys2_29:{deva:'यमनियमासनप्राणायामप्रत्याहारधारणाध्यानसमाधयोऽष्टावङ्गानि',iast:"yama-niyamāsana-prāṇāyāma-pratyāhāra-dhāraṇā-dhyāna-samādhayo 'ṣṭāv aṅgāni",ru:'Яма, нияма, асана, пранаяма, пратьяхара, дхарана, дхьяна, самадхи — восемь частей йоги.',src:'Йога‑сутры Патанджали 2.29'},
+  ys2_30:{deva:'अहिंसासत्यास्तेयब्रह्मचर्यापरिग्रहा यमाः',iast:'ahiṃsā-satyāsteya-brahmacaryāparigrahā yamāḥ',ru:'Ненасилие, правдивость, неприсвоение, брахмачарья, нестяжание — это ямы.',src:'Йога‑сутры Патанджали 2.30'},
+  ys2_32:{deva:'शौचसन्तोषतपःस्वाध्यायेश्वरप्रणिधानानि नियमाः',iast:'śauca-santoṣa-tapaḥ-svādhyāyeśvara-praṇidhānāni niyamāḥ',ru:'Чистота, довольство, тапас, самоизучение, посвящение Ишваре — это ниямы.',src:'Йога‑сутры Патанджали 2.32'},
+  ys2_33:{deva:'वितर्कबाधने प्रतिपक्षभावनम्',iast:'vitarka-bādhane pratipakṣa-bhāvanam',ru:'Когда мешают неблагие мысли, взращивай противоположное.',src:'Йога‑сутры Патанджали 2.33'},
+  ys2_35:{deva:'अहिंसाप्रतिष्ठायां तत्सन्निधौ वैरत्यागः',iast:'ahiṃsā-pratiṣṭhāyāṃ tat-sannidhau vaira-tyāgaḥ',ru:'Когда ненасилие утвердилось, в присутствии такого человека оставляется вражда.',src:'Йога‑сутры Патанджали 2.35'},
+  ys2_36:{deva:'सत्यप्रतिष्ठायां क्रियाफलाश्रयत्वम्',iast:'satya-pratiṣṭhāyāṃ kriyā-phalāśrayatvam',ru:'Когда правдивость утвердилась, действия приносят свои плоды.',src:'Йога‑сутры Патанджали 2.36'},
+  ys2_37:{deva:'अस्तेयप्रतिष्ठायां सर्वरत्नोपस्थानम्',iast:'asteya-pratiṣṭhāyāṃ sarva-ratnopasthānam',ru:'Когда неприсвоение утвердилось, приходят все драгоценности.',src:'Йога‑сутры Патанджали 2.37'},
+  ys2_38:{deva:'ब्रह्मचर्यप्रतिष्ठायां वीर्यलाभः',iast:'brahmacarya-pratiṣṭhāyāṃ vīrya-lābhaḥ',ru:'Когда брахмачарья утвердилась, обретается сила.',src:'Йога‑сутры Патанджали 2.38'},
+  ys2_39:{deva:'अपरिग्रहस्थैर्ये जन्मकथंतासम्बोधः',iast:'aparigraha-sthairye janma-kathaṃtā-sambodhaḥ',ru:'При утвердившемся нестяжании приходит знание «как и почему» рождений.',src:'Йога‑сутры Патанджали 2.39'},
+  ys2_41:{deva:'सत्त्वशुद्धिसौमनस्यैकाग्र्येन्द्रियजयात्मदर्शनयोग्यत्वानि च',iast:'sattva-śuddhi-saumanasyaikāgryendriya-jayātma-darśana-yogyatvāni ca',ru:'От чистоты — ясность саттвы, светлый ум, однонаправленность, власть над чувствами и готовность к видению Себя.',src:'Йога‑сутры Патанджали 2.41'},
+  ys2_42:{deva:'सन्तोषादनुत्तमः सुखलाभः',iast:'santoṣād anuttamaḥ sukha-lābhaḥ',ru:'От довольства обретается непревзойдённое счастье.',src:'Йога‑сутры Патанджали 2.42'},
+  ys2_43:{deva:'कायेन्द्रियसिद्धिरशुद्धिक्षयात्तपसः',iast:'kāyendriya-siddhir aśuddhi-kṣayāt tapasaḥ',ru:'От тапаса, через уничтожение нечистот, — совершенство тела и чувств.',src:'Йога‑сутры Патанджали 2.43'},
+  ys2_44:{deva:'स्वाध्यायादिष्टदेवतासम्प्रयोगः',iast:'svādhyāyād iṣṭa-devatā-samprayogaḥ',ru:'От самоизучения — единение с избранным божеством.',src:'Йога‑сутры Патанджали 2.44'},
+  ys2_45:{deva:'समाधिसिद्धिरीश्वरप्रणिधानात्',iast:'samādhi-siddhir īśvara-praṇidhānāt',ru:'От посвящения Ишваре — совершенство в самадхи.',src:'Йога‑сутры Патанджали 2.45'}
+};
+function scrollHTML(id){const s=SCROLLS[id];return '<div class="scroll">'+(s.deva?'<div class="deva">'+s.deva+'</div>':'')+(s.iast?'<div class="iast">'+s.iast+'</div>':'')+'<div class="ru">'+(s.book?'«'+s.ru+'»':s.ru)+'</div><div class="src">'+s.src+'</div></div>';}
+function gain(id){if(!S.scrolls.includes(id)){S.scrolls.push(id);save();hud();return true;}return false;}
+
+/* ---------- интерфейс ---------- */
+const P=$('#panel');
+function panel(html,h){P.innerHTML='<div class="card">'+html+'</div>';P.classList.remove('hidden');P.scrollTop=0;P.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const f=h&&h[b.dataset.a];if(f)f(b);};}
+function hidePanel(){P.classList.add('hidden');P.innerHTML='';P.onclick=null;}
+const panelOpen=()=>!P.classList.contains('hidden');
+function center(html){const c=$('#center');if(!html){c.classList.add('hidden');c.innerHTML='';return;}c.innerHTML=html;c.classList.remove('hidden');}
+function hint(t){const h=$('#hint');if(!t){h.classList.add('hidden');return;}h.innerHTML=t;h.classList.remove('hidden');}
+function info(html){const el=$('#info');if(!html){el.classList.add('hidden');el.innerHTML='';return;}el.innerHTML=html;el.classList.remove('hidden');}
+let toastT=0;function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2800);}
+function hud(){$('#who').innerHTML='<span class="stage">'+STAGES[S.stage]+'</span>'+(S.ashram?' · '+ASH[S.ashram].n:'');$('#btnScrolls').textContent='Свитки '+S.scrolls.length;$('#btnSound').textContent=muted?'звук выкл':'звук';}
+$('#btnSound').onclick=()=>{muted=!muted;audioInit();musicGain();hud();};
+$('#btnBack').onclick=()=>{if(scene&&scene.back){center();hint();hidePanel();go(scene.back());}};
+$('#btnScrolls').onclick=()=>{if(!scene||scene.name!=='map'){toast('Сначала заверши практику');return;}library();};
+$('#who').onclick=()=>{if(!scene||scene.name!=='map'){toast('Сначала заверши практику');return;}qualities();};
+function library(){
+  const list=S.scrolls.map(scrollHTML).join('')||'<p class="note">Пока пусто. Свитки находятся на пути.</p>';
+  panel('<button class="close" data-a="x">×</button><div class="sub">Библиотека свитков · '+S.scrolls.length+' из '+Object.keys(SCROLLS).length+'</div>'+list+'<p class="note">Строки первоисточников даны для прототипа. Перед релизом они сверяются с базовыми изданиями.</p>',{x:hidePanel});
+}
+function qualities(){
+  const rows=Object.keys(QN).map(k=>'<div>'+QN[k]+' <span class="note">· '+QD[k]+'</span></div><div class="bar">'+bar(S.q[k])+' '+S.q[k]+'</div>').join('');
+  const mins=Math.round((S.sec||0)/60);
+  panel('<button class="close" data-a="x">×</button><div class="sub">'+STAGES[S.stage]+(S.ashram?' · '+ASH[S.ashram].n:'')+'</div><div class="q">'+rows+'</div><p class="note">Каждое качество растёт только от своего вида практики. Абхьяса прибавляется за каждый новый день, когда ты возвращаешься. Дней на пути: '+(S.days||1)+'. Минут практики: '+mins+'.</p><p class="note">Датчики движения: '+(sensorsLive()?'работают':'недоступны, практики идут от касаний')+'.</p><button class="btn" data-a="reset">Начать путь заново</button>',
+    {x:hidePanel,reset:b=>{if(b.dataset.armed){S=fresh();save();hud();go(sceneTitle);}else{b.dataset.armed='1';b.textContent='Точно? Прогресс сотрётся. Нажми ещё раз';}}});
+}
+function pl(n){const a=n%10,b=n%100;if(a===1&&b!==11)return 'лепесток';if(a>=2&&a<=4&&(b<10||b>=20))return 'лепестка';return 'лепестков';}
+
+/* ---------- ввод ---------- */
+const PT={down:false,x:0,y:0,sx:0,sy:0};let KEYD=false;
+cv.addEventListener('pointerdown',e=>{PT.down=true;PT.x=PT.sx=e.clientX;PT.y=PT.sy=e.clientY;try{cv.setPointerCapture(e.pointerId);}catch(_){ }audioInit();if(scene&&scene.down)scene.down(e);});
+cv.addEventListener('pointermove',e=>{PT.x=e.clientX;PT.y=e.clientY;if(scene&&scene.move)scene.move(e);});
+const pUp=e=>{if(!PT.down)return;PT.down=false;if(scene&&scene.up)scene.up(e);};
+cv.addEventListener('pointerup',pUp);cv.addEventListener('pointercancel',pUp);
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&!panelOpen()){KEYD=true;e.preventDefault();}});
+window.addEventListener('keyup',e=>{if(e.code==='Space')KEYD=false;});
+const holding=()=>PT.down||KEYD;
+
+/* ---------- сцены ---------- */
+let scene=null;
+function go(s){if(scene&&scene.leave)scene.leave();hidePanel();center();hint();info();scene=s;if(s.enter)s.enter();$('#btnBack').classList.toggle('hidden',!s.back);}
+let last=performance.now(),TT=0,SKIP=2,RAVG=8;
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;TT+=dt;FRAME++;
+  if(scene&&scene.update)scene.update(dt,TT);
+  if(FRAME%SKIP===0){const t0=performance.now();ctx.clearRect(0,0,W,H);MASK.fill(0);if(LABX.pre)LABX.pre(TT);if(scene&&scene.render)scene.render(TT);flush();if(scene&&scene.post)scene.post(TT);if(LABX.post)LABX.post(TT);
+    RAVG=RAVG*0.95+(performance.now()-t0)*0.05;SKIP=RAVG>24?4:RAVG>15?3:2;}
+  requestAnimationFrame(loop);
+}
+function result(o){
+  bell();vib([30,50,30]);
+  const bars=(o.bars||[]).map(([l,v])=>'<div>'+l+'</div><div class="bar">'+bar(v*100)+' '+Math.round(v*100)+'</div>').join('');
+  const sc=(o.scrolls||[]).filter(id=>gain(id));
+  save();hud();
+  panel('<div class="sub">'+o.title+'</div>'+(bars?'<div class="q">'+bars+'</div>':'')+(o.extra||'')+'<div class="who">Наставница</div><p class="p">'+o.msg+'</p>'+(sc.length?'<div class="sub" style="margin-top:14px">'+(sc.length>1?'Новые свитки':'Новый свиток')+'</div>'+sc.map(scrollHTML).join(''):'')+'<div class="row"><button class="btn" data-a="again">'+(o.againLabel||'Ещё раз')+'</button><button class="btn main" data-a="map">На карту</button></div>',
+    {again:()=>go(o.again()),map:()=>go(sceneMap)});
+}
+
+/* --- визуальная новелла --- */
+let vnAdv=null;
+function vn(lines,done){
+  let i=0,typing=null,full='';
+  function finishType(){if(typing){clearInterval(typing);typing=null;const el=$('#vtxt');if(el)el.textContent=full;const ch=$('#vch');if(ch)ch.classList.remove('hidden');return true;}return false;}
+  function next(){
+    if(i>=lines.length){vnAdv=null;hidePanel();if(done)done();return;}
+    const L=lines[i++];if(L.fn)L.fn();
+    if(L.scroll){vnAdv=null;const isNew=gain(L.scroll);tick(660);panel('<div class="sub">'+(isNew?'Новый свиток':'Свиток')+'</div>'+scrollHTML(L.scroll)+'<p class="note">Свиток добавлен в библиотеку.</p><button class="btn main" data-a="ok">Дальше</button>',{ok:next});return;}
+    if(!L.text){next();return;}
+    full=L.text;
+    const chs=L.choice?'<div class="hidden" id="vch">'+L.choice.map((c,k)=>'<button class="btn" data-k="'+k+'">'+c.t+'</button>').join('')+'</div>':'<div class="tap">коснись, чтобы продолжить ▸</div>';
+    P.innerHTML='<div class="card"><div class="who">'+(L.who||'&nbsp;')+(L.tag?'<span class="tag">· '+L.tag+'</span>':'')+'</div><div class="txt" id="vtxt"></div>'+chs+'</div>';P.classList.remove('hidden');
+    const el=$('#vtxt');let n=0;typing=setInterval(()=>{n+=2;el.textContent=full.slice(0,n);if(n>=full.length)finishType();},30);
+    P.onclick=e=>{const b=e.target.closest('[data-k]');if(finishType())return;
+      if(L.choice){if(!b)return;const c=L.choice[+b.dataset.k];if(L.pick)L.pick(c);if(c.reply)lines.splice(i,0,{who:c.rwho||L.who,text:c.reply});if(c.cut)lines.length=i+(c.reply?1:0);next();}else next();};
+    vnAdv=L.choice?()=>{finishType();}:()=>{if(!finishType())next();};
+  }
+  next();
+}
+function PROLOGUE(){return [
+  {who:'',text:'Река. Трава. Тёплый ветер. Здесь начинается путь.'},
+  {who:'Наставница',text:'Сначала просто вдохни — медленно, будто дыхание поднимается от самого основания позвоночника. И выдохни.'},
+  {who:'Наставница',text:'От тебя здесь ничего не ждут. Прошлые успехи и будущие не важны. Попробуй — и посмотри, что откликнется.'},
+  {who:'Наставница',text:'Кто‑то приходит из боли, кто‑то — от нехватки света, кто‑то просто из любопытства. К этому берегу ведут все дороги.'},
+  {who:'Наставница',tag:'из книги',text:SCROLLS.me_intro.ru,fn:()=>gain('me_intro')},
+  {who:'Наставница',text:'Как ты сегодня?',choice:[
+    {t:'Тяжело, хочется спать',v:'tamas',reply:'Тогда начнём с тела. Дерево у воды поможет проснуться.'},
+    {t:'Суетно, мысли скачут',v:'rajas',reply:'Тогда начнём с дыхания. Длинный выдох у Камня прилива успокоит волны.'},
+    {t:'Ясно и спокойно',v:'sattva',reply:'Тогда тебя ждёт Тихая заводь. Посидим в тишине.'}],
+    pick:c=>{S.mood=c.v;addQ('shraddha',3);save();}},
+  {who:'Наставница',text:'В этих землях четыре ашрама. Какой зовёт тебя первым? Двери остальных всегда открыты.',
+    choice:Object.keys(ASH).map(k=>({t:ASH[k].n+' — '+ASH[k].d,v:k,reply:ASH[k].r})),
+    pick:c=>{S.ashram=c.v;addQ(ASH[c.v].q,10);addQ('shraddha',3);save();hud();}},
+  {who:'Наставница',text:'Вот первый свиток. Это вторая сутра «Йога‑сутр» Патанджали: с неё начинается определение йоги.'},
+  {scroll:'ys1_2'},
+  {who:'Наставница',text:'Перед тобой карта. Иди туда, куда тянет. Я буду рядом.'}
+];}
+
+/* --- титул --- */
+function start(){audioInit();musicStart();askMotion();gain('ku');setTimeout(()=>{if(!sensorsLive())toast('Датчики движения недоступны — практики работают от касаний');},1800);go(S.intro?sceneMap:sceneRiver);}
+/* лотос под сидящей фигурой и редкое кольцо ॐ вокруг (вариант F6) */
+const LOTUS0=["(  (  (  (  (  ॐ  )  )  )  )  )"," '-._'-._'-._'-'_.-'_.-'_.-'  "];
+const LOTUS=['.-( ( ( ॐ ) ) )-.',"  '-.._____..-'  "];
+function seatLotus(ox,oy,S){S*=FIGK;const w=LOTUS[0].length,c0=px2c(ox)-Math.floor(w/2),r0=py2r(oy+0.06*S);LOTUS.forEach((ln,i)=>{for(let j=0;j<ln.length;j++){const q=ln[j];if(q!==' ')putC(c0+j,r0+i,q,q==='ॐ'?PAL.amberHi[7]:PAL.amber[6]);}});}
+function omRing(ox,oy,S,t){S*=FIGK;ctx.save();ctx.font="13px 'Tiro Devanagari Sanskrit', serif";ctx.fillStyle='rgba(232,184,106,.35)';ctx.textAlign='center';ctx.textBaseline='middle';const n=12,cy=oy-0.3*S,r=S*0.58;for(let i=0;i<n;i++){const a=-t*0.08+i/n*Math.PI*2,x=ox+Math.cos(a)*r,y=cy+Math.sin(a)*r*1.2;ctx.save();ctx.translate(x,y);ctx.rotate(a+Math.PI/2);ctx.fillText('ॐ',0,0);ctx.restore();}ctx.restore();}
+const sceneTitle={name:'title',
+  enter(){$('#hud').classList.add('hidden');$('#title').innerHTML='<div class="om">ॐ</div><div class="t1">ПУТЬ ЙОГА</div><div class="t2">прототип · RPG и визуальная новелла</div>';$('#title').classList.remove('hidden');
+    panel(scrollHTML('ku')+(S.intro?'<button class="btn main" data-a="go">Продолжить путь</button><button class="btn" data-a="new">Начать заново</button>':'<button class="btn main" data-a="go">Развернуть коврик</button>')+'<p class="note" style="margin-top:10px">Лучше всего играть с телефона. Игра попросит доступ к датчикам движения; без них практики работают от касаний.</p>'+(STANDALONE()||!/Mobi|iPhone|Android/.test(navigator.userAgent)?'':'<p class="note">Чтобы играть во весь экран, добавь игру на экран «Домой»: в Safari — «Поделиться» → «На экран Домой», в Chrome — меню ⋮ → «Добавить на гл. экран».</p>'),
+      {go:start,new:()=>{S=fresh();save();hud();start();}});},
+  leave(){$('#title').classList.add('hidden');},
+  render(t){const S1=Math.min(H*0.29,W*0.6);seatLotus(W/2,H*0.53,S1);drawFig(FIG_SEAT,W/2,H*0.53,S1,0,PAL.amber,RD);landscape(t,{stars:0.5,river:[0.585,0.63],grass:0.63});},
+  post(t){omRing(W/2,H*0.53,Math.min(H*0.29,W*0.6),t);}
+};
+const sceneRiver={name:'river',
+  enter(){$('#hud').classList.add('hidden');vn(PROLOGUE(),()=>{S.intro=true;save();go(sceneMap);});},
+  up(){if(vnAdv)vnAdv();},
+  render(t){const S1=Math.min(H*0.32,W*0.68);seatLotus(W*0.5,H*0.50,S1);drawFig(FIG_SEAT,W*0.5,H*0.50,S1,0,PAL.amber,RD);landscape(t,{stars:0.36,river:[0.38,0.45],grass:0.45});},
+  post(t){omRing(W*0.5,H*0.50,Math.min(H*0.32,W*0.68),t);}
+};
+
+/* --- карта --- */
+const NODES=[
+  {id:'tree',x:0.35,y:0.80,name:'Дерево у воды',kind:'асана'},
+  {id:'breath',x:0.75,y:0.635,name:'Камень прилива',kind:'пранаяма'},
+  {id:'pond',x:0.21,y:0.605,name:'Тихая заводь',kind:'медитация'},
+  {id:'snake',x:0.31,y:0.395,name:'Тропа змея',kind:'встреча'},
+  {id:'temple',x:0.75,y:0.245,name:'Храм на холме',kind:'чакры',lock:()=>Object.keys(S.done).length<2}
+];
+const NB=id=>NODES.find(n=>n.id===id);
+const VIL={x:0.56,y:0.925};
+const EDGES=[[VIL,'tree'],['tree','pond'],['pond','snake'],[VIL,'breath'],['breath','temple'],['snake','temple']];
+const ORDER=['tree','breath','pond','snake','temple'];
+function recId(){if(housesDone()<10)return 'village';const pref={tamas:'tree',rajas:'breath',sattva:'pond'}[S.mood];if(pref&&!S.done[pref])return pref;return ORDER.find(id=>!S.done[id]&&!(id==='temple'&&Object.keys(S.done).length<2))||null;}
+const allDone=()=>ORDER.every(id=>S.done[id]);
+const riverX=y=>0.60+0.09*Math.sin(y*5.2+0.6);
+function isRiver(c,r){const x=(c+0.5)/COLS,y=(r+0.5)/ROWS;if(y<0.25)return false;return Math.abs(x-riverX(y))<0.035+0.012*Math.sin(y*11);}
+function mapCell(c,r,t){
+  const x=(c+0.5)/COLS,y=(r+0.5)/ROWS,ridge=0.25+0.05*Math.sin(x*9+1)+0.03*Math.sin(x*23);
+  if(y<ridge){if(y>ridge-0.11){const h=hash(c,r),sl=Math.sin(x*40+y*10);const ch=h<0.5?(sl>0?'/':'\\'):h<0.72?'^':'.';const b=clamp(0.2+0.45*(y-(ridge-0.11))/0.11+h*0.2,0,1);putC(c,r,ch,PAL.stone[Math.round(b*6)]);}else bgStars(c,r,t);return;}
+  if(isRiver(c,r)){bgWater(c,r,t,0.32);return;}
+  const pn=NB('pond'),dx=(x-pn.x)/0.15,dy=(y-pn.y+0.012)/0.045;if(dx*dx+dy*dy<1){bgWater(c,r,t*0.4,0.12);return;}
+  if(x<0.52&&y<0.47){const h=hash(c,r),dens=0.55-Math.abs(y-0.36)*1.6;if(h<dens){const ch='&*%#'[(hash(r,c)*4)|0];const b=clamp(0.08+0.35*hash(c+7,r)+0.1*Math.sin(t*0.8+c*0.3),0,1);putC(c,r,ch,PAL.grass[Math.round(b*6)]);return;}}
+  bgGrass(c,r,t,Math.floor(0.22*ROWS),0.75);
+}
+const SN=()=>Math.min(W,H)*0.3;
+let SNAKE_ICON=null;
+function nodeIcon(n,t,pal){const s=SN();const f=ICON[n.id];
+  if(n.id==='temple')putC(px2c(n.x*W),py2r(n.y*H-0.97*s),'ॐ',pal[7]);
+  if(n.id==='breath'){for(let k=0;k<2;k++)for(let c=px2c(n.x*W-s*0.55);c<=px2c(n.x*W+s*0.55);c++)putC(c,py2r(n.y*H+s*0.02)+k,(c+k)%2?'~':'-',PAL.water[5-k]);}
+  if(n.id==='pond'){for(let k=1;k<=2;k++){const rr=s*(0.5+0.18*k);for(let a=0;a<24;a++){const an=a/24*Math.PI*2;putC(px2c(n.x*W+Math.cos(an)*rr),py2r(n.y*H+s*0.02+Math.sin(an)*rr*0.35),'·',PAL.water[6-k]);}}}
+  drawFig(f,n.x*W,n.y*H,s,n.id==='tree'?0.04*Math.sin(t*0.9):0,pal,RD);}
+function drawPath(a,b){const A=typeof a==='string'?NB(a):a,B=typeof b==='string'?NB(b):b;const x1=A.x*W,y1=A.y*H,x2=B.x*W,y2=B.y*H,L=Math.hypot(x2-x1,y2-y1),n=Math.ceil(L/(CW*1.5));
+  for(let i=1;i<n;i++){const s=i/n,x=lerp(x1,x2,s)+Math.sin(s*Math.PI*2)*CW*1.5,y=lerp(y1,y2,s),c=px2c(x),r=py2r(y);if(isRiver(c,r))putC(c,r,'=',PAL.stone[6]);else putC(c,r,(i%4)?'·':'◦',PAL.path[6]);}}
+const DESC={
+  tree:()=>({h:'Врикшасана — поза дерева',body:'<p class="p">Дух дерева учит стоять. Встань на левую ногу, правую стопу поставь на внутреннюю сторону бедра или голени — не на колено. Возьми телефон в ладони у груди, экраном к себе.</p><p class="p">30 секунд дыши ровно и держи фигуру в светлой зоне.</p><p class="note">'+(sensorsLive()?'Датчики работают: фигура повторяет каждое твоё покачивание.':'Датчики недоступны, поэтому фигуру качает ветер. Удерживай её, ведя пальцем в противоположную сторону.')+'</p><p class="note">Освободи место вокруг себя. Поза описана в Гхеранда‑самхите.</p>',scene:()=>makeTree(0)}),
+  breath:()=>{PATSEL=S.mood==='rajas'?1:0;return {h:'Прилив и отлив',body:'<p class="p">Коснись экрана и держи — это вдох, вода поднимается. Отпусти — выдох, вода уходит. Янтарная линия — прилив наставницы: дыши вместе с ней.</p><div class="opts"><button data-a="p0" class="'+(PATSEL===0?'on':'')+'">Ровное 4 : 4</button><button data-a="p1" class="'+(PATSEL===1?'on':'')+'">Длинный выдох 4 : 6</button><button data-a="p2" class="'+(PATSEL===2?'on':'')+'">Кумбхака 4 : 4 : 6</button></div><p class="note">В третьем ритме между вдохом и выдохом короткая задержка: держи экран, пока не придёт выдох. Если закружится голова, отпусти экран и дыши как обычно.</p>',handlers:{p0:b=>sel(b,()=>PATSEL=0),p1:b=>sel(b,()=>PATSEL=1),p2:b=>sel(b,()=>PATSEL=2)},scene:()=>makeTide(PATSEL)};},
+  pond:()=>{DURSEL=60;return {h:'Тихая вода',body:'<p class="p">Положи телефон рядом или держи в ладонях. Закрой глаза. Пока тело неподвижно, муть оседает, и в воде появляется луна. Колокольчик позовёт, когда время выйдет.</p><div class="opts"><button data-a="d1" class="on">1 мин</button><button data-a="d3">3 мин</button><button data-a="d5">5 мин</button></div><p class="note">'+(sensorsLive()?'Телефон чувствует движение.':'Датчики недоступны: тишиной считается время без касаний экрана.')+'</p>',handlers:{d1:b=>sel(b,()=>DURSEL=60),d3:b=>sel(b,()=>DURSEL=180),d5:b=>sel(b,()=>DURSEL=300)},scene:()=>makePond(DURSEL)};},
+  snake:()=>({h:'Встреча со змеем',body:'<p class="p">На тропе поднимается змей. Он встревожен. Здесь не сражаются: успокой своё дыхание — и он успокоится тоже.</p><p class="note">Три спокойных цикла: держи экран на вдохе, отпускай на выдохе. Выдох длиннее вдоха.</p>',go:'Подойти',scene:()=>makeSnake()}),
+  temple:()=>({h:'Семь центров',body:'<p class="p">Внимание поднимается по позвоночнику от основания к макушке. На каждом центре — один полный вдох и выдох: держи экран, пока центр наполняется, затем отпусти.</p><p class="note">Центры описаны по Шат‑чакра‑нирупане, тексте XVI века: число лепестков, элемент, слог‑биджа. У центров в этом тексте свои цвета, не радужные, поэтому здесь они светятся одним тёплым светом.</p>',scene:()=>makeChakra()})
+};
+let PATSEL=0,DURSEL=60;
+function sel(b,fn){fn();b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));}
+function openNode(n){
+  if(n.lock&&n.lock()){panel('<button class="close" data-a="x">×</button><div class="sub">'+n.name+' · закрыто</div><p class="p">Наставница: «Сначала тело и дыхание». Храм откроется после двух любых практик.</p>',{x:hidePanel});return;}
+  const I=DESC[n.id]();
+  panel('<button class="close" data-a="x">×</button><div class="sub">'+n.name+' · '+n.kind+'</div><div class="h">'+I.h+'</div>'+I.body+'<button class="btn main" data-a="go">'+(I.go||'Начать')+'</button>',Object.assign({x:hidePanel,go:()=>go(I.scene())},I.handlers||{}));
+}
+function stageUp(){
+  S.stage=1;save();hud();const isNew=gain('ys2_29');bell();
+  panel('<div class="sub">Новая ступень</div><div class="h">Ученик · шишья</div><div class="who">Наставница</div><p class="p">Первая земля пройдена: тело, дыхание, тишина, встреча и семь центров. Дальше — Лес зверей, там ждут черепаха, пчела и лев.</p>'+(isNew?scrollHTML('ys2_29'):'')+'<p class="note">В прототипе путь пока заканчивается здесь. С живым учителем он продолжается: <a href="https://t.me/ikaruneshwari" target="_blank" rel="noopener">t.me/ikaruneshwari</a></p><div class="row"><button class="btn" data-a="lib">Свитки</button><button class="btn main" data-a="x">Остаться на карте</button></div>',{x:hidePanel,lib:library});
+}
+const sceneMap={name:'map',
+  enter(){$('#hud').classList.remove('hidden');hud();const rc=recId();hint(rc?'Наставница советует: <span style="color:var(--amber)">'+(rc==='village'?'Деревня':NB(rc).name)+'</span>':'Коснись места на карте');
+    if(S.returning){S.returning=false;save();const isNew=gain('ys1_14');toast('Абхьяса +10');panel('<div class="who">Наставница</div><p class="p">С возвращением. Каждый день, когда ты приходишь, практика становится прочнее.</p>'+(isNew?scrollHTML('ys1_14'):'')+'<button class="btn main" data-a="ok">Дальше</button>',{ok:()=>{hidePanel();if(allDone()&&S.stage===0)stageUp();}});return;}
+    if(allDone()&&S.stage===0)setTimeout(()=>{if(scene===sceneMap)stageUp();},350);},
+  up(e){if(panelOpen())return;if(Math.hypot(PT.x-PT.sx,PT.y-PT.sy)>14)return;let best=null,bd=1e9;const s=SN();
+    for(const n of NODES){const d=Math.hypot(n.x*W-e.clientX,n.y*H-0.25*s-e.clientY);if(d<bd){bd=d;best=n;}}
+    const dv=Math.hypot(VIL.x*W-e.clientX,VIL.y*H-0.2*s-e.clientY);if(dv<bd&&dv<Math.max(60,s*0.7)){go(sceneVillage);return;}
+    if(best&&bd<Math.max(60,s*0.75))openNode(best);},
+  render(t){
+    const rc=recId(),hi=Math.sin(t*3.2)>0;
+    for(const n of NODES){const lk=n.lock&&n.lock(),dn=S.done[n.id];nodeIcon(n,t,lk?PAL.shade:dn?PAL.grass:(n.id===rc&&hi)?PAL.amberHi:PAL.amber);}
+    drawFig(FIG_GATE,VIL.x*W,VIL.y*H-SN()*0.3,SN()*0.75,0,housesDone()>=10?PAL.grass:(rc==='village'&&hi)?PAL.amberHi:PAL.stone,RD);
+    for(const [a,b] of EDGES)drawPath(a,b);
+    eachCell((c,r)=>mapCell(c,r,t));
+  },
+  post(){
+    ctx.textAlign='center';ctx.textBaseline='top';
+    const draw=(x,y,a,b,ca,cb)=>{ctx.font="500 11px 'IBM Plex Mono', monospace";const tw=Math.max(ctx.measureText(a).width,b?ctx.measureText(b).width:0)+12;ctx.fillStyle='rgba(5,7,6,.82)';ctx.fillRect(x-tw/2,y-3,tw,b?31:17);ctx.fillStyle=ca;ctx.fillText(a,x,y);if(b){ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillStyle=cb;ctx.fillText(b,x,y+14);}};
+    for(const n of NODES){const lk=n.lock&&n.lock(),dn=S.done[n.id];draw(n.x*W,n.y*H+6,n.name,(dn?'✓ ':'')+(lk?'закрыто':n.kind),lk?'#77736a':'#e6dfcf',lk?'#5b5850':dn?'#8fbf7f':'#e8b86a');}
+    draw(VIL.x*W,VIL.y*H+6,'Деревня',(housesDone()>=10?'✓ ':'')+'яма и нияма · '+housesDone()+'/10','#e6dfcf',housesDone()>=10?'#8fbf7f':'#e8b86a');
+  }
+};
+
+/* --- дыхательное ядро --- */
+const PATS=[{n:'Ровное дыхание',i:4,o:4,c:6},{n:'Длинный выдох',i:4,o:6,c:5},{n:'С задержкой',i:4,h:4,o:6,c:4}];
+function breathCore(p){const h=p.h||0;return {p,t:0,started:false,lvl:0,guide:0,match:0,total:0,done:false,phase:'in',lastPhase:'in',cyc:0,ok:false,remain:p.i,
+  step(dt,hold){if(this.done)return;if(!this.started){if(hold){this.started=true;tick(520);}else return;}
+    this.t+=dt;const L=this.p.i+h+this.p.o,k=Math.floor(this.t/L),ph=this.t-k*L,inPh=ph<this.p.i,hPh=!inPh&&ph<this.p.i+h;
+    if(k>=this.p.c){this.done=true;return;}
+    this.phase=inPh?'in':hPh?'hold':'out';if(this.phase!==this.lastPhase){this.lastPhase=this.phase;tick(inPh?520:hPh?460:390);vib(12);}
+    this.cyc=k;this.guide=inPh?0.5-0.5*Math.cos(Math.PI*ph/this.p.i):hPh?1:0.5+0.5*Math.cos(Math.PI*(ph-this.p.i-h)/this.p.o);
+    this.lvl=clamp(this.lvl+(hold?(inPh||hPh?dt/this.p.i:dt/this.p.i*0.3):-dt/this.p.o),0,1);
+    const nb=Math.min(ph,Math.abs(ph-this.p.i),Math.abs(ph-this.p.i-h),L-ph);this.ok=(hold===(inPh||hPh))||nb<0.35;this.total+=dt;if(this.ok)this.match+=dt;
+    this.remain=inPh?this.p.i-ph:hPh?this.p.i+h-ph:L-ph;},
+  score(){return this.total?this.match/this.total:0;}};}
+
+/* --- асана: врикшасана --- */
+function makeTree(side){
+  const live=sensorsLive(),dur=FAST?5:30;
+  let st='count',tt=0,n0=0,ang=0,dev=0,prev=0,sumS=0,sumD=0,dBase=0,dCur=0,lastSec=-1;const g0={x:0,y:0,z:0};
+  const ph=[Math.random()*6,Math.random()*6,Math.random()*6];
+  return {name:'tree',back:()=>sceneMap,
+    enter(){$('#hud').classList.remove('hidden');hint(live?'Встань в позу, телефон в ладонях у груди':'Коснись экрана и веди пальцем, чтобы удерживать фигуру');},
+    up(){dBase=dCur;},
+    update(dt){tt+=dt;
+      if(st==='count'){const s=Math.max(1,(FAST?2:5)-Math.floor(tt));if(s!==lastSec){lastSec=s;center('<div class="big">'+s+'</div><div class="mid">'+(side?'другая нога — опора':'левая нога — опора')+'</div>');tick(440);}if(tt>=(FAST?2:5)){st='calib';tt=0;lastSec=-1;if(live)center('<div class="big">···</div><div class="mid">замри</div>');}return;}
+      if(st==='calib'){if(live){g0.x+=M.gs.x;g0.y+=M.gs.y;g0.z+=M.gs.z;n0++;}if(tt>(live?1.2:0.1)){if(n0){g0.x/=n0;g0.y/=n0;g0.z/=n0;}st='run';tt=0;tick(660);center();hint(live?'Дыши ровно. Взгляд в одну точку.':'Ветер качает дерево — веди пальцем против ветра');}return;}
+      if(st!=='run')return;
+      if(live){const r=tiltFromBase(g0);dev=r.dev;ang=clamp(r.lat*1.6,-40,40);}
+      else{const w=0.55*Math.sin(tt*0.7+ph[0])+0.3*Math.sin(tt*1.9+ph[1])+0.15*Math.sin(tt*3.3+ph[2]);dCur=PT.down?dBase+(PT.x-PT.sx)/W*80:dBase;ang=clamp(w*16*(1+tt/40)+dCur,-40,40);dev=Math.abs(ang)/1.6;}
+      sumS+=clamp(1-dev/10,0,1)*dt;sumD+=Math.abs(dev-prev);prev=dev;
+      const left=Math.ceil(dur-tt);if(left!==lastSec){lastSec=left;center('<div class="mid" style="font-size:15px">0:'+String(Math.max(0,left)).padStart(2,'0')+'</div>');}
+      if(tt>=dur){st='done';center();hint();S.sec+=dur;
+        const sth=clamp(sumS/dur,0,1),suk=clamp(1-(sumD/dur)/(live?12:20),0,1);
+        addQ('sthira',2+sth*12);addQ('sukha',1+suk*10);S.done.tree=true;
+        result({title:'Врикшасана · результат',bars:[['Стхира · устойчивость',sth],['Сукха · лёгкость',suk]],
+          msg:sth>0.75?'Корни держат. Это и есть стхира — устойчивость.':sth>0.45?'Дерево качается на ветру — и всё равно стоит. Так и должно быть.':'Ветер сегодня сильный. Попробуй мягче: стопа плотнее, взгляд в одну точку.',
+          scrolls:['ys2_46'],againLabel:side?'Ещё раз':'Другая нога',again:()=>makeTree(side?0:1)});}
+    },
+    render(t){
+      const ox=W/2,oy=H*0.84,Sc=Math.min(H*0.62,W*1.25),inZ=dev<5;
+      drawFig(FIG_TREE,ox,oy,Sc,ang*Math.PI/180,inZ?PAL.skin:PAL.stone,RD);
+      const fc=px2c(ox);
+      for(let r=py2r(oy-Sc*1.02);r<py2r(oy);r++){const yy=(oy-(r*CH+CH/2))/Sc;const half=Math.tan(8*Math.PI/180)*yy*Sc/CW+0.32*Sc/CW;if(r%2)continue;for(const s of [-1,1])putC(Math.round(fc+s*half),r,'·',PAL.amber[inZ?6:3]);}
+      const gr=py2r(oy)+1;for(let c=0;c<COLS;c++)putC(c,gr,c%2?'_':'.',PAL.stone[3]);
+      landscape(t,{stars:0.3,grass:Math.min(0.99,oy/H+0.02)});
+    }
+  };
+}
+
+/* --- пранаяма: прилив --- */
+function makeTide(pi){
+  const p=Object.assign({},PATS[pi]);if(FAST)p.c=1;const B=breathCore(p);let shown='';
+  return {name:'tide',back:()=>sceneMap,
+    enter(){$('#hud').classList.remove('hidden');center('<div class="big">КОСНИСЬ</div><div class="mid">и держи — первый вдох</div>');hint(p.n+': вдох '+p.i+(p.h?' · задержка '+p.h:'')+' · выдох '+p.o+' · циклов: '+p.c);},
+    update(dt){if(B.done)return;B.step(dt,holding());
+      if(B.started&&!B.done){const s=Math.ceil(B.remain),key=B.phase+s+'|'+B.cyc;if(key!==shown){shown=key;center('<div class="big">'+(B.phase==='in'?'ВДОХ':B.phase==='hold'?'ЗАДЕРЖКА':'ВЫДОХ')+'</div><div class="mid">'+s+' · цикл '+(B.cyc+1)+' из '+p.c+'</div>');}}
+      if(B.done){center();hint();const sc=B.score();S.sec+=Math.round(B.t);addQ('prana',2+sc*14);addQ('sukha',3);S.done.breath=true;
+        result({title:'Пранаяма · результат',bars:[['Прана · совпадение с ритмом',sc]],
+          msg:sc>0.8?'Прилив и отлив совпали. Когда дыхание ровное, ровным становится и ум.':sc>0.55?'Дыхание ищет свой ритм — это уже практика.':'Не гонись за линией. Пусть выдох будет мягким и чуть длиннее, ритм придёт сам.',
+          scrolls:['hyp2_2','book_breath'],again:()=>makeTide(pi)});}},
+    render(t){
+      const base=0.88,amp=0.52,sr=Math.round((base-B.lvl*amp)*ROWS),gr=Math.round((base-(B.started?B.guide:0)*amp)*ROWS);
+      for(let c=0;c<COLS;c++)if(c%3!==2)putC(c,gr,'-',PAL.amber[B.ok||!B.started?6:4]);
+      const mc=Math.round(COLS*0.74),mr=Math.round(ROWS*0.12);['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(mc+j-3,mr+i,s[j],PAL.sky[6]);});
+      eachCell((c,r)=>{if(r>sr)bgWater(c,r,t,0.4+0.4*(r-sr)/ROWS);else if(r===sr){const s=Math.sin(c*0.5-t*2.5);putC(c,r,s>0.3?'~':s>-0.3?'-':'~',PAL.water[7]);}else if(r===sr-1){if(Math.sin(c*0.5-t*2.5+1)>0.6)putC(c,r,'.',PAL.water[6]);}else if(r/ROWS<0.45)bgStars(c,r,t);});
+    }
+  };
+}
+
+/* --- медитация: тихая заводь --- */
+function makePond(dur){
+  if(FAST)dur=9;const live=sensorsLive();let A=0.7,still=0,tt=0,wl=null,lastSec=-1,ended=false;
+  const top=0.22,bot=0.88,N=Math.round(clamp(COLS*ROWS/22,90,340));
+  const pts=Array.from({length:N},()=>({x:Math.random()*W,y:lerp(top+0.04,bot,Math.random())*H,vx:0,vy:0,ch:".:*+o,'"[(Math.random()*7)|0],b:Math.random()}));
+  return {name:'pond',back:()=>sceneMap,
+    enter(){$('#hud').classList.remove('hidden');center('<div class="mid" style="font-size:14px">Закрой глаза.<br>Колокольчик позовёт.</div>');hint('');
+      try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{});}catch(e){}},
+    leave(){try{wl&&wl.release();}catch(e){}},
+    down(){A=Math.min(1,A+0.5);},move(){if(PT.down)A=Math.min(1,A+0.02);},
+    update(dt){if(ended)return;tt+=dt;
+      if(live&&sensorsLive()&&M.jolt>0.35){A=Math.min(1,A+(M.jolt-0.35)*dt*4);}M.jolt*=0.9;
+      A=Math.max(0,A-dt*0.14);if(A<0.2)still+=dt;
+      if(tt>6&&tt<7)center();
+      const left=Math.ceil(dur-tt);if(left!==lastSec){lastSec=left;hint('<span style="color:var(--dim)">'+Math.floor(left/60)+':'+String(left%60).padStart(2,'0')+'</span>');}
+      const by=bot*H;
+      for(const q of pts){const sink=24*(1-A);q.vx+=(Math.random()-0.5)*A*320*dt;q.vy+=(Math.random()-0.5)*A*320*dt-A*26*dt;q.vx*=0.95;q.vy*=0.95;q.x+=q.vx*dt;q.y+=(q.vy+sink)*dt;
+        if(q.x<0)q.x+=W;if(q.x>W)q.x-=W;if(q.y<(top+0.03)*H)q.y=(top+0.03)*H;const fl=by-q.b*CH*1.6;if(q.y>fl){q.y=fl;q.vy=A>0.4?-Math.random()*90*A:0;}}
+      if(tt>=dur){ended=true;hint();center();S.sec+=dur;const sc=clamp(still/Math.max(1,dur-5),0,1);addQ('dharana',2+sc*14);S.done.pond=true;
+        result({title:'Медитация · результат',bars:[['Дхарана · время в тишине',sc]],
+          msg:sc>0.7?'Муть осела. В неподвижной воде видно луну.':'Вода ещё мутная — и это нормально. Сидеть рядом с мутью тоже практика.',
+          scrolls:['bg2_58'],again:()=>makePond(dur)});}},
+    render(t){
+      const by=bot*H;let settled=0;
+      for(const q of pts){if(q.y>=by-q.b*CH*1.6-1)settled++;putC(px2c(q.x),py2r(q.y),q.ch,PAL.path[3+Math.round(q.b*4)]);}
+      const clar=settled/pts.length;
+      if(clar>0.7&&A<0.25){const mc=px2c(W/2),mr=py2r(H*0.42),al=clamp((clar-0.7)*3.3,0,1);
+        ['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(mc+j-3,mr+i,s[j],PAL.sky[Math.round(2+al*5)]);});
+        for(let j=-8;j<=8;j++)if(j%2===0)putC(mc+j,mr+4,'~',PAL.water[Math.round(3+al*3)]);}
+      const sr=py2r(top*H),br=py2r(by);
+      eachCell((c,r)=>{if(r===sr){const s=Math.sin(c*0.4-t*(0.6+A*2));putC(c,r,s>0?'~':'-',PAL.water[5+Math.round(A*2)]);}
+        else if(r>sr){if(r>=br){if(hash(c,r)<0.6)putC(c,r,hash(r,c)<0.5?'_':'.',PAL.stone[3]);}
+          else if(hash(c,r+((t*(0.4+A*3))|0))<0.07+A*0.07)putC(c,r,hash(r,c)<0.5?'~':'-',PAL.water[2+Math.round(A*3)]);}
+        else bgStars(c,r,t);});
+    }
+  };
+}
+
+/* --- встреча: змей --- */
+function makeSnake(){
+  const live=sensorsLive(),B=breathCore({i:4,o:6,c:FAST?1:3});
+  let st='calm',m=0,agi=1,low=0,tt=0,L=0,hold=0,n0=0,shown='';const g0={x:0,y:0,z:0};
+  return {name:'snake',back:()=>sceneMap,
+    enter(){$('#hud').classList.remove('hidden');center('<div class="big">КОСНИСЬ</div><div class="mid">и держи — первый вдох</div>');hint('Вдох 4 · выдох 6 · три цикла');},
+    update(dt){tt+=dt;
+      if(st==='calm'){B.step(dt,holding());m=lerp(m,B.started&&B.ok?1:0,dt*1.2);agi=clamp(1-m,0,1);
+        if(B.started&&!B.done){const s=Math.ceil(B.remain),key=B.phase+s+'|'+B.cyc;if(key!==shown){shown=key;center('<div class="big">'+(B.phase==='in'?'ВДОХ':'ВЫДОХ')+'</div><div class="mid">'+s+' · цикл '+(B.cyc+1)+' из '+B.p.c+'</div>');}}
+        if(B.done){center();if(B.score()>=0.55){st='demo';tt=0;hint('Змей опускается и показывает, как поднимается сам: грудь вперёд и вверх, плечи от ушей.');}
+          else{st='fail';hint();panel('<div class="who">Наставница</div><p class="p">Змей ещё насторожен. Попробуй мягче: пусть выдох будет длиннее вдоха.</p><div class="row"><button class="btn" data-a="map">На карту</button><button class="btn main" data-a="again">Ещё раз</button></div>',{map:()=>go(sceneMap),again:()=>go(makeSnake())});}}
+        return;}
+      if(st==='demo'){low=clamp(tt/1.5,0,1);agi=Math.max(0,agi-dt);if(live){g0.x+=M.gs.x;g0.y+=M.gs.y;g0.z+=M.gs.z;n0++;}
+        if(tt>4.5){if(n0){g0.x/=n0;g0.y/=n0;g0.z/=n0;}st='pose';tt=0;hint(live?'Медленно наклоняй телефон к себе — фигура поднимает грудь. Держи её в янтарной полосе 5 секунд.':'Веди пальцем вверх — фигура поднимает грудь. Держи её в янтарной полосе 5 секунд.');}return;}
+      if(st==='pose'){
+        if(live)L=lerp(L,clamp(tiltFromBase(g0).dev/22,0,1),dt*6);
+        else L=PT.down?lerp(L,clamp((PT.sy-PT.y)/(H*0.35),0,1),dt*8):Math.max(0,L-dt*0.6);
+        if(L>=0.55&&L<=0.85)hold+=dt;
+        const s=Math.max(0,Math.ceil((FAST?1:5)-hold));const key='p'+s;if(key!==shown){shown=key;center('<div class="mid" style="font-size:15px">'+(s?'в полосе: '+s:'')+'</div>');}
+        if(hold>=(FAST?1:5)){st='done';center();hint();S.sec+=Math.round(B.t+10);const sc=B.score();addQ('shraddha',8);addQ('prana',2+sc*8);addQ('sthira',4);S.done.snake=true;
+          result({title:'Встреча · результат',bars:[['Ровность дыхания',sc]],extra:'<div class="sub" style="margin-top:6px">Открыта асана</div><p class="p"><b>Бхуджангасана</b> — поза змея (bhujaṅga — «змей»). Описана в Гхеранда‑самхите (2.42).</p>',
+            msg:'Змей успокоился вместе с тобой и показал свою позу.',scrolls:['hyp3_1'],again:()=>makeSnake()});}}
+    },
+    render(t){
+      const pose=st==='pose'||st==='done';
+      if(pose){
+        const cg=COLS-3,rT=py2r(H*0.30),rB=py2r(H*0.74);
+        for(let r=rT;r<=rB;r++){const v=1-(r-rT)/(rB-rT),band=v>=0.55&&v<=0.85;putC(cg,r,band?'█':'│',band?PAL.amber[4]:PAL.stone[3]);}
+        putC(cg-1,Math.round(lerp(rB,rT,L)),'◀',PAL.amber[7]);
+        drawFig(figCobra(L),W*0.56,H*0.82,Math.min(W*0.82,H*0.6),0,L>=0.55&&L<=0.85?PAL.skin:PAL.stone,RD);
+        drawFig(figSnake(t,0,1),W*0.3,H*0.5,Math.min(W*0.5,H*0.32),0,PAL.snake,RS);
+      }else{
+        drawFig(figSnake(t,agi,low),W*0.5,H*0.74,Math.min(W*1.05,H*0.6),0,PAL.snake,RS);
+        if(st==='calm'){const r0=py2r(H*0.86),r1=py2r(H*0.975),lv=Math.round(lerp(r1,r0,B.lvl)),gv=Math.round(lerp(r1,r0,B.started?B.guide:0));
+          for(let c=0;c<COLS;c++)if(c%3!==2)putC(c,gv,'-',PAL.amber[B.ok||!B.started?6:4]);
+          for(let r=r0;r<=r1;r++)for(let c=0;c<COLS;c++){if(r>lv)bgWater(c,r,t,0.35);else if(r===lv)putC(c,r,'~',PAL.water[6]);else mark(c,r);}}
+      }
+      eachCell((c,r)=>bgForest(c,r,t));
+    },
+    post(){if(st==='calm'&&agi>0.6&&B.started){ctx.font="13px 'IBM Plex Mono', monospace";ctx.textAlign='center';ctx.fillStyle='rgba(212,224,134,'+(agi-0.5).toFixed(2)+')';ctx.fillText('с с с',W*0.62,H*0.33);}}
+  };
+}
+
+/* --- чакры --- */
+const CHK=[
+  {n:'Муладхара',d:'मूलाधार',p:4,e:'земля',b:'लं',bt:'лам',y:0.115},
+  {n:'Свадхиштхана',d:'स्वाधिष्ठान',p:6,e:'вода',b:'वं',bt:'вам',y:0.20},
+  {n:'Манипура',d:'मणिपूर',p:10,e:'огонь',b:'रं',bt:'рам',y:0.285},
+  {n:'Анахата',d:'अनाहत',p:12,e:'воздух',b:'यं',bt:'ям',y:0.39},
+  {n:'Вишуддха',d:'विशुद्ध',p:16,e:'пространство',b:'हं',bt:'хам',y:0.505},
+  {n:'Аджна',d:'आज्ञा',p:2,e:'ум',b:'ॐ',bt:'ом',y:0.61},
+  {n:'Сахасрара',d:'सहस्रार',p:1000,e:'за пределами элементов',b:'',bt:'тишина',y:0.715}
+];
+const NOTES=[196,220,247,294,330,392,440];
+function makeChakra(){
+  let i=0,f=0,st='in',outT=0,warned=false;const lit=[];
+  const card=(k,phase)=>{const c=CHK[k];info('<div class="sub" style="margin-bottom:6px">'+(k+1)+' из 7 · '+c.n+'</div><div class="deva" style="font-size:18px">'+c.d+'</div><div class="note" style="margin:2px 0 6px">'+c.p+' '+pl(c.p)+' · '+c.e+'</div>'+(phase==='out'?'<div class="ru">'+(c.b?'<span class="deva" style="font-size:26px">'+c.b+'</span>&nbsp; '+c.bt:c.bt)+'</div>':'<div class="note" style="margin:0">Держи экран — вдох, центр наполняется</div>'));};
+  return {name:'chakra',back:()=>sceneMap,
+    enter(){$('#hud').classList.remove('hidden');card(0,'in');center('<div class="mid">Внимание к основанию позвоночника</div>');},
+    update(dt){
+      if(st==='in'){if(holding()){f=Math.min(1,f+dt/(FAST?1:3.5));if(f>0.05)center();}
+        else if(f>=0.7){st='out';outT=0;tone(NOTES[i],2.6,0.05);vib(15);card(i,'out');}
+        else if(f>0){f=Math.max(0,f-dt*0.5);if(!warned){warned=true;center('<div class="mid">Чуть дольше — до полного вдоха</div>');}}}
+      else if(st==='out'){if(!holding())outT+=dt;if(outT>=(FAST?0.8:3)){lit[i]=true;i++;f=0;st='in';warned=false;
+        if(i>=7){st='done';info();center();S.sec+=60;addQ('prana',6);addQ('dharana',6);S.done.temple=true;
+          result({title:'Семь центров · результат',msg:'Внимание поднялось от основания до макушки. Все семь центров пройдены.',extra:'<p class="note">Описание центров по Шат‑чакра‑нирупане: число лепестков, элемент и слог‑биджа.</p>',again:()=>makeChakra()});}
+        else card(i,'in');}}
+    },
+    render(t){
+      const ox=W/2,oy=H*0.72,Sc=Math.min(H*0.66,W*1.1),fc=px2c(ox);
+      for(let k=0;k<7;k++){const r=py2r(oy-CHK[k].y*Sc);let ch,col;
+        if(lit[k]){ch='@';col=PAL.amber[6];}else if(k===i&&st!=='done'){const pu=0.5+0.5*Math.sin(t*4);ch=f>0.66?'@':f>0.33?'O':'o';col=PAL.amber[Math.round(3+f*3+pu)];
+          const rr=1+Math.round(f*2);for(const [dc,dr] of [[-2*rr,0],[2*rr,0],[0,-rr],[0,rr],[-rr,-rr],[rr,-rr],[-rr,rr],[rr,rr]])putC(fc+dc,r+dr,f>0.5?'*':'.',PAL.amber[Math.round(2+f*4)]);}
+        else{ch='·';col=PAL.stone[4];}
+        putC(fc,r,ch,col);}
+      for(let r=py2r(oy-0.72*Sc);r<py2r(oy-0.1*Sc);r++)putC(fc,r,'¦',PAL.amber[lit.length?2:1]);
+      drawFig(FIG_SEAT,ox,oy,Sc,0,PAL.stone,RD);
+      const cy=oy-0.38*Sc,rad=0.62*Sc,prog=lit.filter(Boolean).length/7;
+      for(let a=0;a<60;a++){const an=a/60*Math.PI*2,x=ox+Math.cos(an)*rad,y=cy+Math.sin(an)*rad*0.95;putC(px2c(x),py2r(y),a/60<prog?'*':'·',a/60<prog?PAL.amber[5]:PAL.stone[2]);}
+      eachCell((c,r)=>bgStars(c,r,t));
+    }
+  };
+}
+
+/* ---------- деревня: яма и нияма ---------- */
+const FIG_DOG=mkFig([['e',0,0.12,0.2,0.09],['o',0.24,0.2,0.075],['c',0.3,0.17,0.35,0.11,0.02],['c',-0.12,0.06,-0.12,-0.04,0.025],['c',0.1,0.06,0.1,-0.04,0.025],['c',-0.19,0.14,-0.3,0.26,0.02]],0.02);
+const FIG_POT=mkFig([['e',0,0.0,0.19,0.23],['c',0,0.2,0,0.3,0.1],['e',0,0.31,0.13,0.03]],0.02);
+const FIG_BOAT=mkFig([['c',-0.42,0,0.42,0,0.05],['e',0,-0.03,0.44,0.085],['o',0.05,0.1,0.06],['c',0.05,0.12,0.05,0.26,0.03]],0.02);
+const FIG_HOUSE=mkFig([['e',0,-0.04,0.28,0.24],['c',-0.4,0.12,0,0.52,0.05],['c',0.4,0.12,0,0.52,0.05],['e',0,0.24,0.12,0.12]],0.02);
+const FIG_LAMP=mkFig([['e',0,0,0.12,0.05],['c',0,0.03,0,0.1,0.04],['e',0,0.12,0.06,0.02]],0.02);
+function stillMech(dur,draw){ // покой: без касаний и без тряски
+  let still=0,tt=0;return {done:false,score:0,
+    update(dt){tt+=dt;const moving=PT.down||(sensorsLive()&&M.jolt>0.35);M.jolt*=0.9;if(!moving)still+=dt;else still=Math.max(0,still-dt*0.5);this.p=clamp(still/dur,0,1);if(still>=dur){this.done=true;this.score=clamp(1-(tt-dur)/dur,0.3,1);}},
+    render(t){draw(t,this.p||0);}};
+}
+function levelMech(dur,draw){ // уровень: наклон около нуля
+  const live=sensorsLive(),g0={x:0,y:0,z:0};let n0=0,tt=0,ang=0,ok=0,dBase=0;
+  return {done:false,score:0,
+    up(){dBase=ang;},
+    update(dt){tt+=dt;if(tt<1){if(live){g0.x+=M.gs.x;g0.y+=M.gs.y;g0.z+=M.gs.z;n0++;}return;}if(n0){g0.x/=n0;g0.y/=n0;g0.z/=n0;n0=0;}
+      if(live)ang=clamp(tiltFromBase(g0).lat*1.3,-30,30);else ang=clamp(PT.down?dBase+(PT.x-PT.sx)/W*60:ang,-30,30);
+      if(Math.abs(ang)<4)ok+=dt;else ok=Math.max(0,ok-dt*0.3);this.p=clamp(ok/dur,0,1);this.ang=ang;if(ok>=dur){this.done=true;this.score=clamp(1-tt/(dur*4),0.3,1);}},
+    render(t){draw(t,this.ang||0,this.p||0);}};
+}
+function catchMech(need,draw){ // корзина под падающими плодами
+  const live=sensorsLive(),g0={x:0,y:0,z:0};let n0=0,tt=0,bx=0.5,got=0,miss=0;const fr=[];
+  return {done:false,score:0,fr,
+    update(dt){tt+=dt;if(tt<1){if(live){g0.x+=M.gs.x;g0.y+=M.gs.y;g0.z+=M.gs.z;n0++;}return;}if(n0){g0.x/=n0;g0.y/=n0;g0.z/=n0;n0=0;}
+      if(live)bx=clamp(bx+tiltFromBase(g0).lat/18*dt*1.4,0.1,0.9);else if(PT.down)bx=clamp(PT.x/W,0.1,0.9);
+      if(fr.length<2&&hash(tt*7|0,3)<0.5&&(!fr.length||fr[fr.length-1].y>0.3))fr.push({x:0.15+0.7*Math.random(),y:0.1,v:0.12+0.05*Math.random()});
+      for(let i=fr.length-1;i>=0;i--){const f=fr[i];f.y+=f.v*dt*(1+tt/40);if(f.y>=0.8){if(Math.abs(f.x-bx)<0.12){got++;tick(620);vib(10);}else{miss++;tick(300);}fr.splice(i,1);}}
+      this.bx=bx;this.got=got;if(got>=need){this.done=true;this.score=clamp(need/(need+miss),0.3,1);}},
+    render(t){draw(t,this);}};
+}
+function breathMech(pat,draw,hintIn){ // дыхательное ядро с рисунком
+  const B=breathCore(pat);let shown='';center('<div class="big">КОСНИСЬ</div><div class="mid">и держи — первый вдох</div>');
+  return {done:false,score:0,B,
+    update(dt){if(B.done)return;B.step(dt,holding());
+      if(B.started&&!B.done){const s=Math.ceil(B.remain),key=B.phase+s+'|'+B.cyc;if(key!==shown){shown=key;center('<div class="big">'+(B.phase==='in'?'ВДОХ':B.phase==='hold'?'ЗАДЕРЖКА':'ВЫДОХ')+'</div><div class="mid">'+s+' · '+(B.cyc+1)+' из '+pat.c+'</div>');}}
+      if(B.done){center();this.done=true;this.score=B.score();}},
+    render(t){draw(t,B);}};
+}
+function rubMech(need,draw){ // натереть, потом замереть
+  let dist=0,lx=0,ly=0,still=0,st='rub';
+  return {done:false,score:0,
+    move(){if(PT.down&&st==='rub'){dist+=Math.hypot(PT.x-lx,PT.y-ly);}lx=PT.x;ly=PT.y;},
+    down(){lx=PT.x;ly=PT.y;},
+    update(dt){this.clean=clamp(dist/need,0,1);if(st==='rub'&&this.clean>=1){st='still';tick(620);hint('Теперь замри: вода должна успокоиться');}
+      if(st==='still'){const moving=PT.down||(sensorsLive()&&M.jolt>0.35);M.jolt*=0.9;if(!moving)still+=dt;else still=Math.max(0,still-dt);this.calm=clamp(still/4,0,1);if(still>=(FAST?1:3)){this.done=true;this.score=1;}}},
+    render(t){draw(t,this.clean||0,this.calm||0,st);}};
+}
+function forgeMech(draw){ // держать в огне до нужного цвета, затем три удара
+  let heat=0,st='heat',hits=0,msg='';
+  return {done:false,score:0,
+    up(){if(st!=='heat')return;if(heat<0.55){msg='Рано: металл холодный';tick(300);heat=0;}else if(heat>0.9){msg='Перегорел';tick(300);heat=0;}else{st='hit';hits=0;hint('Три удара: коснись в такт');tick(620);}},
+    down(){if(st==='hit'){hits++;tick(700+hits*60);vib(15);if(hits>=3){this.done=true;this.score=1;}}},
+    update(dt){if(st==='heat'){if(holding())heat=Math.min(1,heat+dt/(FAST?2:5));else heat=Math.max(0,heat-dt*0.25);if(heat>=1){msg='Перегорел';heat=0;tick(300);}}this.heat=heat;this.msg=msg;this.st=st;this.hits=hits;},
+    render(t){draw(t,this);}};
+}
+function rowMech(need,draw){ // грести наклонами или свайпами
+  const live=sensorsLive(),g0={x:0,y:0,z:0};let n0=0,tt=0,side=0,strokes=0,lx=0;
+  return {done:false,score:0,
+    down(){lx=PT.x;},
+    up(){if(live)return;const d=PT.x-lx;if(Math.abs(d)>40){const s=d>0?1:-1;if(s!==side){side=s;strokes++;tick(500);vib(10);}}},
+    update(dt){tt+=dt;if(tt<1){if(live){g0.x+=M.gs.x;g0.y+=M.gs.y;g0.z+=M.gs.z;n0++;}return;}if(n0){g0.x/=n0;g0.y/=n0;g0.z/=n0;n0=0;}
+      if(live){const l=tiltFromBase(g0).lat;const s=l>12?1:l<-12?-1:0;if(s&&s!==side){side=s;strokes++;tick(500);vib(10);}}
+      this.p=clamp(strokes/need,0,1);this.side=side;if(strokes>=need){this.done=true;this.score=1;}},
+    render(t){draw(t,this.p||0,this.side||0);}};
+}
+function rhythmMech(need,draw){ // касание в такт: челнок доходит до края — коснись
+  const T=1.6;let tt=0,good=0,bad=0,fx=0,last=-9;
+  return {done:false,score:0,
+    down(){const ph=(tt/T)%1,d=Math.min(ph,1-ph,Math.abs(ph-0.5));if(d<0.12){good++;tick(640);vib(10);fx=1;}else{bad++;good=Math.max(0,good-1);tick(300);vib(40);fx=-1;}last=tt;},
+    update(dt){tt+=dt;fx*=0.9;this.t=tt;this.pos=0.5-0.5*Math.cos(tt/T*Math.PI*2);this.good=good;this.fx=fx;this.p=clamp(good/need,0,1);if(good>=need){this.done=true;this.score=clamp(need/(need+bad),0.3,1);}},
+    render(t){draw(t,this);}};
+}
+function syllMech(parts,draw){ // собрать строку из слогов
+  const order=parts.map((_,i)=>i),sh=order.slice().sort(()=>Math.random()-0.5);let got=0,panelUp=false;
+  const show=()=>{panelUp=true;panel('<div class="sub">Собери строку</div><div class="deva" style="min-height:1.6em">'+parts.slice(0,got).join('')+'<span style="color:var(--dim)">'+(got<parts.length?' …':'')+'</span></div><div class="opts" style="flex-wrap:wrap">'+sh.map(i=>'<button data-a="s'+i+'" class="deva" style="font-size:18px;'+(i<got?'opacity:.25':'')+'">'+parts[i]+'</button>').join('')+'</div><p class="note">Строка: ЙС 1.2, योगश्चित्तवृत्तिनिरोधः. Коснись слогов по порядку.</p>',
+    Object.fromEntries(sh.map(i=>['s'+i,()=>{if(i===got){got++;tick(600+got*40);if(got>=parts.length){hidePanel();panelUp=false;this_.done=true;this_.score=1;}else show();}else{tick(300);vib(30);got=0;show();}}])));};
+  const this_={done:false,score:0,enter(){show();},update(){},render(t){draw(t,got/parts.length);}};
+  return this_;
+}
+const HOUSES=[
+  {id:'ahimsa',fail:['Пёс отвечает тем, что получает. Что получится, если ему ничего не делать?','Сила здесь уже пробовалась — зимой, камнями. Попробуй иначе.','Не торопись к колодцу. Иногда путь короче, если сесть.'],rgb:'232,184,106',petals:6,n:'Ахимса',ru:'ненасилие',who:'Гончарница',deva:'अहिंसा',
+   intro:['Гончарница у дома. Из‑под крыльца рычит пёс: зимой его гнали камнями. Тебе нужно к колодцу, он не пустит.'],
+   q:'Что делать?',opts:[
+     {t:'Бросить лепёшку издалека',reply:'Пёс ест, но к тебе не подходит. К колодцу всё так же не пройти.'},
+     {t:'Прогнать палкой',reply:'Пёс лает и не пускает. Гончарница: «Его уже прогоняли. Не помогло».'},
+     {t:'Сесть у ворот, не смотреть на него, дышать ровно',ok:true}],
+   task:'Положи телефон на колено и не касайся экрана. Пёс выйдет сам.',
+   mech:()=>stillMech(FAST?3:10,(t,p)=>{drawFig(FIG_DOG,lerp(W*0.88,W*0.6,p),H*0.8,Math.min(W*0.75,H*0.42),0,p>0.95?PAL.skin:PAL.path,RD);drawFig(FIG_SEAT,W*0.24,H*0.8,Math.min(W*0.6,H*0.34),0,PAL.amber,RD);
+     const r=py2r(H*0.3);for(let c=2;c<COLS-2;c++)putC(c,r,c/COLS<p?'·':' ',PAL.amber[5]);landscape(t,{stars:0.35,grass:0.6});}),
+   end:'С ним ничего не делали — поэтому он пришёл.',scroll:'ys2_35'},
+  {id:'satya',fail:['Слово тоже может навредить. Поищи такое, которое поможет корзине.','Похвала не выровняет дно, упрёк — тоже. Что выровняет?','Правдой у Вьясы считается речь на благо. Попробуй сказать на благо.'],rgb:'232,226,196',petals:5,n:'Сатья',ru:'правдивость',who:'Корзинщик',deva:'सत्य',
+   intro:['Корзинщик показывает первую корзину на продажу. Дно кривое. «Хороша?»'],
+   q:'Что сказать?',opts:[
+     {t:'Никуда не годится',reply:'Он молча забирает корзину и уходит в дом.'},
+     {t:'Отличная корзина!',reply:'Он уносит её на рынок. Дно проседает под рисом.'},
+     {t:'Дно уводит влево — давай выровняем',ok:true}],
+   task:'Наклоняй телефон, пока дно не встанет ровно, и держи так 5 секунд.',
+   mech:()=>levelMech(FAST?1:3,(t,ang,p)=>{const a=ang*Math.PI/180,ox=W/2,oy=H*0.6,Sc=Math.min(W*0.7,H*0.4);drawFig(mkFig([['e',0,0,0.42,0.1],['c',-0.4,0.06,-0.32,0.3,0.03],['c',0.4,0.06,0.32,0.3,0.03],['c',-0.32,0.3,0.32,0.3,0.03]],0.02),ox,oy,Sc,-a,Math.abs(ang)<4?PAL.skin:PAL.path,RD);
+     const c0=px2c(ox),r0=py2r(oy-Sc*0.5);for(let d=-10;d<=10;d++)putC(c0+d,r0,d===Math.round(clamp(ang/3,-10,10))?'●':'·',d===0?PAL.amber[7]:PAL.stone[3]);
+     const r=py2r(H*0.2);for(let c=2;c<COLS-2;c++)if(c/COLS<p)putC(c,r,'·',PAL.amber[5]);landscape(t,{stars:0.3,grass:0.82});}),
+   end:'Правда — та, что идёт на пользу. Когда слово совпадает с делом, дело приносит плод.',scroll:'ys2_36'},
+  {id:'asteya',fail:['Плоды на дороге — ещё не твои. Чьи они?','Пройти мимо тоже можно. Но тогда зачем ты пришёл в этот дом?','Попробуй сделать так, чтобы плоды вернулись к хозяину.'],rgb:'196,214,120',petals:7,n:'Астея',ru:'неприсвоение',who:'Хозяин рощи',deva:'अस्तेय',
+   intro:['Манго из чужой рощи падают через забор прямо на дорогу.'],
+   q:'Что делать?',opts:[
+     {t:'Пройти мимо',reply:'Плоды остаются гнить. Дорога дальше не открывается.'},
+     {t:'Поднять и съесть',reply:'Хозяин видит из окна и закрывает ставни.'},
+     {t:'Собрать и отнести к калитке',ok:true}],
+   task:'Наклоняй телефон, чтобы корзина ловила падающие плоды. Нужно пять.',
+   mech:()=>catchMech(FAST?2:3,(t,m)=>{for(const f of m.fr)putC(px2c(f.x*W),py2r(f.y*H),'o',PAL.amber[6]);const bx=m.bx*W;drawFig(mkFig([['e',0,0,0.4,0.1],['c',-0.38,0.05,-0.3,0.3,0.03],['c',0.38,0.05,0.3,0.3,0.03],['c',-0.3,0.3,0.3,0.3,0.03]],0.02),bx,H*0.8,Math.min(W*0.4,H*0.24),0,PAL.amber,RD);
+     if(m.shown!==m.got){m.shown=m.got;center('<div class="mid">'+(m.got||0)+' из '+(FAST?2:3)+'</div>');}for(let c=0;c<COLS;c++)if(hash(c,1)<0.5)putC(c,py2r(H*0.08),'&',PAL.grass[5]);landscape(t,{stars:0.0,grass:0.86});}),
+   end:'То, что ты не взял, пришло само.',scroll:'ys2_37'},
+  {id:'brahmacharya',fail:['Масла мало, а ночь длинная. Что бережёт огонь?','Сразу всё — и ничего не остаётся к полуночи. Подумай о фитиле.','Барабаны будут и завтра. Светильник — только сегодня.'],rgb:'240,156,96',petals:4,n:'Брахмачарья',short:'Брахмач.',ru:'сбережение силы',who:'Ученик',deva:'ब्रह्मचर्य',
+   intro:['Праздник, бьют барабаны. Ученику поручено держать светильник до луны, а масла мало.'],
+   q:'Что посоветовать?',opts:[
+     {t:'Долить всё масло сразу',reply:'Пламя коптит и трещит, к середине ночи гаснет.'},
+     {t:'Пойти на праздник, свет подождёт',reply:'Светильник гаснет.'},
+     {t:'Прикрыть огонь ладонью и дышать медленно',ok:true}],
+   task:'Держи экран на вдохе, отпускай на выдохе. Выдох длиннее вдоха: пламя горит ровно.',
+   mech:()=>breathMech({i:4,o:6,c:FAST?1:2},(t,B)=>{const ox=W/2,oy=H*0.72,h=(0.12+0.3*B.lvl)*H,fl=B.started&&!B.ok?1:0.2;drawFig(FIG_LAMP,ox,oy,Math.min(W*0.8,H*0.45),0,PAL.path,RD);
+     for(let r=py2r(oy-h);r<py2r(oy-H*0.02);r++){const y=(r*CH-(oy-h))/h,w=Math.max(1,Math.round((1-y)*(1-y)*5+Math.sin(t*9+r)*fl*2));for(let d=-w;d<=w;d++)putC(px2c(ox)+d+Math.round(Math.sin(t*12+r*0.7)*fl*2),r,y<0.3?'^':y<0.7?'*':'#',PAL.amber[Math.round(3+y*4)]);}
+     const mc=px2c(W*0.8),mr=py2r(H*0.12);['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(mc+j-3,mr+i,s[j],PAL.sky[2+Math.round(4*B.cyc/3)]);});landscape(t,{stars:0.4,grass:0.78});}),
+   end:'Огонь горит долго, когда не тратит себя на треск.',scroll:'ys2_38'},
+  {id:'aparigraha',fail:['Чем больше в сумке, тем тяжелее дорога. Что действительно нужно в пути?','Отказаться от всего — тоже способ не слышать дарящего. Возьми то, что нужно.','Старик дарит не вещи, а свободу. Подумай, что из этого пригодится.'],rgb:'186,182,160',petals:3,n:'Апариграха',ru:'нестяжание',who:'Старик',deva:'अपरिग्रह',
+   intro:['Старик уходит жить в лес и раздаёт вещи: посох, котёл, одеяло, книги.'],
+   q:'Что взять?',opts:[
+     {t:'Не брать ничего',reply:'Старик огорчён: его дар не принят.'},
+     {t:'Взять всё',reply:'С полной сумкой не дойти до следующего дома. Вещи придётся вернуть.'},
+     {t:'Взять одну вещь, которая нужна в пути: посох',ok:true,reply:'Старик кивает и рассказывает, откуда у него этот посох и куда он теперь идёт.',rwho:''}],
+   task:null,mech:null,
+   end:'Руки свободны — и видно, откуда пришёл и куда идёшь.',scroll:'ys2_39'},
+  {id:'shaucha',fail:['Блеск снаружи не делает воду чистой. Где ещё песок?','Вьяса делит чистоту на внешнюю и внутреннюю. Сделай обе.','Мутная вода — внутри. Промой изнутри.'],rgb:'156,206,236',petals:8,n:'Шауча',ru:'чистота',who:'Женщина у колодца',deva:'शौच',
+   intro:['Женщина у колодца чистит сосуды песком. Твой после дороги мутный.'],
+   q:'Как мыть?',opts:[
+     {t:'Попросить женщину вымыть',reply:'Она качает головой: «Свой сосуд каждый моет сам».'},
+     {t:'Вымыть только снаружи',reply:'Сосуд блестит, а вода в нём всё равно мутная.'},
+     {t:'Вымыть снаружи и изнутри',ok:true}],
+   task:'Три экран пальцем, сосуд светлеет. Потом замри: вода успокоится, и в ней появится отражение.',
+   mech:()=>rubMech(FAST?W*1.5:W*4,(t,clean,calm,st)=>{const ox=W/2,oy=H*0.6;drawFig(FIG_POT,ox,oy,Math.min(W*0.9,H*0.55),0,clean>0.5?PAL.amber:PAL.path,RD);
+     if(st==='still'){const c0=px2c(ox),r0=py2r(oy-H*0.02);for(let d=-3;d<=3;d++)putC(c0+d,r0,calm>0.8?'~':'-',PAL.water[Math.round(3+calm*4)]);if(calm>0.8)putC(c0,r0-1,'☺',PAL.amberHi[7]);}
+     const r=py2r(H*0.16);for(let c=2;c<COLS-2;c++)if(c/COLS<(st==='rub'?clean:calm))putC(c,r,'·',PAL.amber[5]);landscape(t,{stars:0.3,grass:0.84});}),
+   end:'Снаружи — песок и вода. Внутри — то, что ты держишь в уме.',scroll:'ys2_41'},
+  {id:'santosha',fail:['Чужой станок быстрее, и что с того? Посмотри на своё полотно.','Распустить — значит потерять день. Что можно сделать из того, что есть?','Довольство — не отказ от работы, а радость о сделанном.'],rgb:'236,196,214',petals:6,n:'Сантоша',ru:'довольство',who:'Ткачиха',deva:'सन्तोष',
+   intro:['Ткачиха: полотно выходит короче, чем нужно на сари. Соседка ткёт быстрее.'],
+   q:'Что предложить?',opts:[
+     {t:'Распустить и начать заново',reply:'День кончается, полотна нет.'},
+     {t:'Ускориться и догнать соседку',reply:'Такт сбивается, нить рвётся.'},
+     {t:'Доткать то, что есть — выйдет платок',ok:true}],
+   task:'Челнок ходит туда и обратно. Касайся экрана в момент, когда он доходит до края. Нужно шесть точных касаний.',
+   mech:()=>rhythmMech(FAST?2:5,(t,m)=>{const ox=W*0.5,oy=H*0.56,Sc=Math.min(W*0.8,H*0.46),cl=0.05+0.5*m.p;
+     drawFig(FIG_LOOM,ox,oy,Sc,0,PAL.stone,RD);
+     {const r=Math.min(cl/2,0.08);drawFig(mkFig([['c',-0.3+r,0.28-cl/2,0.3-r,0.28-cl/2,cl/2]],0.01),ox,oy,Sc,0,PAL.amber,RD);}
+     const near=m.pos<0.15||m.pos>0.85;putC(px2c(ox+(m.pos-0.5)*Sc*0.62),py2r(oy-(0.28-cl)*Sc),'◆',near?PAL.amberHi[7]:PAL.amber[5]);
+     for(const sx of [-1,1]){const nr=sx<0?m.pos<0.15:m.pos>0.85;for(let r=py2r(oy-0.3*Sc);r<py2r(oy+0.3*Sc);r++)putC(px2c(ox+sx*Sc*0.44),r,nr?'█':'│',nr?PAL.amber[5]:PAL.stone[3]);}
+     center(m.fx>0.3?'<div class="mid">ровно</div>':m.fx<-0.3?'<div class="mid">мимо — жди края</div>':'<div class="mid">'+m.good+' из '+(FAST?2:5)+'</div>');landscape(t,{stars:0.25,grass:0.86});}),
+   end:'Это радость, к которой нечего прибавить.',scroll:'ys2_42'},
+  {id:'tapas',fail:['Рано вынутый металл трескается. Подожди нужного цвета.','Передержать — тоже ошибка. Жар нужен в меру.','Тапас — жар, который выжигает лишнее, а не всё подряд.'],rgb:'246,140,84',petals:10,n:'Тапас',ru:'жар усилия',who:'Кузнец',deva:'तपस्',
+   intro:['Кузнец куёт серп. Главное — не рано и не поздно.'],
+   q:'Как держать?',opts:[
+     {t:'Держать как можно дольше',reply:'Металл перегорает.'},
+     {t:'Вынуть рано',reply:'Металл холодный, серп трескается.'},
+     {t:'Держать до нужного цвета и ударить',ok:true}],
+   task:'Держи экран: заготовка греется. Отпусти, когда она в янтарной полосе. Потом три удара.',
+   mech:()=>forgeMech((t,m)=>{const cg=COLS-3,rT=py2r(H*0.25),rB=py2r(H*0.75);for(let r=rT;r<=rB;r++){const v=1-(r-rT)/(rB-rT),band=v>=0.55&&v<=0.9;putC(cg,r,band?'█':'│',band?PAL.amber[4]:PAL.stone[3]);}putC(cg-1,Math.round(lerp(rB,rT,m.heat)),'◀',PAL.amber[7]);
+     const ox=W*0.45,oy=H*0.6;drawFig(mkFig([['c',-0.3,0.1,0.1,0.1,0.05],['c',0.1,0.1,0.35,-0.1,0.045],['c',0.35,-0.1,0.3,-0.3,0.035]],0.02),ox,oy,Math.min(W*0.8,H*0.45),0,m.st==='hit'?PAL.amberHi:m.heat>0.55?PAL.amber:PAL.path,RD);
+     if(m.st==='heat'){for(let r=py2r(oy+H*0.05);r<py2r(oy+H*0.2);r++)for(let c=px2c(ox-W*0.2);c<px2c(ox+W*0.2);c++)if(hash(c,r+((t*8)|0))<0.3+m.heat*0.4)putC(c,r,'^*'[(hash(r,c)*2)|0],PAL.amber[Math.round(2+m.heat*5)]);}
+     if(m.msg)center('<div class="mid">'+m.msg+'</div>');if(m.st==='hit')center('<div class="big">'+'✦'.repeat(m.hits)+'</div>');landscape(t,{stars:0.2,grass:0.88});}),
+   end:'Жар нужен, чтобы выгорело лишнее, а не чтобы сгорело всё.',scroll:'ys2_43'},
+  {id:'svadhyaya',fail:['Первое, что пришло в голову, — не то, что ты учил. Вернись к началу строки.','Строка вспоминается с первого слога. Начни с него.','Повторение — и есть практика. Начни стих сначала.'],rgb:'206,188,246',petals:12,n:'Свадхьяя',ru:'самоизучение',who:'Чтец',deva:'स्वाध्याय',
+   intro:['Чтец сбился на середине стиха и не может вспомнить продолжение.'],
+   q:'Что делать?',opts:[
+     {t:'Сказать, что строка не так важна',reply:'Чтец замолкает. Вечер проходит без стиха.'},
+     {t:'Подсказать первое, что пришло в голову',reply:'Строка не складывается.'},
+     {t:'Начать стих сначала вместе с ним',ok:true}],
+   task:'Повтори строку вместе с ним: держи экран на вдохе, отпусти на выдохе. Два спокойных цикла.',
+   mech:()=>breathMech({i:4,o:4,c:FAST?1:2},(t,B)=>{const G=['यो','ग','श्चि','त्त','वृ','त्ति','नि','रो','धः'],n=Math.round(B.lvl*G.length);
+     for(let i=0;i<n;i++)putC(px2c(W*(0.14+0.085*i)),py2r(H*0.26),G[i],PAL.amber[Math.round(4+3*B.lvl)]);
+     drawFig(FIG_SEAT,W/2,H*0.68,Math.min(W*0.55,H*0.32),0,PAL.amber,RD);landscape(t,{stars:0.45,grass:0.82});}),
+   end:'Что повторяешь, к тому и приходишь.',scroll:'ys2_44'},
+  {id:'ishvara',fail:['Весь день он возил людей не ради платы. Куда идёт то, что дали?','Отказаться — ещё не значит посвятить. Подумай, кому отдать плоды.','Лодка доплыла. Что сделать с тем, что осталось в руках?'],rgb:'236,226,196',petals:16,n:'Ишвара‑пранидхана',short:'Ишвара',ru:'посвящение Ишваре',who:'Перевозчик',deva:'ईश्वरप्रणिधान',
+   intro:['Перевозчик весь день возит людей и не назначает платы. «Возьми весло».'],
+   q:'Что сделать с платой?',opts:[
+     {t:'Отказаться от платы',reply:'Перевозчик пожимает плечами: «Тогда зачем ты грёб?»'},
+     {t:'Оставить плату себе',reply:'Ничего не происходит. Вечер просто кончается.'},
+     {t:'Посвятить работу и её плоды',ok:true}],
+   task:'Греби: наклоняй телефон влево и вправо попеременно. Или веди пальцем из стороны в сторону.',
+   mech:()=>rowMech(FAST?2:6,(t,p,side)=>{const bx=lerp(W*0.15,W*0.85,p),by=H*0.52;drawFig(FIG_BOAT,bx,by,Math.min(W*0.7,H*0.4),side*0.05,PAL.amber,RD);
+     const oc=px2c(bx+side*CW*4),orr=py2r(by+H*0.04);putC(oc,orr,side>0?'\\':'/',PAL.stone[6]);landscape(t,{stars:0.3,river:[0.45,0.7],grass:0.7});}),
+   end:'Лодка доплыла. Этого достаточно.',scroll:'ys2_45'}
+];
+/* иллюстрации к тексту домов: живые сцены из знаков */
+const FIG_WELL=mkFig([['c',-0.3,0,-0.3,0.4,0.04],['c',0.3,0,0.3,0.4,0.04],['c',-0.36,0.42,0.36,0.42,0.035],['e',0,0,0.34,0.1]],0.02);
+const FIG_BASKET=mkFig([['e',0,0,0.42,0.1],['c',-0.4,0.06,-0.32,0.3,0.03],['c',0.4,0.06,0.32,0.3,0.03],['c',-0.32,0.3,0.32,0.3,0.03]],0.02);
+const FIG_SICKLE=mkFig([['c',-0.3,0.1,0.1,0.1,0.05],['c',0.1,0.1,0.35,-0.1,0.045],['c',0.35,-0.1,0.3,-0.3,0.035]],0.02);
+function flame(ox,oy,h,fl,t){for(let r=py2r(oy-h);r<py2r(oy-H*0.01);r++){const y=(r*CH-(oy-h))/h,w=Math.max(1,Math.round((1-y)*(1-y)*5+Math.sin(t*9+r)*fl*2));for(let d=-w;d<=w;d++)putC(px2c(ox)+d+Math.round(Math.sin(t*12+r*0.7)*fl*2),r,y<0.3?'ऽ':y<0.7?'र':'ॐ',PAL.amber[Math.round(3+y*4)]);}}
+function moon(cx,cy,b){['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(px2c(cx)+j-3,py2r(cy)+i,s[j],PAL.sky[b]);});}
+const FIG_LOOM=mkFig([['c',-0.36,-0.3,-0.36,0.4,0.035],['c',0.36,-0.3,0.36,0.4,0.035],['c',-0.4,0.4,0.4,0.4,0.03],['c',-0.4,-0.3,0.4,-0.3,0.03]],0.02);
+const FIG_STAND=mkFig([['o',0,0.64,0.085],['c',0,0.53,0,0.22,0.09],['c',-0.05,0.22,-0.09,-0.22,0.05],['c',0.05,0.22,0.09,-0.22,0.05],['c',-0.1,0.48,-0.19,0.2,0.035],['c',0.1,0.48,0.19,0.2,0.035]],0.015);
+const ISTG={s:'t'};
+const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вступления, 'q' вопрос, 'bad' неверный ответ, 'ok' верный
+  ahimsa:(t,st)=>{const S1=Math.min(W*0.55,H*0.32),porch=py2r(H*0.55);drawFig(FIG_HOUSE,W*0.3,H*0.5,S1,0,PAL.stone,RD);
+    for(let c=px2c(W*0.42);c<px2c(W*0.95);c++)putC(c,porch,'॓',PAL.stone[4]);
+    if(st===1||st==='q'||st==='bad'||st==='ok')drawFig(FIG_STAND,W*0.5,H*0.62,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    if(st==='ok'){drawFig(FIG_DOG,W*0.74,H*0.66,Math.min(W*0.5,H*0.3),0,PAL.skin,RD);}
+    else if(st==='t'||st===0){const bl=Math.sin(t*2)>0.9?' ':'ः';putC(px2c(W*0.78),porch+1,bl,PAL.amber[6]);putC(px2c(W*0.78)+2,porch+1,bl,PAL.amber[6]);}
+    else{const k=st==='bad'?1.6:st==='q'?1:0.5,sh=Math.sin(t*22)*CW*0.4*k;drawFig(FIG_DOG,W*0.74+sh,H*0.64,Math.min(W*0.5,H*0.3),0,PAL.path,RD);
+      const n=st==='bad'?5:st==='q'?3:1;for(let i=0;i<n;i++)putC(px2c(W*0.8)+i*2,porch-2-i,'र',PAL.amber[3+Math.min(4,i)]);}
+    landscape(t,{dim:0.45,stars:0.3,grass:0.7});},
+  satya:(t,st)=>{const a=st==='ok'?0:st==='bad'?0.25:0.1*Math.sin(t*1.3);
+    if(st!=='t'&&st!==0)drawFig(FIG_STAND,W*0.25,H*0.66,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    drawFig(FIG_BASKET,W*0.6,H*0.56,Math.min(W*0.6,H*0.36),a,st==='ok'?PAL.skin:PAL.path,RD);
+    const n=st==='bad'?24:st==='ok'?0:8;for(let i=0;i<n;i++){const k=(t*(st==='bad'?1.2:0.5)+i*0.37)%1;putC(px2c(W*0.45-i*CW*0.4),py2r(H*0.6+k*H*0.14),'·',PAL.amber[Math.round(6-k*4)]);}
+    if(st==='ok')for(let i=-3;i<=3;i++)putC(px2c(W*0.6)+i,py2r(H*0.52),'·',PAL.amber[6]);
+    landscape(t,{dim:0.45,stars:0.3,grass:0.78});},
+  asteya:(t,st)=>{for(let c=0;c<COLS;c++)if(c%2)putC(c,py2r(H*0.56),'॥',PAL.stone[4]);
+    for(let c=0;c<COLS;c++)for(let r=py2r(H*0.36);r<py2r(H*0.5);r++)if(hash(c,r)<0.22)putC(c,r,'ॐ',PAL.grass[Math.round(3+4*hash(r,c))]);
+    if(st==='bad'){drawFig(FIG_HOUSE,W*0.78,H*0.42,Math.min(W*0.5,H*0.3),0,PAL.shade,RD);putC(px2c(W*0.78)-1,py2r(H*0.42),'▬',PAL.stone[3]);putC(px2c(W*0.78)+1,py2r(H*0.42),'▬',PAL.stone[3]);}
+    const falling=st==='t'||st===0||st==='q';if(falling)for(let i=0;i<3;i++){const k=((t*0.35)+i/3)%1,x=W*(0.25+0.25*i),y=H*(0.45+0.3*k);putC(px2c(x),py2r(y),'●',PAL.amber[Math.round(7-k*3)]);}
+    if(st===1||st==='q'||st==='bad')for(let i=0;i<5;i++)putC(px2c(W*0.2)+i*3,py2r(H*0.76),'●',PAL.amber[5]);
+    if(st==='ok'){drawFig(FIG_BASKET,W*0.5,H*0.74,Math.min(W*0.45,H*0.26),0,PAL.amber,RD);for(let i=-2;i<=2;i++)putC(px2c(W*0.5)+i,py2r(H*0.7),'●',PAL.amberHi[7]);}
+    landscape(t,{dim:0.45,stars:0.0,grass:0.78});},
+  brahmacharya:(t,st)=>{const ox=W*0.38,oy=H*0.66;drawFig(FIG_LAMP,ox,oy,Math.min(W*0.6,H*0.36),0,PAL.path,RD);
+    const h=st==='bad'?H*0.05*(0.5+0.5*Math.sin(t*15)):st==='ok'?H*0.2:H*0.18,fl=st==='ok'?0.15:st==='bad'?2:1;if(h>H*0.02)flame(ox,oy,h,fl,t);
+    if(st!=='t')drawFig(FIG_STAND,W*0.62,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    const beat=Math.pow(0.5+0.5*Math.sin(t*6),6),loud=st==='t'||st===0||st===1;for(let i=0;i<2;i++){const cx=px2c(W*0.84)+i*4,cy=py2r(H*0.6);putC(cx,cy,beat>0.5&&loud?'●':'◦',PAL.amber[Math.round(3+(loud?beat:0.2)*4)]);putC(cx-1,cy+1,'॥',PAL.stone[4]);putC(cx+1,cy+1,'॥',PAL.stone[4]);}
+    moon(W*0.82,H*0.14,st==='ok'?6:2);landscape(t,{dim:0.45,stars:0.4,grass:0.74});},
+  aparigraha:(t,st)=>{drawFig(FIG_SEAT,W*0.26,H*0.64,Math.min(W*0.5,H*0.3),0,PAL.amber,RD);
+    const y=H*0.62,xs=[0.55,0.68,0.8,0.92],pu=st===1||st==='q'?1+0.06*Math.sin(t*3):1;
+    const items=st==='ok'?[0]:st==='bad'?[]:[0,1,2,3];
+    if(st==='bad'){for(let i=0;i<4;i++)putC(px2c(W*0.7)+i*2-3,py2r(H*0.6)-(i%2),'▣',PAL.path[5]);drawFig(FIG_STAND,W*0.72,H*0.68,Math.min(W*0.42,H*0.27)*0.9,0.3,PAL.stone,RD);}
+    for(const i of items){const x=W*xs[i];if(i===0)drawFig(mkFig([['c',0,-0.3,0,0.3,0.03]],0.01),x,y,H*0.22*pu,0.1,st==='ok'?PAL.amberHi:PAL.path,RD);
+      else if(i===1)drawFig(FIG_POT,x,y,H*0.16*pu,0,PAL.path,RD);else if(i===2)drawFig(mkFig([['e',0,0,0.4,0.12]],0.01),x,y+H*0.03,H*0.16*pu,0,PAL.path,RD);
+      else drawFig(mkFig([['c',-0.25,-0.1,0.25,-0.1,0.07],['c',-0.25,0.08,0.25,0.08,0.07]],0.01),x,y,H*0.16*pu,0,PAL.path,RD);}
+    landscape(t,{dim:0.45,stars:0.3,grass:0.72});},
+  shaucha:(t,st)=>{drawFig(FIG_WELL,W*0.3,H*0.55,Math.min(W*0.6,H*0.36),0,PAL.stone,RD);
+    if(st!=='t'&&st!==0)drawFig(FIG_STAND,W*0.58,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    drawFig(FIG_POT,W*0.8,H*0.64,Math.min(W*0.4,H*0.26),0,st==='bad'||st==='ok'?PAL.amber:PAL.path,RD);
+    const c0=px2c(W*0.8),r0=py2r(H*0.6);if(st==='bad'){for(let d=-2;d<=2;d++)putC(c0+d,r0,'≈',PAL.shade[4]);}
+    if(st==='ok'){for(let d=-2;d<=2;d++)putC(c0+d,r0,'~',PAL.water[6]);putC(c0,r0-1,'☺',PAL.amberHi[7]);}
+    const act=st===0||st===1||st==='q';if(act)for(let i=0;i<4;i++){const k=(t*0.4+i/4)%1,rr=Math.round(2+k*6);for(let a=0;a<12;a++){const an=a/12*Math.PI*2;putC(px2c(W*0.3+Math.cos(an)*rr*CW),py2r(H*0.5+Math.sin(an)*rr*CH*0.5),'~',PAL.water[Math.round(6-k*4)]);}}
+    landscape(t,{dim:0.45,stars:0.3,grass:0.78});},
+  santosha:(t,st)=>{const ox=W*0.42,oy=H*0.55,Sc=Math.min(W*0.7,H*0.42),ph=0.5+0.5*Math.sin(t*(st==='bad'?4:1.5));
+    drawFig(FIG_LOOM,ox,oy,Sc,0,PAL.stone,RD);
+    const cl=st==='bad'?0.3:0.55;{const h=0.5*cl,r=Math.min(h/2,0.08);drawFig(mkFig([['c',-0.3+r,0.28-h/2,0.3-r,0.28-h/2,h/2]],0.01),ox,oy,Sc,0,PAL.amber,RD);}
+    if(st!=='ok')putC(px2c(ox+(ph-0.5)*Sc*0.6),py2r(oy-(0.28-0.5*cl)*Sc),'◆',PAL.amberHi[7]);
+    if(st==='bad')for(let i=0;i<3;i++)putC(px2c(ox)+i*2-2,py2r(oy-0.1*Sc)+i,'╱',PAL.stone[6]);
+    if(st!=='t'&&st!==0)drawFig(FIG_STAND,W*0.82,H*0.7,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    if(st==='ok')putC(px2c(W*0.82),py2r(H*0.52),'▬',PAL.amberHi[7]);
+    landscape(t,{dim:0.45,stars:0.25,grass:0.8});},
+  tapas:(t,st)=>{const ox=W*0.42,oy=H*0.58,pu=0.5+0.5*Math.sin(t*2);
+    const pal=st==='bad'?PAL.shade:st==='ok'?PAL.amberHi:pu>0.5?PAL.amber:PAL.path;drawFig(FIG_SICKLE,ox,oy,Math.min(W*0.7,H*0.4),0,pal,RD);
+    if(st==='bad')for(let i=0;i<4;i++)putC(px2c(ox)+i*2-2,py2r(oy)-i,'╱',PAL.stone[6]);
+    const fire=st!=='ok';if(fire)for(let r=py2r(oy+H*0.04);r<py2r(oy+H*0.2);r++)for(let c=px2c(ox-W*0.22);c<px2c(ox+W*0.22);c++)if(hash(c,r+((t*8)|0))<(st==='bad'?0.2:0.45))putC(c,r,'ऽर'[(hash(r,c)*2)|0],PAL.amber[Math.round(2+4*hash(c,r+3))]);
+    if(st!=='t')drawFig(FIG_STAND,W*0.8,H*0.7,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+    landscape(t,{dim:0.45,stars:0.2,grass:0.82});},
+  svadhyaya:(t,st)=>{drawFig(FIG_SEAT,W/2,H*0.68,Math.min(W*0.55,H*0.32),0,PAL.amber,RD);const G=['यो','ग','श्चि','त्त','वृ','त्ति','नि','रो','धः'];
+    const n=st===1||st==='q'?4:st==='bad'?9:9;
+    for(let i=0;i<n;i++){let x,y,k;if(st==='ok'){x=W*(0.15+0.085*i);y=H*0.28;k=0.1;}else if(st==='bad'){k=((t*0.3)+i/9)%1;x=W*(0.5+0.42*Math.sin(i*2.1+t*1.5));y=H*(0.2+0.4*hash(i,3));}
+      else{k=((t*0.18)+i/G.length)%1;x=W*(0.5+0.3*Math.sin(i*2.1+t*0.2));y=H*(0.58-0.4*k);}putC(px2c(x),py2r(y),G[i],PAL.amber[Math.round(7-k*5)]);}
+    if(st===1||st==='q')putC(px2c(W*0.5),py2r(H*0.3),'…',PAL.stone[5]);
+    landscape(t,{dim:0.45,stars:0.45,grass:0.82});},
+  ishvara:(t,st)=>{const move=st==='ok',x=move?W*(0.2+0.6*((t*0.12)%1)):W*0.5+(st==='bad'?0:Math.sin(t*0.6)*CW*2),rock=st==='bad'?0:0.04*Math.sin(t*1.1);
+    drawFig(FIG_BOAT,x,H*0.52+(st==='bad'?0:Math.sin(t*1.1)*CH*0.4),Math.min(W*0.7,H*0.4),rock,PAL.amber,RD);
+    if(st!=='t'&&st!==0)drawFig(FIG_STAND,x+W*0.08,H*0.5,Math.min(W*0.22,H*0.14),0,PAL.skin,RD);
+    if(st==='ok'){const n=['ॐ','ॐ','ॐ'];for(let i=0;i<3;i++){const k=((t*0.3)+i/3)%1;putC(px2c(W*0.84),py2r(H*(0.4-0.2*k)),n[i],PAL.amberHi[Math.round(7-k*5)]);}drawFig(FIG_GATE,W*0.86,H*0.4,Math.min(W*0.2,H*0.12),0,PAL.stone,RD);}
+    landscape(t,{dim:0.45,stars:0.3,river:[0.44,0.68],grass:0.68});}
+};
+const FAILSEEN={};
+const GROUPS=[{id:'yama',n:'Яма',d:'как жить с другими',y:0.32,from:0,scroll:'ys2_30',sum:'Пять домов ямы пройдены. Ненасилие, правдивость, неприсвоение, брахмачарья, нестяжание — так живут с другими.'},
+              {id:'niyama',n:'Нияма',d:'как жить с собой',y:0.72,from:5,scroll:'ys2_32',sum:'Пять домов ниямы пройдены. Чистота, довольство, тапас, самоизучение, посвящение Ишваре — так живут с собой.'}];
+const groupDone=g=>HOUSES.slice(g.from,g.from+5).filter(h=>S.houses[h.id]).length;
+const FIG_GATE=mkFig([['c',-0.36,-0.3,-0.36,0.38,0.11],['c',0.36,-0.3,0.36,0.38,0.11],['c',-0.5,0.42,0.5,0.42,0.09],['e',0,0.56,0.26,0.1],['o',-0.36,-0.32,0.13],['o',0.36,-0.32,0.13]],0.03);
+const sceneVillage={name:'village',back:()=>sceneMap,
+  enter(){$('#hud').classList.remove('hidden');const k=housesDone();hint(k>=10?'Деревня пройдена. Дальше — карта.':k<5?'Войди в <span style="color:var(--amber)">ворота ямы</span>':'Войди в <span style="color:var(--amber)">ворота ниямы</span>');
+    if(k===0&&!S.vilIntro){S.vilIntro=true;save();vn([{who:'',text:'Деревня у реки. Двое ворот: за одними пять домов ямы, за другими пять домов ниямы.'},{who:'Наставница',text:'Первая земля начинается не с асаны. Яма — как жить с другими. Нияма — как жить с собой.'},{who:'Наставница',text:'За воротами дома идут один за другим. В каждом будет выбор. Ошибка ничего не отнимает: сцена начнётся заново, и я подскажу.'}],()=>{});}},
+  up(e){if(panelOpen()){if(vnAdv)vnAdv();return;}if(Math.hypot(PT.x-PT.sx,PT.y-PT.sy)>14)return;const k=housesDone();
+    for(const g of GROUPS){if(Math.hypot(W/2-e.clientX,g.y*H-e.clientY)<Math.min(W,H)*0.3){const d=groupDone(g);
+      if(g.from===5&&k<5){toast('Сначала яма');return;}if(d>=5){toast(g.n+' пройдена');return;}go(makeHouse(g.from+d));return;}}
+    if(e.clientY<H*0.14)go(sceneMap);},
+  render(t){const k=housesDone(),s=Math.min(W,H)*0.3;
+    for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,cur=!lk&&d<5,hi=cur&&Math.sin(t*3.2)>0;
+      drawFig(FIG_GATE,W/2,g.y*H,s,0,d>=5?PAL.sky:lk?PAL.stone:(hi?PAL.amberHi:PAL.amber),RD);
+      for(let i=0;i<5;i++){const dn=S.houses[HOUSES[g.from+i].id];putC(px2c(W/2)+(i-2)*3,py2r(g.y*H+s*0.45),dn?'◆':'◇',dn?PAL.amberHi[7]:PAL.stone[5]);}}
+    const rr=py2r(H*0.52);for(let c=0;c<COLS;c++)if(c%2)putC(c,rr,'·',PAL.path[5]);
+    landscape(t,{stars:0.18,river:[0.9,0.97],grass:0.2});},
+  post(){ctx.textAlign='center';ctx.textBaseline='top';ctx.font="500 12px 'IBM Plex Mono', monospace";const k=housesDone();
+    for(const g of GROUPS){const d=groupDone(g),lk=g.from===5&&k<5,yy=g.y*H-Math.min(W,H)*0.3;ctx.fillStyle='rgba(5,7,6,.8)';ctx.fillRect(W/2-90,yy,180,30);
+      ctx.fillStyle=d>=5?'#c9d3e4':lk?'#77736a':'#e8b86a';ctx.fillText(g.n.toUpperCase()+' · '+d+'/5',W/2,yy+2);ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillStyle='#b3a88f';ctx.fillText(g.d,W/2,yy+16);ctx.font="500 12px 'IBM Plex Mono', monospace";}
+    ctx.fillStyle='#8d8676';ctx.font="11px 'IBM Plex Mono', monospace";ctx.fillText('▲ на карту',W/2,H*0.05+12);}
+};
+function makeHouse(k){
+  const Hh=HOUSES[k],grp=GROUPS[k<5?0:1],lastInGroup=k%5===4;let st='vn',mech=null,failed=false;
+  const lines=()=>{const L=[];Hh.intro.forEach((t,i)=>L.push({who:Hh.n+' — '+Hh.ru,tag:grp.n+' · '+(k%5+1)+' из 5',text:t,fn:()=>{ISTG.s=i;}}));
+    L.push({who:'',text:Hh.q,fn:()=>{ISTG.s='q';},choice:Hh.opts.slice().sort(()=>Math.random()-0.5).map(o=>o.ok?{t:o.t,ok:true,reply:o.reply,rwho:o.rwho,cut:true}:{t:o.t,reply:o.reply,cut:true}),pick:c=>{failed=!c.ok;ISTG.s=c.ok?'ok':'bad';}});return L;};
+  const finish=()=>{st='done';center();hint();S.houses[Hh.id]=true;addQ('shraddha',4);addQ(k<5?'sukha':'dharana',3);S.sec+=20;
+    const extra=Hh.after&&S.img?'<p class="note">Выбранный образ: '+Hh.after.opts.find(o=>o.v===S.img).t.toLowerCase()+'.</p>':'';
+    const sc=gain(Hh.scroll);save();hud();bell();vib([30,50,30]);
+    if(lastInGroup){const g2=gain(grp.scroll);panel('<div class="sub">'+grp.n+' · пройдена</div><div class="who">Наставница</div><p class="p">'+Hh.end+'</p><p class="p">'+grp.sum+'</p>'+extra+(sc?'<div class="sub" style="margin-top:14px">Новый свиток</div>'+scrollHTML(Hh.scroll):'')+(g2?scrollHTML(grp.scroll):'')+'<button class="btn main" data-a="v">'+(housesDone()>=10?'На карту':'В деревню')+'</button>',{v:()=>go(housesDone()>=10?sceneMap:sceneVillage)});}
+    else panel('<div class="sub">'+Hh.n+' · пройдено</div><div class="who">Наставница</div><p class="p">'+Hh.end+'</p>'+extra+(sc?'<div class="sub" style="margin-top:14px">Новый свиток</div>'+scrollHTML(Hh.scroll):'')+'<div class="row"><button class="btn" data-a="v">В деревню</button><button class="btn main" data-a="n">Следующий дом</button></div>',{v:()=>go(sceneVillage),n:()=>go(makeHouse(k+1))});};
+  const afterChoice=()=>{if(!Hh.after){finish();return;}st='vn';vn([{who:'',text:Hh.after.q,choice:Hh.after.opts.map(o=>({t:o.t,v:o.v})),pick:c=>{S.img=c.v;save();}}],finish);};
+  const startMech=()=>{if(!Hh.mech){afterChoice();return;}st='mech';mech=Hh.mech();hint(Hh.task);if(mech.enter)mech.enter();};
+  const onVnDone=()=>{if(failed){const used=FAILSEEN[Hh.id]||(FAILSEEN[Hh.id]=[]);let pool=Hh.fail.map((_,i)=>i).filter(i=>!used.includes(i));if(!pool.length){used.length=0;pool=Hh.fail.map((_,i)=>i);}const fi=pool[(Math.random()*pool.length)|0];used.push(fi);const first=!S.scrolls.includes('ys2_33');
+    panel('<div class="who">Наставница</div><p class="p">'+Hh.fail[fi]+'</p>'+(first?'<p class="note">Когда мешают неблагие мысли, взращивай противоположное.</p>'+scrollHTML('ys2_33'):'')+'<button class="btn main" data-a="r">Заново</button>',{r:()=>{gain('ys2_33');go(makeHouse(k));}});return;}startMech();};
+  let t0=null;const G=segG(Hh.deva).filter(c=>c.trim());
+  return {name:'house',back:()=>sceneVillage,get mech(){return mech;},
+    enter(){$('#hud').classList.remove('hidden');vn(lines(),onVnDone);},
+    down(e){if(st==='mech'&&mech&&mech.down)mech.down(e);},
+    move(e){if(st==='mech'&&mech&&mech.move)mech.move(e);},
+    up(e){if(st==='vn'){if(vnAdv)vnAdv();return;}if(st==='mech'&&mech&&mech.up)mech.up(e);},
+    update(dt){if(st!=='mech'||!mech)return;mech.update(dt);if(mech.done){mech=Object.assign(mech,{update(){}});setTimeout(()=>{afterChoice();},600);st='wait';}},
+    render(t){if(t0===null)t0=t;if(mech){mech.render(t);}
+      else{mandala(t-t0,{g:G,rgb:Hh.rgb,petals:Hh.petals,cy:0.42,core:G[0],a:0.2,rings:8});ILL[Hh.id](t,ISTG.s);}}
+  };
+}
+
+/* ---------- запуск ---------- */
+window.addEventListener('resize',resize);
+resize();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(resize);
+checkDay();hud();go(sceneTitle);requestAnimationFrame(loop);
+try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
+window.__game={lab:{LABX,RDW,RIM,mandala,drawFig,mkFig,putC,putB,mark,PAL,landscape,px2c,py2r,get W(){return W;},get H(){return H;},get CW(){return CW;},get CH(){return CH;},get COLS(){return COLS;},get ROWS(){return ROWS;},get ctx(){return ctx;},FIG_SEAT,FIG_TREE,FIG_GATE,FIG_HOUSE,ICON,NODES,RD,RS,hash,lerp,clamp,bgStars,eachCell},show(fn){go({name:'lab',render:fn,post:fn.post});},go,get S(){return S;},get scene(){return scene;},scenes:{sceneMap,sceneTitle,sceneVillage},makeTree,makeTide,makePond,makeSnake,makeChakra,makeHouse};
+})();
+</script>
+</body>
+</html>
