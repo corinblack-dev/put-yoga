@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Путь йога — игра о пути практики</title>
+<meta name="description" content="RPG и визуальная новелла о пути йога. Телефон становится ковриком: равновесие, дыхание и тишина — это механика игры.">
+<meta property="og:title" content="Путь йога — игра о пути практики">
+<meta property="og:description" content="RPG и визуальная новелла, где практика и есть игра.">
+<meta property="og:image" content="https://corinblack-dev.github.io/put-yoga/landing/img/meditation.jpg">
+<meta name="theme-color" content="#050605">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Tiro+Devanagari+Sanskrit&family=Cormorant+Garamond:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050605;--ink:#e6dfcf;--dim:#9a917f;--amber:#e8b86a;--amber2:#f3cf8a;--line:rgba(232,184,106,.22);--card:rgba(20,18,12,.55)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 'IBM Plex Mono',ui-monospace,Menlo,monospace;-webkit-font-smoothing:antialiased}
+a{color:var(--amber);text-decoration:none}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+.deva{font-family:'Tiro Devanagari Sanskrit',serif}
+.serif{font-family:'Cormorant Garamond',serif}
+/* звёзды */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+main,header,footer{position:relative;z-index:1}
+/* шапка */
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;max-width:980px;margin:0 auto}
+.logo{display:flex;gap:10px;align-items:center;letter-spacing:.32em;font-size:12px;color:var(--ink)}
+.logo .deva{font-size:22px;color:var(--amber);letter-spacing:0}
+.lang{display:flex;gap:4px}
+.lang button{background:none;border:1px solid var(--line);color:var(--dim);font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer}
+.lang button.on{color:var(--amber);border-color:rgba(232,184,106,.6)}
+/* герой */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;min-height:calc(100vh - 70px);padding:10px 0 40px}
+.hero h1{font-weight:400;letter-spacing:.34em;font-size:clamp(30px,5.4vw,52px);margin:0 0 8px;line-height:1.15}
+.hero .sub{color:var(--dim);letter-spacing:.22em;font-size:12px;text-transform:uppercase;margin-bottom:26px}
+.hero .lead{font-family:'Cormorant Garamond',serif;font-size:clamp(21px,2.6vw,26px);line-height:1.4;margin:0 0 30px;color:#efe7d4}
+.figure{position:relative;justify-self:center;width:min(420px,100%)}
+.figure img{width:100%;display:block;-webkit-mask-image:radial-gradient(ellipse 75% 70% at 50% 50%,#000 70%,transparent 100%);mask-image:radial-gradient(ellipse 75% 70% at 50% 50%,#000 70%,transparent 100%)}
+.om{position:absolute;left:50%;top:25.76%;transform:translate(-50%,-50%);font-family:'Tiro Devanagari Sanskrit',serif;font-size:clamp(17px,2.4vw,24px);color:#f6dca0;animation:om 3s ease-in-out infinite}
+@keyframes om{0%,100%{text-shadow:0 0 4px rgba(243,207,138,.5);opacity:.78}50%{text-shadow:0 0 14px rgba(243,207,138,.95),0 0 34px rgba(243,207,138,.45);opacity:1}}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border-radius:12px;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:14px;background:rgba(10,10,8,.5);cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.btn:hover{border-color:rgba(232,184,106,.7);color:var(--amber2)}
+.btn.main{background:linear-gradient(180deg,rgba(232,184,106,.22),rgba(232,184,106,.08));border-color:rgba(232,184,106,.7);color:var(--amber2)}
+.social{display:flex;gap:10px;margin-top:22px}
+.social a{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);border:1px solid var(--line);border-radius:10px;padding:9px 13px}
+.social a:hover{color:var(--amber)}
+.social svg{width:16px;height:16px}
+/* секции */
+section{padding:72px 0;border-top:1px solid rgba(232,184,106,.08)}
+.kicker{color:var(--amber);letter-spacing:.3em;font-size:12px;text-transform:uppercase;margin-bottom:10px}
+h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,4.4vw,44px);margin:0 0 26px;line-height:1.15}
+.intro{max-width:720px;font-size:16px;color:#d9d1bf}
+/* манифест */
+.manifest{counter-reset:m;display:grid;gap:2px;margin-top:10px}
+.manifest li{list-style:none;counter-increment:m;display:grid;grid-template-columns:56px 1fr;gap:14px;padding:20px 0;border-bottom:1px solid rgba(232,184,106,.1)}
+.manifest li::before{content:counter(m,decimal-leading-zero);color:var(--amber);font-size:13px;letter-spacing:.1em;padding-top:4px}
+.manifest b{display:block;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:24px;line-height:1.25;margin-bottom:6px;color:#f1e9d6}
+.manifest span{color:#c9c0ad}
+.ul{margin:0;padding:0}
+/* земли */
+.lands{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.land{background:var(--card);border:1px solid rgba(232,184,106,.12);border-radius:16px;overflow:hidden}
+.land .pic{aspect-ratio:4/5;overflow:hidden;background:#050605}
+.land img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s ease}
+.land:hover img{transform:scale(1.04)}
+.land .txt{padding:14px 16px 18px}
+.land h3{margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:22px}
+.land .tag{color:var(--amber);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
+.land p{margin:0;color:#c9c0ad;font-size:13.5px;line-height:1.6}
+/* механики */
+.mech{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.m{border:1px solid rgba(232,184,106,.14);border-radius:14px;padding:18px 18px 20px;background:var(--card)}
+.m .ico{font-family:'Tiro Devanagari Sanskrit',serif;color:var(--amber);font-size:24px;line-height:1;margin-bottom:10px}
+.m h3{margin:0 0 6px;font-size:15px;font-weight:500;color:#f1e9d6}
+.m p{margin:0;color:#c9c0ad;font-size:13.5px}
+/* свиток */
+.scroll{margin:30px auto 0;max-width:640px;text-align:center;border:1px solid var(--line);border-radius:16px;padding:28px 22px;background:rgba(232,184,106,.04)}
+.scroll .deva{font-size:24px;color:var(--amber2)}
+.scroll .iast{color:var(--dim);font-style:italic;margin:6px 0 12px;font-size:13px}
+.scroll .ru{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.35}
+.scroll .src{color:var(--dim);font-size:12px;margin-top:10px}
+.sources{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.sources span{border:1px solid rgba(232,184,106,.16);border-radius:999px;padding:6px 12px;font-size:12.5px;color:#d9d1bf}
+/* финал */
+.final{text-align:center}
+.final .deva.big{font-size:56px;color:var(--amber);display:block;margin-bottom:6px;animation:om 3s ease-in-out infinite}
+.final .cta{justify-content:center;margin-top:22px}
+footer{padding:36px 0 50px;color:var(--dim);font-size:12px;text-align:center;border-top:1px solid rgba(232,184,106,.08)}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease}
+.reveal.in{opacity:1;transform:none}
+html[lang=ru] [data-l=en],html[lang=en] [data-l=ru]{display:none!important}
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;min-height:auto;padding-top:0}
+  .figure{order:-1;width:min(330px,88%)}
+  .lands{grid-template-columns:1fr 1fr}
+  .mech{grid-template-columns:1fr}
+  .manifest li{grid-template-columns:40px 1fr}
+  section{padding:56px 0}
+}
+@media (max-width:440px){.lands{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.om,.final .deva.big{animation:none}.reveal{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<header class="top">
+  <div class="logo"><span class="deva">ॐ</span><span>ПУТЬ ЙОГА</span></div>
+  <div class="lang"><button data-set="ru" class="on">RU</button><button data-set="en">EN</button></div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1><span data-l="ru">ПУТЬ ЙОГА</span><span data-l="en">YOGI'S PATH</span></h1>
+        <div class="sub"><span data-l="ru">RPG · визуальная новелла · практика</span><span data-l="en">RPG · visual novel · practice</span></div>
+        <p class="lead">
+          <span data-l="ru">Игра, в которой практика и есть механика. Телефон становится ковриком: чтобы пройти уровень, нужно удержать равновесие, выровнять дыхание и посидеть в тишине.</span>
+          <span data-l="en">A game where practice is the mechanic. Your phone becomes the mat: to pass a level you hold your balance, even out your breath and sit in stillness.</span>
+        </p>
+        <div class="cta">
+          <a class="btn main" href="../whitelist/"><span data-l="ru">Попасть в вайтлист</span><span data-l="en">Join the whitelist</span></a>
+          <a class="btn" href="../"><span data-l="ru">Открыть прототип</span><span data-l="en">Try the prototype</span></a>
+        </div>
+        <div class="social">
+          <a href="https://t.me/ikaruneshwari" target="_blank" rel="noopener" class="tg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.7 19.7c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 13.4l-4.8-1.5c-1-.3-1-1 .2-1.5L20.5 3.3c.9-.3 1.6.2 1.4 1.3z"/></svg>Telegram</a>
+          <a href="#" target="_blank" rel="noopener" class="ig" data-ig><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor"/></svg>Instagram</a>
+        </div>
+      </div>
+      <div class="figure"><img src="img/meditation.jpg" alt=""><div class="om">ॐ</div></div>
+    </div>
+  </div>
+
+  <section id="manifest">
+    <div class="wrap">
+      <div class="kicker reveal"><span data-l="ru">Манифест</span><span data-l="en">Manifesto</span></div>
+      <h2 class="reveal"><span data-l="ru">Во что мы верим, создавая эту игру</span><span data-l="en">What we believe in, making this game</span></h2>
+      <ul class="ul manifest">
+        <li class="reveal"><div><b data-l="ru">Практика и есть игра.</b><b data-l="en">Practice is the game.</b>
+          <span data-l="ru">Дерево здесь не проходится нажатием кнопки: нужно встать и удержать равновесие. Дыхание не прокачивается очками: нужно дышать.</span>
+          <span data-l="en">You don't pass the tree by pressing a button: you stand and keep your balance. Breath isn't levelled up with points: you breathe.</span></div></li>
+        <li class="reveal"><div><b data-l="ru">Путь начинается не с асаны.</b><b data-l="en">The path doesn't begin with asana.</b>
+          <span data-l="ru">Первая земля — деревня: пять домов ямы и пять домов ниямы. Сначала о том, как жить с другими и с собой. Так начинаются восемь частей йоги у Патанджали.</span>
+          <span data-l="en">The first land is a village: five houses of yama and five of niyama. First, how to live with others and with yourself. That's where Patañjali's eight limbs begin.</span></div></li>
+        <li class="reveal"><div><b data-l="ru">Ошибка — тоже учитель.</b><b data-l="en">A mistake is a teacher too.</b>
+          <span data-l="ru">Неверный выбор ничего не отнимает. Сцена начинается заново, наставница подсказывает, и ты пробуешь ещё раз.</span>
+          <span data-l="en">A wrong choice takes nothing away. The scene starts over, the mentor gives a hint, and you try again.</span></div></li>
+        <li class="reveal"><div><b data-l="ru">Слова — из первоисточников.</b><b data-l="en">Words from the source texts.</b>
+          <span data-l="ru">Каждый свиток в игре — строка из древних текстов на санскрите, с транслитерацией и переводом, сверенная по традиции. Без поздних украшений и красивых легенд.</span>
+          <span data-l="en">Every scroll in the game is a line from the ancient texts in Sanskrit, with transliteration and translation, checked against the tradition. No later embellishments.</span></div></li>
+        <li class="reveal"><div><b data-l="ru">Тишина — тоже механика.</b><b data-l="en">Stillness is a mechanic too.</b>
+          <span data-l="ru">В тихой заводи муть оседает, только пока ты неподвижна. Чем дольше тишина, тем яснее вода.</span>
+          <span data-l="en">In the quiet pool the silt settles only while you stay still. The longer the silence, the clearer the water.</span></div></li>
+        <li class="reveal"><div><b data-l="ru">Мир соткан из знаков.</b><b data-l="en">The world is woven from signs.</b>
+          <span data-l="ru">Каждая фигура в игре собрана из тысяч мелких знаков деванагари. Издали это человек, дерево, змей. Вблизи — письмо.</span>
+          <span data-l="en">Every figure in the game is made of thousands of tiny Devanagari signs. From afar it's a person, a tree, a serpent. Up close, it's script.</span></div></li>
+        <li class="reveal"><div><b data-l="ru">Без спешки.</b><b data-l="en">No rush.</b>
+          <span data-l="ru">Здесь нет таймеров на выживание и гонки за рейтингом. Темп задаёт дыхание.</span>
+          <span data-l="en">No survival timers, no leaderboard race. The pace is set by your breath.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="lands">
+    <div class="wrap">
+      <div class="kicker reveal"><span data-l="ru">Мир игры</span><span data-l="en">The world</span></div>
+      <h2 class="reveal"><span data-l="ru">Земли первого пути</span><span data-l="en">Lands of the first path</span></h2>
+      <div class="lands">
+        <div class="land reveal"><div class="pic"><img src="img/village.jpg" alt=""></div><div class="txt"><div class="tag">yama · niyama</div><h3 data-l="ru">Деревня</h3><h3 data-l="en">The village</h3>
+          <p data-l="ru">Двое ворот, десять домов. В каждом — житель, выбор из трёх ответов и короткая практика. В награду — свиток из Йога-сутр.</p><p data-l="en">Two gates, ten houses. Each has a resident, a choice of three answers and a short practice. The reward is a scroll from the Yoga Sūtras.</p></div></div>
+        <div class="land reveal"><div class="pic"><img src="img/treepose.jpg" alt=""></div><div class="txt"><div class="tag">vṛkṣāsana</div><h3 data-l="ru">Дерево у воды</h3><h3 data-l="en">Tree by the water</h3>
+          <p data-l="ru">Поза дерева. Ветер качает фигуру, а ты удерживаешь её наклоном телефона. Устойчивость и лёгкость считаются отдельно.</p><p data-l="en">Tree pose. The wind sways the figure and you hold it steady by tilting the phone. Steadiness and ease are scored separately.</p></div></div>
+        <div class="land reveal"><div class="pic"><img src="img/stone.jpg" alt="" style="object-position:50% 70%"></div><div class="txt"><div class="tag">prāṇāyāma</div><h3 data-l="ru">Камень прилива</h3><h3 data-l="en">Tide stone</h3>
+          <p data-l="ru">Дыхание касанием: держишь экран на вдохе, отпускаешь на выдохе. Вода поднимается и уходит вместе с тобой. Есть ритм с задержкой — кумбхакой.</p><p data-l="en">Breath by touch: hold the screen to inhale, release to exhale. The water rises and falls with you. One rhythm includes the retention, kumbhaka.</p></div></div>
+        <div class="land reveal"><div class="pic"><img src="img/pond.jpg" alt="" style="object-position:50% 35%"></div><div class="txt"><div class="tag">dhyāna</div><h3 data-l="ru">Тихая заводь</h3><h3 data-l="en">The quiet pool</h3>
+          <p data-l="ru">Медитация на 1, 3 или 5 минут. Каждое движение поднимает ил, неподвижность даёт ему осесть, и в воде появляется луна.</p><p data-l="en">Meditation for 1, 3 or 5 minutes. Every movement stirs the silt, stillness lets it settle, and the moon appears in the water.</p></div></div>
+        <div class="land reveal"><div class="pic"><img src="img/snake.jpg" alt="" style="object-position:50% 12%"></div><div class="txt"><div class="tag">bhujaṅgāsana</div><h3 data-l="ru">Тропа змея</h3><h3 data-l="en">Serpent's trail</h3>
+          <p data-l="ru">На тропе встречается змей. Его не прогоняют: рядом с ним дышат ровно, пока он не успокоится. Тогда он показывает свою позу.</p><p data-l="en">A serpent waits on the trail. You don't drive it away: you breathe evenly beside it until it calms. Then it shows you its pose.</p></div></div>
+        <div class="land reveal"><div class="pic"><img src="img/temple.jpg" alt="" style="object-position:50% 40%"></div><div class="txt"><div class="tag">ṣaṭ-cakra</div><h3 data-l="ru">Храм на холме</h3><h3 data-l="en">Temple on the hill</h3>
+          <p data-l="ru">Открывается, когда пройден путь. Семь центров зажигаются по одному, с их слогами-биджами, как в Шат-чакра-нирупане.</p><p data-l="en">Opens once the path is walked. Seven centres light up one by one with their bīja syllables, as in the Ṣaṭ-cakra-nirūpaṇa.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="kicker reveal"><span data-l="ru">Как играть</span><span data-l="en">How it plays</span></div>
+      <h2 class="reveal"><span data-l="ru">Телефон — это коврик</span><span data-l="en">Your phone is the mat</span></h2>
+      <div class="mech">
+        <div class="m reveal"><div class="ico">स्थिर</div><h3 data-l="ru">Наклон и равновесие</h3><h3 data-l="en">Tilt and balance</h3><p data-l="ru">Гироскоп чувствует, насколько ровно ты держишься. Без датчиков всё работает от касаний.</p><p data-l="en">The gyroscope feels how steady you are. Without sensors everything works by touch.</p></div>
+        <div class="m reveal"><div class="ico">प्राण</div><h3 data-l="ru">Дыхание касанием</h3><h3 data-l="en">Breath by touch</h3><p data-l="ru">Держишь экран — вдох, отпускаешь — выдох. Игра ведёт ритм и показывает, насколько ты с ним совпала.</p><p data-l="en">Hold the screen to inhale, release to exhale. The game leads the rhythm and shows how closely you followed it.</p></div>
+        <div class="m reveal"><div class="ico">ध्यान</div><h3 data-l="ru">Неподвижность</h3><h3 data-l="en">Stillness</h3><p data-l="ru">Положи телефон и не трогай. Время в тишине — это и есть результат.</p><p data-l="en">Put the phone down and leave it. Time spent in stillness is the score.</p></div>
+        <div class="m reveal"><div class="ico">विद्या</div><h3 data-l="ru">Выбор и свитки</h3><h3 data-l="en">Choices and scrolls</h3><p data-l="ru">Диалоги визуальной новеллы, наставница, жители деревни. За каждый пройденный шаг — свиток в коллекцию.</p><p data-l="en">Visual-novel dialogue, a mentor, villagers. Every step you pass adds a scroll to your collection.</p></div>
+      </div>
+      <div class="scroll reveal">
+        <div class="deva">योगश्चित्तवृत्तिनिरोधः</div>
+        <div class="iast">yogaś citta-vṛtti-nirodhaḥ</div>
+        <div class="ru" data-l="ru">Йога — это прекращение колебаний ума.</div>
+        <div class="ru" data-l="en">Yoga is the stilling of the movements of the mind.</div>
+        <div class="src" data-l="ru">Йога-сутры Патанджали 1.2</div><div class="src" data-l="en">Patañjali's Yoga Sūtras 1.2</div>
+      </div>
+      <div class="sources reveal">
+        <span data-l="ru">Йога-сутры Патанджали</span><span data-l="en">Yoga Sūtras</span>
+        <span data-l="ru">Хатха-йога-прадипика</span><span data-l="en">Haṭha Yoga Pradīpikā</span>
+        <span data-l="ru">Гхеранда-самхита</span><span data-l="en">Gheraṇḍa Saṃhitā</span>
+        <span data-l="ru">Катха-упанишада</span><span data-l="en">Kaṭha Upaniṣad</span>
+        <span data-l="ru">Бхагавад-гита</span><span data-l="en">Bhagavad Gītā</span>
+        <span data-l="ru">Шат-чакра-нирупана</span><span data-l="en">Ṣaṭ-cakra-nirūpaṇa</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <span class="deva big">ॐ</span>
+      <h2 class="reveal"><span data-l="ru">Первые игроки войдут раньше всех</span><span data-l="en">First players get in first</span></h2>
+      <p class="intro reveal" style="margin:0 auto">
+        <span data-l="ru">Оставь контакт в вайтлисте — пришлём ранний доступ, когда откроем следующую землю, и спросим, как тебе путь.</span>
+        <span data-l="en">Leave your contact on the whitelist — we'll send early access when the next land opens, and ask how the path feels.</span></p>
+      <div class="cta">
+        <a class="btn main" href="../whitelist/"><span data-l="ru">Попасть в вайтлист</span><span data-l="en">Join the whitelist</span></a>
+        <a class="btn" href="https://t.me/ikaruneshwari" target="_blank" rel="noopener">Telegram</a>
+        <a class="btn" href="#" target="_blank" rel="noopener" data-ig>Instagram</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><span data-l="ru">Путь йога · прототип · 2026</span><span data-l="en">Yogi's Path · prototype · 2026</span></footer>
+<script>
+const CONFIG={instagram:''}; // ссылка на Instagram, например https://instagram.com/имя
+document.querySelectorAll('[data-ig]').forEach(a=>{if(CONFIG.instagram)a.href=CONFIG.instagram;else a.style.display='none';});
+// язык
+function setLang(l){document.documentElement.lang=l;document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.set===l));try{localStorage.setItem('py.lang',l);}catch(e){}}
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.set));
+let L=null;try{L=localStorage.getItem('py.lang');}catch(e){}
+const q=new URLSearchParams(location.search).get('lang');setLang(q||L||((navigator.language||'').startsWith('ru')?'ru':'en'));
+// появление
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+// звёзды из знаков
+const cv=document.getElementById('stars'),cx=cv.getContext('2d');let st=[];
+function rs(){const d=Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;cx.setTransform(d,0,0,d,0,0);st=[];const n=Math.round(innerWidth*innerHeight/5200);for(let i=0;i<n;i++)st.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,b:Math.random(),p:Math.random()*6.28,c:['·','·','·','ः','ऽ','·'][i%6]});}
+function fr(t){cx.clearRect(0,0,innerWidth,innerHeight);cx.textAlign='center';cx.textBaseline='middle';cx.font="10px 'Tiro Devanagari Sanskrit', serif";
+  for(const s of st){const a=(0.12+0.5*s.b*s.b)*(0.6+0.4*Math.sin(t/1600+s.p));cx.fillStyle='rgba(232,184,106,'+a.toFixed(3)+')';cx.fillText(s.c,s.x,s.y);}
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(fr);}
+addEventListener('resize',rs);rs();requestAnimationFrame(fr);
+</script>
+</body>
+</html>

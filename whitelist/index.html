@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Вайтлист · Путь йога</title>
+<meta name="description" content="Ранний доступ к игре «Путь йога».">
+<meta property="og:title" content="Вайтлист · Путь йога">
+<meta property="og:image" content="https://corinblack-dev.github.io/put-yoga/landing/img/meditation.jpg">
+<meta name="theme-color" content="#050605">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Tiro+Devanagari+Sanskrit&family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050605;--ink:#e6dfcf;--dim:#9a917f;--amber:#e8b86a;--amber2:#f3cf8a;--line:rgba(232,184,106,.22)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 'IBM Plex Mono',ui-monospace,Menlo,monospace;min-height:100vh}
+a{color:var(--amber);text-decoration:none}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;max-width:760px;margin:0 auto}
+.back{color:var(--dim);font-size:13px}
+.lang{display:flex;gap:4px}.lang button{background:none;border:1px solid var(--line);color:var(--dim);font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer}.lang button.on{color:var(--amber);border-color:rgba(232,184,106,.6)}
+.wrap{max-width:560px;margin:0 auto;padding:10px 22px 60px}
+.om{font-family:'Tiro Devanagari Sanskrit',serif;font-size:46px;color:var(--amber);text-align:center;animation:om 3s ease-in-out infinite}
+@keyframes om{0%,100%{text-shadow:0 0 4px rgba(243,207,138,.5);opacity:.8}50%{text-shadow:0 0 16px rgba(243,207,138,.9);opacity:1}}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,6vw,40px);text-align:center;margin:6px 0 10px;line-height:1.15}
+.lead{text-align:center;color:#cfc6b2;margin:0 0 26px}
+form{display:grid;gap:14px;border:1px solid var(--line);border-radius:18px;padding:22px;background:rgba(20,18,12,.5)}
+label{display:grid;gap:6px;font-size:13px;color:#d9d1bf}
+input,select{font:inherit;font-size:15px;color:var(--ink);background:#0b0c0a;border:1px solid rgba(232,184,106,.2);border-radius:10px;padding:12px 13px;min-height:48px;width:100%}
+input:focus,select:focus{outline:none;border-color:rgba(232,184,106,.7)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(232,184,106,.2);border-radius:999px;padding:8px 12px;cursor:pointer;font-size:13px}
+.chips input{width:auto;min-height:0;accent-color:#e8b86a}
+.agree{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--dim)}
+.agree input{width:auto;min-height:0;margin-top:3px;accent-color:#e8b86a}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:12px 20px;border-radius:12px;border:1px solid rgba(232,184,106,.7);font:inherit;font-size:15px;color:var(--amber2);background:linear-gradient(180deg,rgba(232,184,106,.22),rgba(232,184,106,.08));cursor:pointer;width:100%}
+.btn:disabled{opacity:.5}
+.ok{display:none;text-align:center;border:1px solid var(--line);border-radius:18px;padding:28px 22px;background:rgba(20,18,12,.5)}
+.ok .deva{font-family:'Tiro Devanagari Sanskrit',serif;font-size:22px;color:var(--amber2)}
+.social{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.social a{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13px}
+.note{font-size:12px;color:var(--dim);text-align:center;margin-top:14px}
+.err{color:#e0907a;font-size:13px;display:none}
+html[lang=ru] [data-l=en],html[lang=en] [data-l=ru]{display:none!important}
+@media (max-width:420px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top"><a class="back" href="../landing/">← <span data-l="ru">об игре</span><span data-l="en">about</span></a><div class="lang"><button data-set="ru" class="on">RU</button><button data-set="en">EN</button></div></header>
+<div class="wrap">
+  <div class="om">ॐ</div>
+  <h1><span data-l="ru">Вайтлист «Пути йога»</span><span data-l="en">Yogi's Path whitelist</span></h1>
+  <p class="lead"><span data-l="ru">Ранний доступ к новым землям, тестовые сборки и вопросы о том, как тебе путь. Без рассылок ради рассылок.</span><span data-l="en">Early access to new lands, test builds, and questions about how the path feels. No spam.</span></p>
+
+  <form id="f" novalidate>
+    <label><span data-l="ru">Имя</span><span data-l="en">Name</span><input name="name" autocomplete="given-name" required></label>
+    <label><span data-l="ru">Email</span><span data-l="en">Email</span><input name="email" type="email" autocomplete="email" required inputmode="email"></label>
+    <div class="row">
+      <label><span data-l="ru">Telegram или Instagram</span><span data-l="en">Telegram or Instagram</span><input name="handle" placeholder="@"></label>
+      <label><span data-l="ru">Телефон</span><span data-l="en">Phone</span><select name="phone"><option value="iphone">iPhone</option><option value="android">Android</option><option value="other" data-l="ru">Другое</option></select></label>
+    </div>
+    <div><div style="font-size:13px;color:#d9d1bf;margin-bottom:8px"><span data-l="ru">Что тебе ближе</span><span data-l="en">What draws you most</span></div>
+      <div class="chips">
+        <label><input type="checkbox" name="like" value="asana"><span data-l="ru">асаны</span><span data-l="en">asana</span></label>
+        <label><input type="checkbox" name="like" value="breath"><span data-l="ru">дыхание</span><span data-l="en">breath</span></label>
+        <label><input type="checkbox" name="like" value="meditation"><span data-l="ru">медитация</span><span data-l="en">meditation</span></label>
+        <label><input type="checkbox" name="like" value="texts"><span data-l="ru">тексты и философия</span><span data-l="en">texts & philosophy</span></label>
+        <label><input type="checkbox" name="like" value="games"><span data-l="ru">просто игры</span><span data-l="en">just games</span></label>
+      </div></div>
+    <label class="agree"><input type="checkbox" name="agree" required><span><span data-l="ru">Согласна(ен), чтобы мне написали о раннем доступе. Данные используются только для этого.</span><span data-l="en">I agree to be contacted about early access. Data is used for this only.</span></span></label>
+    <div class="err" id="err"></div>
+    <button class="btn" id="go"><span data-l="ru">Записаться</span><span data-l="en">Sign me up</span></button>
+  </form>
+
+  <div class="ok" id="ok">
+    <div class="deva">स्वागतम्</div>
+    <h1 style="font-size:30px"><span data-l="ru">Ты в списке</span><span data-l="en">You're on the list</span></h1>
+    <p class="lead" style="margin-bottom:0"><span data-l="ru">Напишем, когда откроется следующая земля. А пока путь можно продолжать здесь:</span><span data-l="en">We'll write when the next land opens. Meanwhile, the path continues here:</span></p>
+    <div class="social">
+      <a href="https://t.me/ikaruneshwari" target="_blank" rel="noopener">Telegram</a>
+      <a href="#" target="_blank" rel="noopener" data-ig>Instagram</a>
+      <a href="../"><span data-l="ru">Прототип игры</span><span data-l="en">Game prototype</span></a>
+    </div>
+  </div>
+  <p class="note"><span data-l="ru">Обновления также в Telegram и Instagram.</span><span data-l="en">Updates also on Telegram and Instagram.</span></p>
+</div>
+<script>
+// endpoint: адрес формы Formspree (https://formspree.io/f/XXXX) или Google Apps Script. Пока пусто — заявки не уходят.
+const CONFIG={endpoint:'',instagram:''};
+document.querySelectorAll('[data-ig]').forEach(a=>{if(CONFIG.instagram)a.href=CONFIG.instagram;else a.style.display='none';});
+function setLang(l){document.documentElement.lang=l;document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.set===l));try{localStorage.setItem('py.lang',l);}catch(e){}}
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.set));
+let L=null;try{L=localStorage.getItem('py.lang');}catch(e){}setLang(new URLSearchParams(location.search).get('lang')||L||((navigator.language||'').startsWith('ru')?'ru':'en'));
+const f=document.getElementById('f'),err=document.getElementById('err'),go=document.getElementById('go');
+const T=(ru,en)=>document.documentElement.lang==='ru'?ru:en;
+f.addEventListener('submit',async e=>{e.preventDefault();err.style.display='none';
+  const d=new FormData(f);const email=(d.get('email')||'').trim();
+  if(!d.get('name')||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent=T('Укажи имя и корректный email.','Please enter your name and a valid email.');err.style.display='block';return;}
+  if(!d.get('agree')){err.textContent=T('Нужна галочка согласия.','Please tick the consent box.');err.style.display='block';return;}
+  const data={name:d.get('name'),email,handle:d.get('handle')||'',phone:d.get('phone'),likes:d.getAll('like').join(', '),lang:document.documentElement.lang,source:new URLSearchParams(location.search).get('utm_source')||document.referrer||'direct',at:new Date().toISOString()};
+  if(!CONFIG.endpoint){err.textContent=T('Запись скоро откроется. Пока напиши «вайтлист» в Telegram — внесём вручную.','Sign-up opens soon. For now, message “whitelist” on Telegram and we’ll add you.');err.style.display='block';return;}
+  go.disabled=true;
+  try{const r=await fetch(CONFIG.endpoint,{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!r.ok)throw 0;f.style.display='none';document.getElementById('ok').style.display='block';}
+  catch(x){err.textContent=T('Не получилось отправить. Попробуй ещё раз чуть позже.','Could not send. Please try again a bit later.');err.style.display='block';go.disabled=false;}
+});
+</script>
+</body>
+</html>
