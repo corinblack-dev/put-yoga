@@ -15,236 +15,354 @@
 :root{--bg:#050605;--ink:#e6dfcf;--dim:#9a917f;--amber:#e8b86a;--amber2:#f3cf8a;--line:rgba(232,184,106,.22);--card:rgba(20,18,12,.55)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 'IBM Plex Mono',ui-monospace,Menlo,monospace;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 'IBM Plex Mono',ui-monospace,Menlo,monospace;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:var(--amber);text-decoration:none}
 .wrap{max-width:980px;margin:0 auto;padding:0 22px}
 .deva{font-family:'Tiro Devanagari Sanskrit',serif}
-.serif{font-family:'Cormorant Garamond',serif}
-/* звёзды */
 #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
 main,header,footer{position:relative;z-index:1}
-/* шапка */
 .top{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;max-width:980px;margin:0 auto}
-.logo{display:flex;gap:10px;align-items:center;letter-spacing:.32em;font-size:12px;color:var(--ink)}
-.logo .deva{font-size:22px;color:var(--amber);letter-spacing:0}
+.logo{display:flex;gap:10px;align-items:center;letter-spacing:.32em;font-size:12px;color:var(--ink);user-select:none;-webkit-user-select:none;cursor:default}
+.logo .deva{font-size:22px;color:var(--amber);letter-spacing:0;animation:om 3s ease-in-out infinite}
+.nav{display:flex;gap:6px;align-items:center}
+.nav a.sm{color:var(--dim);font-size:12px;padding:6px 8px;transition:color .25s}
+.nav a.sm:hover{color:var(--amber)}
 .lang{display:flex;gap:4px}
 .lang button{background:none;border:1px solid var(--line);color:var(--dim);font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer}
 .lang button.on{color:var(--amber);border-color:rgba(232,184,106,.6)}
-/* герой */
 .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;min-height:calc(100vh - 70px);padding:10px 0 40px}
-.hero h1{font-weight:400;letter-spacing:.34em;font-size:clamp(30px,5.4vw,52px);margin:0 0 8px;line-height:1.15}
-.hero .sub{color:var(--dim);letter-spacing:.22em;font-size:12px;text-transform:uppercase;margin-bottom:26px}
-.hero .lead{font-family:'Cormorant Garamond',serif;font-size:clamp(21px,2.6vw,26px);line-height:1.4;margin:0 0 30px;color:#efe7d4}
-.figure{position:relative;justify-self:center;width:min(420px,100%)}
+.hero h1{font-weight:400;letter-spacing:.34em;font-size:clamp(30px,5.4vw,52px);margin:0 0 8px;line-height:1.15;animation:rise 1.4s ease both}
+.hero .sub{color:var(--dim);letter-spacing:.22em;font-size:12px;text-transform:uppercase;margin-bottom:26px;animation:rise 1.4s .15s ease both}
+.hero .lead{font-family:'Cormorant Garamond',serif;font-size:clamp(21px,2.6vw,26px);line-height:1.4;margin:0 0 30px;color:#efe7d4;animation:rise 1.4s .3s ease both}
+.hero .cta,.hero .social{animation:rise 1.4s .45s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.figure{position:relative;justify-self:center;width:min(420px,100%);animation:rise 1.8s ease both}
+.figure .inner{animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.018) translateY(-4px)}}
 .figure img{width:100%;display:block;-webkit-mask-image:radial-gradient(ellipse 75% 70% at 50% 50%,#000 70%,transparent 100%);mask-image:radial-gradient(ellipse 75% 70% at 50% 50%,#000 70%,transparent 100%)}
+.figure .glow{position:absolute;left:50%;top:44%;width:46%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,210,130,.2),rgba(255,210,130,0) 70%);animation:glow 7s ease-in-out infinite;pointer-events:none;mix-blend-mode:screen}
+@keyframes glow{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
 .om{position:absolute;left:50%;top:25.76%;transform:translate(-50%,-50%);font-family:'Tiro Devanagari Sanskrit',serif;font-size:clamp(17px,2.4vw,24px);color:#f6dca0;animation:om 3s ease-in-out infinite}
 @keyframes om{0%,100%{text-shadow:0 0 4px rgba(243,207,138,.5);opacity:.78}50%{text-shadow:0 0 14px rgba(243,207,138,.95),0 0 34px rgba(243,207,138,.45);opacity:1}}
 .cta{display:flex;flex-wrap:wrap;gap:10px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border-radius:12px;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:14px;background:rgba(10,10,8,.5);cursor:pointer;transition:border-color .2s,color .2s,background .2s}
-.btn:hover{border-color:rgba(232,184,106,.7);color:var(--amber2)}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border-radius:12px;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:14px;background:rgba(10,10,8,.5);cursor:pointer;transition:border-color .25s,color .25s,transform .25s}
+.btn:hover{border-color:rgba(232,184,106,.7);color:var(--amber2);transform:translateY(-1px)}
 .btn.main{background:linear-gradient(180deg,rgba(232,184,106,.22),rgba(232,184,106,.08));border-color:rgba(232,184,106,.7);color:var(--amber2)}
-.social{display:flex;gap:10px;margin-top:22px}
-.social a{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);border:1px solid var(--line);border-radius:10px;padding:9px 13px}
-.social a:hover{color:var(--amber)}
+.btn.main::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,236,190,.22),transparent);animation:shine 4.5s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+.social{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.social a{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);border:1px solid var(--line);border-radius:10px;padding:9px 13px;transition:color .25s,border-color .25s}
+.social a:hover{color:var(--amber);border-color:rgba(232,184,106,.5)}
 .social svg{width:16px;height:16px}
-/* секции */
 section{padding:72px 0;border-top:1px solid rgba(232,184,106,.08)}
 .kicker{color:var(--amber);letter-spacing:.3em;font-size:12px;text-transform:uppercase;margin-bottom:10px}
 h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,4.4vw,44px);margin:0 0 26px;line-height:1.15}
 .intro{max-width:720px;font-size:16px;color:#d9d1bf}
-/* манифест */
-.manifest{counter-reset:m;display:grid;gap:2px;margin-top:10px}
-.manifest li{list-style:none;counter-increment:m;display:grid;grid-template-columns:56px 1fr;gap:14px;padding:20px 0;border-bottom:1px solid rgba(232,184,106,.1)}
-.manifest li::before{content:counter(m,decimal-leading-zero);color:var(--amber);font-size:13px;letter-spacing:.1em;padding-top:4px}
+.manifest{display:grid;gap:2px;margin:10px 0 0;padding:0}
+.manifest li{list-style:none;display:grid;grid-template-columns:56px 1fr;gap:14px;padding:20px 0;border-bottom:1px solid rgba(232,184,106,.1)}
+.manifest .n{color:var(--amber);font-size:13px;letter-spacing:.1em;padding-top:4px}
+.manifest li.in .n{animation:om 3.5s ease-in-out infinite}
 .manifest b{display:block;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:24px;line-height:1.25;margin-bottom:6px;color:#f1e9d6}
 .manifest span{color:#c9c0ad}
-.ul{margin:0;padding:0}
-/* земли */
 .lands{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.land{background:var(--card);border:1px solid rgba(232,184,106,.12);border-radius:16px;overflow:hidden}
+.land{background:var(--card);border:1px solid rgba(232,184,106,.12);border-radius:16px;overflow:hidden;transition:border-color .4s,transform .4s,opacity .9s}
+.land:hover{border-color:rgba(232,184,106,.4);transform:translateY(-3px)}
 .land .pic{aspect-ratio:4/5;overflow:hidden;background:#050605}
-.land img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s ease}
-.land:hover img{transform:scale(1.04)}
+.land img{width:100%;height:100%;object-fit:cover;display:block;animation:drift 18s ease-in-out infinite alternate}
+.land:nth-child(2n) img{animation-delay:-6s}.land:nth-child(3n) img{animation-delay:-12s}
+@keyframes drift{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.1) translate(-2%,-2%)}}
 .land .txt{padding:14px 16px 18px}
 .land h3{margin:0 0 4px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:22px}
 .land .tag{color:var(--amber);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
 .land p{margin:0;color:#c9c0ad;font-size:13.5px;line-height:1.6}
-/* механики */
 .mech{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .m{border:1px solid rgba(232,184,106,.14);border-radius:14px;padding:18px 18px 20px;background:var(--card)}
-.m .ico{font-family:'Tiro Devanagari Sanskrit',serif;color:var(--amber);font-size:24px;line-height:1;margin-bottom:10px}
+.m .ico{font-family:'Tiro Devanagari Sanskrit',serif;color:var(--amber);font-size:24px;line-height:1;margin-bottom:10px;animation:om 4s ease-in-out infinite}
+.m:nth-child(2) .ico{animation-delay:-1s}.m:nth-child(3) .ico{animation-delay:-2s}.m:nth-child(4) .ico{animation-delay:-3s}
 .m h3{margin:0 0 6px;font-size:15px;font-weight:500;color:#f1e9d6}
 .m p{margin:0;color:#c9c0ad;font-size:13.5px}
-/* свиток */
 .scroll{margin:30px auto 0;max-width:640px;text-align:center;border:1px solid var(--line);border-radius:16px;padding:28px 22px;background:rgba(232,184,106,.04)}
 .scroll .deva{font-size:24px;color:var(--amber2)}
+.scroll .deva span{opacity:0;display:inline-block;transition:opacity .6s}
+.scroll.in .deva span{opacity:1}
 .scroll .iast{color:var(--dim);font-style:italic;margin:6px 0 12px;font-size:13px}
-.scroll .ru{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.35}
+.scroll .q{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.35}
 .scroll .src{color:var(--dim);font-size:12px;margin-top:10px}
 .sources{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
 .sources span{border:1px solid rgba(232,184,106,.16);border-radius:999px;padding:6px 12px;font-size:12.5px;color:#d9d1bf}
-/* финал */
+.road{position:relative;margin:10px 0 0;padding:0 0 0 34px}
+.road::before{content:'';position:absolute;left:9px;top:6px;bottom:6px;width:1px;background:rgba(232,184,106,.15)}
+.road .fill{position:absolute;left:9px;top:6px;width:1px;height:0;background:linear-gradient(180deg,var(--amber),rgba(232,184,106,.25));transition:height 2.4s ease}
+.road.in .fill{height:var(--h,30%)}
+.step{position:relative;padding:4px 0 26px;opacity:0;transform:translateX(-10px);transition:opacity .8s,transform .8s}
+.road.in .step{opacity:1;transform:none}
+.step .dot{position:absolute;left:-31px;top:8px;width:14px;height:14px;border-radius:50%;border:1px solid rgba(232,184,106,.5);background:#050605}
+.step.done .dot{background:var(--amber);border-color:var(--amber)}
+.step.now .dot{border-color:var(--amber2);background:rgba(232,184,106,.3)}
+.step.now .dot::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(243,207,138,.6);animation:ping 2.2s ease-out infinite}
+@keyframes ping{from{transform:scale(.6);opacity:1}to{transform:scale(1.8);opacity:0}}
+.step .st{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
+.step.done .st{color:#8fbf7f}.step.now .st{color:var(--amber)}
+.step b{display:block;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;color:#f1e9d6;line-height:1.25}
+.step p{margin:4px 0 0;color:#c9c0ad;font-size:13.5px;max-width:640px}
+.donate{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center}
+.donate .box{border:1px solid var(--line);border-radius:18px;padding:22px;background:rgba(232,184,106,.05);display:grid;gap:10px}
+.donate .note{color:var(--dim);font-size:12.5px;margin-top:4px}
+.lotus{font-family:'Tiro Devanagari Sanskrit',serif;font-size:13px;color:rgba(232,184,106,.6);letter-spacing:.5em;overflow:hidden;white-space:nowrap;margin-top:18px}
+.lotus span{display:inline-block;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-5px);opacity:1}}
 .final{text-align:center}
-.final .deva.big{font-size:56px;color:var(--amber);display:block;margin-bottom:6px;animation:om 3s ease-in-out infinite}
+.final .big{font-size:56px;color:var(--amber);display:block;margin-bottom:6px;animation:om 3s ease-in-out infinite}
 .final .cta{justify-content:center;margin-top:22px}
-footer{padding:36px 0 50px;color:var(--dim);font-size:12px;text-align:center;border-top:1px solid rgba(232,184,106,.08)}
+footer{padding:36px 22px 50px;color:var(--dim);font-size:12px;text-align:center;border-top:1px solid rgba(232,184,106,.08)}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease}
 .reveal.in{opacity:1;transform:none}
-html[lang=ru] [data-l=en],html[lang=en] [data-l=ru]{display:none!important}
+.hidden{display:none!important}
 @media (max-width:760px){
   .hero{grid-template-columns:1fr;min-height:auto;padding-top:0}
   .figure{order:-1;width:min(330px,88%)}
   .lands{grid-template-columns:1fr 1fr}
-  .mech{grid-template-columns:1fr}
+  .mech,.donate{grid-template-columns:1fr}
   .manifest li{grid-template-columns:40px 1fr}
   section{padding:56px 0}
+  .nav a.sm{display:none}
 }
 @media (max-width:440px){.lands{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){.om,.final .deva.big{animation:none}.reveal{opacity:1;transform:none;transition:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal,.step{opacity:1;transform:none}}
+/* админка */
+body.edit [data-k]{outline:1px dashed rgba(232,184,106,.45);outline-offset:3px;cursor:text;border-radius:3px}
+body.edit [data-k]:focus{outline:1px solid var(--amber2);background:rgba(232,184,106,.06)}
+body.edit{padding-bottom:130px}
+#adm{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:50;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:max-content;max-width:calc(100% - 20px);padding:10px;border:1px solid rgba(232,184,106,.5);border-radius:14px;background:rgba(12,11,8,.96);box-shadow:0 10px 40px rgba(0,0,0,.6);font-size:12px}
+#adm button{font:inherit;font-size:12px;color:var(--ink);background:#15130e;border:1px solid var(--line);border-radius:9px;padding:8px 10px;cursor:pointer;min-height:36px}
+#adm button.pri{color:var(--amber2);border-color:rgba(232,184,106,.7)}
+#adm .st{color:var(--dim);padding:0 6px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .card{width:min(560px,100%);max-height:88vh;overflow:auto;background:#0e0d0a;border:1px solid rgba(232,184,106,.4);border-radius:16px;padding:20px}
+.modal h3{margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:24px}
+.modal label{display:grid;gap:4px;font-size:12px;color:#cfc6b2;margin-bottom:10px}
+.modal input,.modal textarea,.modal select{font:inherit;font-size:14px;color:var(--ink);background:#090908;border:1px solid rgba(232,184,106,.22);border-radius:9px;padding:9px 10px;width:100%}
+.modal textarea{min-height:64px;resize:vertical}
+.modal .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
+.modal .row button,.modal .mini{font:inherit;font-size:13px;color:var(--ink);background:#15130e;border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer}
+.modal .row .pri{color:var(--amber2);border-color:rgba(232,184,106,.7)}
+.modal .hint{color:var(--dim);font-size:12px;line-height:1.55;margin:0 0 12px}
+.ri{border:1px solid rgba(232,184,106,.15);border-radius:12px;padding:10px;margin-bottom:10px}
+.ri .tools{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.ri .tools select{width:auto}
+@media (max-width:600px){#adm{gap:4px;padding:6px;bottom:8px}#adm button{padding:6px 8px;min-height:32px;font-size:11px}#adm .st:first-child{display:none}}
+#toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:70;background:#15130e;border:1px solid rgba(232,184,106,.6);color:var(--amber2);padding:10px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%}
+#toast.on{opacity:1}
 </style>
 </head>
 <body>
 <canvas id="stars"></canvas>
 <header class="top">
-  <div class="logo"><span class="deva">ॐ</span><span>ПУТЬ ЙОГА</span></div>
-  <div class="lang"><button data-set="ru" class="on">RU</button><button data-set="en">EN</button></div>
+  <div class="logo" id="logo"><span class="deva">ॐ</span><span data-k="brand"></span></div>
+  <div class="nav">
+    <a class="sm" href="#manifest" data-k="manifest.kicker"></a>
+    <a class="sm" href="#roadmap" data-k="roadmap.kicker"></a>
+    <a class="sm" href="#donate" data-k="donate.kicker"></a>
+    <div class="lang"><button data-set="ru" class="on">RU</button><button data-set="en">EN</button></div>
+  </div>
 </header>
 <main>
   <div class="wrap">
     <div class="hero">
       <div>
-        <h1><span data-l="ru">ПУТЬ ЙОГА</span><span data-l="en">YOGI'S PATH</span></h1>
-        <div class="sub"><span data-l="ru">RPG · визуальная новелла · практика</span><span data-l="en">RPG · visual novel · practice</span></div>
-        <p class="lead">
-          <span data-l="ru">Игра, в которой практика и есть механика. Телефон становится ковриком: чтобы пройти уровень, нужно удержать равновесие, выровнять дыхание и посидеть в тишине.</span>
-          <span data-l="en">A game where practice is the mechanic. Your phone becomes the mat: to pass a level you hold your balance, even out your breath and sit in stillness.</span>
-        </p>
+        <h1 data-k="hero.title"></h1>
+        <div class="sub" data-k="hero.sub"></div>
+        <p class="lead" data-k="hero.lead"></p>
         <div class="cta">
-          <a class="btn main" href="../whitelist/"><span data-l="ru">Попасть в вайтлист</span><span data-l="en">Join the whitelist</span></a>
-          <a class="btn" href="../"><span data-l="ru">Открыть прототип</span><span data-l="en">Try the prototype</span></a>
+          <a class="btn main" href="../whitelist/"><span data-k="hero.cta1"></span></a>
+          <a class="btn" href="../"><span data-k="hero.cta2"></span></a>
+          <a class="btn" id="ctaDonate" href="#donate"><span data-k="hero.cta3"></span></a>
         </div>
-        <div class="social">
-          <a href="https://t.me/ikaruneshwari" target="_blank" rel="noopener" class="tg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.7 19.7c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 13.4l-4.8-1.5c-1-.3-1-1 .2-1.5L20.5 3.3c.9-.3 1.6.2 1.4 1.3z"/></svg>Telegram</a>
-          <a href="#" target="_blank" rel="noopener" class="ig" data-ig><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor"/></svg>Instagram</a>
-        </div>
+        <div class="social" id="social1"></div>
       </div>
-      <div class="figure"><img src="img/meditation.jpg" alt=""><div class="om">ॐ</div></div>
+      <div class="figure"><div class="inner"><img src="img/meditation.jpg" alt=""><div class="glow"></div><div class="om">ॐ</div></div></div>
     </div>
   </div>
 
-  <section id="manifest">
-    <div class="wrap">
-      <div class="kicker reveal"><span data-l="ru">Манифест</span><span data-l="en">Manifesto</span></div>
-      <h2 class="reveal"><span data-l="ru">Во что мы верим, создавая эту игру</span><span data-l="en">What we believe in, making this game</span></h2>
-      <ul class="ul manifest">
-        <li class="reveal"><div><b data-l="ru">Практика и есть игра.</b><b data-l="en">Practice is the game.</b>
-          <span data-l="ru">Дерево здесь не проходится нажатием кнопки: нужно встать и удержать равновесие. Дыхание не прокачивается очками: нужно дышать.</span>
-          <span data-l="en">You don't pass the tree by pressing a button: you stand and keep your balance. Breath isn't levelled up with points: you breathe.</span></div></li>
-        <li class="reveal"><div><b data-l="ru">Путь начинается не с асаны.</b><b data-l="en">The path doesn't begin with asana.</b>
-          <span data-l="ru">Первая земля — деревня: пять домов ямы и пять домов ниямы. Сначала о том, как жить с другими и с собой. Так начинаются восемь частей йоги у Патанджали.</span>
-          <span data-l="en">The first land is a village: five houses of yama and five of niyama. First, how to live with others and with yourself. That's where Patañjali's eight limbs begin.</span></div></li>
-        <li class="reveal"><div><b data-l="ru">Ошибка — тоже учитель.</b><b data-l="en">A mistake is a teacher too.</b>
-          <span data-l="ru">Неверный выбор ничего не отнимает. Сцена начинается заново, наставница подсказывает, и ты пробуешь ещё раз.</span>
-          <span data-l="en">A wrong choice takes nothing away. The scene starts over, the mentor gives a hint, and you try again.</span></div></li>
-        <li class="reveal"><div><b data-l="ru">Слова — из первоисточников.</b><b data-l="en">Words from the source texts.</b>
-          <span data-l="ru">Каждый свиток в игре — строка из древних текстов на санскрите, с транслитерацией и переводом, сверенная по традиции. Без поздних украшений и красивых легенд.</span>
-          <span data-l="en">Every scroll in the game is a line from the ancient texts in Sanskrit, with transliteration and translation, checked against the tradition. No later embellishments.</span></div></li>
-        <li class="reveal"><div><b data-l="ru">Тишина — тоже механика.</b><b data-l="en">Stillness is a mechanic too.</b>
-          <span data-l="ru">В тихой заводи муть оседает, только пока ты неподвижна. Чем дольше тишина, тем яснее вода.</span>
-          <span data-l="en">In the quiet pool the silt settles only while you stay still. The longer the silence, the clearer the water.</span></div></li>
-        <li class="reveal"><div><b data-l="ru">Мир соткан из знаков.</b><b data-l="en">The world is woven from signs.</b>
-          <span data-l="ru">Каждая фигура в игре собрана из тысяч мелких знаков деванагари. Издали это человек, дерево, змей. Вблизи — письмо.</span>
-          <span data-l="en">Every figure in the game is made of thousands of tiny Devanagari signs. From afar it's a person, a tree, a serpent. Up close, it's script.</span></div></li>
-        <li class="reveal"><div><b data-l="ru">Без спешки.</b><b data-l="en">No rush.</b>
-          <span data-l="ru">Здесь нет таймеров на выживание и гонки за рейтингом. Темп задаёт дыхание.</span>
-          <span data-l="en">No survival timers, no leaderboard race. The pace is set by your breath.</span></div></li>
-      </ul>
-    </div>
-  </section>
+  <section id="manifest"><div class="wrap">
+    <div class="kicker reveal" data-k="manifest.kicker"></div>
+    <h2 class="reveal" data-k="manifest.title"></h2>
+    <ul class="manifest" id="manifestList"></ul>
+  </div></section>
 
-  <section id="lands">
-    <div class="wrap">
-      <div class="kicker reveal"><span data-l="ru">Мир игры</span><span data-l="en">The world</span></div>
-      <h2 class="reveal"><span data-l="ru">Земли первого пути</span><span data-l="en">Lands of the first path</span></h2>
-      <div class="lands">
-        <div class="land reveal"><div class="pic"><img src="img/village.jpg" alt=""></div><div class="txt"><div class="tag">yama · niyama</div><h3 data-l="ru">Деревня</h3><h3 data-l="en">The village</h3>
-          <p data-l="ru">Двое ворот, десять домов. В каждом — житель, выбор из трёх ответов и короткая практика. В награду — свиток из Йога-сутр.</p><p data-l="en">Two gates, ten houses. Each has a resident, a choice of three answers and a short practice. The reward is a scroll from the Yoga Sūtras.</p></div></div>
-        <div class="land reveal"><div class="pic"><img src="img/treepose.jpg" alt=""></div><div class="txt"><div class="tag">vṛkṣāsana</div><h3 data-l="ru">Дерево у воды</h3><h3 data-l="en">Tree by the water</h3>
-          <p data-l="ru">Поза дерева. Ветер качает фигуру, а ты удерживаешь её наклоном телефона. Устойчивость и лёгкость считаются отдельно.</p><p data-l="en">Tree pose. The wind sways the figure and you hold it steady by tilting the phone. Steadiness and ease are scored separately.</p></div></div>
-        <div class="land reveal"><div class="pic"><img src="img/stone.jpg" alt="" style="object-position:50% 70%"></div><div class="txt"><div class="tag">prāṇāyāma</div><h3 data-l="ru">Камень прилива</h3><h3 data-l="en">Tide stone</h3>
-          <p data-l="ru">Дыхание касанием: держишь экран на вдохе, отпускаешь на выдохе. Вода поднимается и уходит вместе с тобой. Есть ритм с задержкой — кумбхакой.</p><p data-l="en">Breath by touch: hold the screen to inhale, release to exhale. The water rises and falls with you. One rhythm includes the retention, kumbhaka.</p></div></div>
-        <div class="land reveal"><div class="pic"><img src="img/pond.jpg" alt="" style="object-position:50% 35%"></div><div class="txt"><div class="tag">dhyāna</div><h3 data-l="ru">Тихая заводь</h3><h3 data-l="en">The quiet pool</h3>
-          <p data-l="ru">Медитация на 1, 3 или 5 минут. Каждое движение поднимает ил, неподвижность даёт ему осесть, и в воде появляется луна.</p><p data-l="en">Meditation for 1, 3 or 5 minutes. Every movement stirs the silt, stillness lets it settle, and the moon appears in the water.</p></div></div>
-        <div class="land reveal"><div class="pic"><img src="img/snake.jpg" alt="" style="object-position:50% 12%"></div><div class="txt"><div class="tag">bhujaṅgāsana</div><h3 data-l="ru">Тропа змея</h3><h3 data-l="en">Serpent's trail</h3>
-          <p data-l="ru">На тропе встречается змей. Его не прогоняют: рядом с ним дышат ровно, пока он не успокоится. Тогда он показывает свою позу.</p><p data-l="en">A serpent waits on the trail. You don't drive it away: you breathe evenly beside it until it calms. Then it shows you its pose.</p></div></div>
-        <div class="land reveal"><div class="pic"><img src="img/temple.jpg" alt="" style="object-position:50% 40%"></div><div class="txt"><div class="tag">ṣaṭ-cakra</div><h3 data-l="ru">Храм на холме</h3><h3 data-l="en">Temple on the hill</h3>
-          <p data-l="ru">Открывается, когда пройден путь. Семь центров зажигаются по одному, с их слогами-биджами, как в Шат-чакра-нирупане.</p><p data-l="en">Opens once the path is walked. Seven centres light up one by one with their bīja syllables, as in the Ṣaṭ-cakra-nirūpaṇa.</p></div></div>
-      </div>
-    </div>
-  </section>
+  <section id="lands"><div class="wrap">
+    <div class="kicker reveal" data-k="lands.kicker"></div>
+    <h2 class="reveal" data-k="lands.title"></h2>
+    <div class="lands" id="landsList"></div>
+  </div></section>
 
-  <section id="how">
-    <div class="wrap">
-      <div class="kicker reveal"><span data-l="ru">Как играть</span><span data-l="en">How it plays</span></div>
-      <h2 class="reveal"><span data-l="ru">Телефон — это коврик</span><span data-l="en">Your phone is the mat</span></h2>
-      <div class="mech">
-        <div class="m reveal"><div class="ico">स्थिर</div><h3 data-l="ru">Наклон и равновесие</h3><h3 data-l="en">Tilt and balance</h3><p data-l="ru">Гироскоп чувствует, насколько ровно ты держишься. Без датчиков всё работает от касаний.</p><p data-l="en">The gyroscope feels how steady you are. Without sensors everything works by touch.</p></div>
-        <div class="m reveal"><div class="ico">प्राण</div><h3 data-l="ru">Дыхание касанием</h3><h3 data-l="en">Breath by touch</h3><p data-l="ru">Держишь экран — вдох, отпускаешь — выдох. Игра ведёт ритм и показывает, насколько ты с ним совпала.</p><p data-l="en">Hold the screen to inhale, release to exhale. The game leads the rhythm and shows how closely you followed it.</p></div>
-        <div class="m reveal"><div class="ico">ध्यान</div><h3 data-l="ru">Неподвижность</h3><h3 data-l="en">Stillness</h3><p data-l="ru">Положи телефон и не трогай. Время в тишине — это и есть результат.</p><p data-l="en">Put the phone down and leave it. Time spent in stillness is the score.</p></div>
-        <div class="m reveal"><div class="ico">विद्या</div><h3 data-l="ru">Выбор и свитки</h3><h3 data-l="en">Choices and scrolls</h3><p data-l="ru">Диалоги визуальной новеллы, наставница, жители деревни. За каждый пройденный шаг — свиток в коллекцию.</p><p data-l="en">Visual-novel dialogue, a mentor, villagers. Every step you pass adds a scroll to your collection.</p></div>
-      </div>
-      <div class="scroll reveal">
-        <div class="deva">योगश्चित्तवृत्तिनिरोधः</div>
-        <div class="iast">yogaś citta-vṛtti-nirodhaḥ</div>
-        <div class="ru" data-l="ru">Йога — это прекращение колебаний ума.</div>
-        <div class="ru" data-l="en">Yoga is the stilling of the movements of the mind.</div>
-        <div class="src" data-l="ru">Йога-сутры Патанджали 1.2</div><div class="src" data-l="en">Patañjali's Yoga Sūtras 1.2</div>
-      </div>
-      <div class="sources reveal">
-        <span data-l="ru">Йога-сутры Патанджали</span><span data-l="en">Yoga Sūtras</span>
-        <span data-l="ru">Хатха-йога-прадипика</span><span data-l="en">Haṭha Yoga Pradīpikā</span>
-        <span data-l="ru">Гхеранда-самхита</span><span data-l="en">Gheraṇḍa Saṃhitā</span>
-        <span data-l="ru">Катха-упанишада</span><span data-l="en">Kaṭha Upaniṣad</span>
-        <span data-l="ru">Бхагавад-гита</span><span data-l="en">Bhagavad Gītā</span>
-        <span data-l="ru">Шат-чакра-нирупана</span><span data-l="en">Ṣaṭ-cakra-nirūpaṇa</span>
-      </div>
+  <section id="how"><div class="wrap">
+    <div class="kicker reveal" data-k="how.kicker"></div>
+    <h2 class="reveal" data-k="how.title"></h2>
+    <div class="mech" id="mechList"></div>
+    <div class="scroll reveal" id="quote">
+      <div class="deva" id="qdeva"></div>
+      <div class="iast">yogaś citta-vṛtti-nirodhaḥ</div>
+      <div class="q" data-k="how.quote"></div>
+      <div class="src" data-k="how.src"></div>
     </div>
-  </section>
+    <div class="sources reveal" id="sources"></div>
+  </div></section>
 
-  <section class="final">
-    <div class="wrap">
-      <span class="deva big">ॐ</span>
-      <h2 class="reveal"><span data-l="ru">Первые игроки войдут раньше всех</span><span data-l="en">First players get in first</span></h2>
-      <p class="intro reveal" style="margin:0 auto">
-        <span data-l="ru">Оставь контакт в вайтлисте — пришлём ранний доступ, когда откроем следующую землю, и спросим, как тебе путь.</span>
-        <span data-l="en">Leave your contact on the whitelist — we'll send early access when the next land opens, and ask how the path feels.</span></p>
-      <div class="cta">
-        <a class="btn main" href="../whitelist/"><span data-l="ru">Попасть в вайтлист</span><span data-l="en">Join the whitelist</span></a>
-        <a class="btn" href="https://t.me/ikaruneshwari" target="_blank" rel="noopener">Telegram</a>
-        <a class="btn" href="#" target="_blank" rel="noopener" data-ig>Instagram</a>
-      </div>
+  <section id="roadmap"><div class="wrap">
+    <div class="kicker reveal" data-k="roadmap.kicker"></div>
+    <h2 class="reveal" data-k="roadmap.title"></h2>
+    <div class="road reveal" id="road"><div class="fill"></div><div id="roadList"></div></div>
+  </div></section>
+
+  <section id="donate"><div class="wrap donate">
+    <div>
+      <div class="kicker reveal" data-k="donate.kicker"></div>
+      <h2 class="reveal" data-k="donate.title"></h2>
+      <p class="intro reveal" data-k="donate.text"></p>
+      <div class="lotus" id="lotusRow"></div>
     </div>
-  </section>
+    <div class="box reveal"><div id="donateBtns" style="display:grid;gap:10px"></div><div class="note" data-k="donate.note"></div></div>
+  </div></section>
+
+  <section class="final"><div class="wrap">
+    <span class="deva big">ॐ</span>
+    <h2 class="reveal" data-k="final.title"></h2>
+    <p class="intro reveal" style="margin:0 auto" data-k="final.text"></p>
+    <div class="cta"><a class="btn main" href="../whitelist/"><span data-k="final.cta"></span></a></div>
+    <div class="social" id="social2" style="justify-content:center"></div>
+  </div></section>
 </main>
-<footer><span data-l="ru">Путь йога · прототип · 2026</span><span data-l="en">Yogi's Path · prototype · 2026</span></footer>
+<footer data-k="footer"></footer>
+<div id="toast"></div>
+
 <script>
-const CONFIG={instagram:''}; // ссылка на Instagram, например https://instagram.com/имя
-document.querySelectorAll('[data-ig]').forEach(a=>{if(CONFIG.instagram)a.href=CONFIG.instagram;else a.style.display='none';});
-// язык
-function setLang(l){document.documentElement.lang=l;document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.set===l));try{localStorage.setItem('py.lang',l);}catch(e){}}
+const REPO={owner:'corinblack-dev',repo:'put-yoga',path:'landing/content.json',branch:'main'};
+const PASS='d313169be066b1fc542122915bc3394e67df9e28bd734ecc46942506ac36219e';
+let C=null,LANG='ru',EDIT=false;
+const $=s=>document.querySelector(s);
+const get=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const set=(o,p,v)=>{const ks=p.split('.');let a=o;for(let i=0;i<ks.length-1;i++)a=a[ks[i]];a[ks[ks.length-1]]=v;};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS={get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}},set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}},del:k=>{try{localStorage.removeItem(k);}catch(e){}}};
+function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),ms||2600);}
+const ST={ru:{done:'готово',now:'сейчас',next:'дальше'},en:{done:'done',now:'now',next:'next'}};
+const ICONS={telegram:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.7 19.7c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 13.4l-4.8-1.5c-1-.3-1-1 .2-1.5L20.5 3.3c.9-.3 1.6.2 1.4 1.3z"/></svg>',
+  instagram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor"/></svg>'};
+
+function render(){
+  const T=C[LANG];document.documentElement.lang=LANG;
+  $('#manifestList').innerHTML=T.manifest.items.map((it,i)=>`<li class="reveal"><div class="n">${String(i+1).padStart(2,'0')}</div><div><b data-k="manifest.items.${i}.t"></b><span data-k="manifest.items.${i}.d"></span></div></li>`).join('');
+  $('#landsList').innerHTML=T.lands.items.map((it,i)=>`<div class="land reveal" style="transition-delay:${(i%3)*0.12}s"><div class="pic"><img src="img/${C.landsImg[i]||'village'}.jpg" alt="" style="object-position:${C.landsPos[i]||'50% 50%'}"></div><div class="txt"><div class="tag" data-k="lands.items.${i}.tag"></div><h3 data-k="lands.items.${i}.t"></h3><p data-k="lands.items.${i}.d"></p></div></div>`).join('');
+  $('#mechList').innerHTML=T.how.items.map((it,i)=>`<div class="m reveal" style="transition-delay:${(i%2)*0.12}s"><div class="ico" data-k="how.items.${i}.ico"></div><h3 data-k="how.items.${i}.t"></h3><p data-k="how.items.${i}.d"></p></div>`).join('');
+  $('#sources').innerHTML=T.how.sources.map((s,i)=>`<span data-k="how.sources.${i}"></span>`).join('');
+  const done=C.roadmapStatus.filter(s=>s==='done').length,now=C.roadmapStatus.indexOf('now');
+  $('#roadList').innerHTML=T.roadmap.items.map((it,i)=>{const s=C.roadmapStatus[i]||'next';return `<div class="step ${s}" style="transition-delay:${(0.2+i*0.25).toFixed(2)}s"><div class="dot"></div><div class="st">${ST[LANG][s]}</div><b data-k="roadmap.items.${i}.t"></b><p data-k="roadmap.items.${i}.d"></p></div>`;}).join('');
+  const n=T.roadmap.items.length||1,reach=(now>=0?now+0.5:done)/n;$('#road').style.setProperty('--h',Math.round(reach*100)+'%');
+  document.querySelectorAll('[data-k]').forEach(el=>{const v=get(T,el.dataset.k);el.textContent=v==null?'':v;});
+  $('#qdeva').innerHTML=['यो','ग','श्चि','त्त','वृ','त्ति','नि','रो','धः'].map((s,i)=>`<span style="transition-delay:${(0.3+i*0.18).toFixed(2)}s">${s}</span>`).join('');
+  const L=C.links,soc=(L.telegram?`<a href="${esc(L.telegram)}" target="_blank" rel="noopener">${ICONS.telegram}Telegram</a>`:'')+(L.instagram?`<a href="${esc(L.instagram)}" target="_blank" rel="noopener">${ICONS.instagram}Instagram</a>`:'');
+  $('#social1').innerHTML=soc;$('#social2').innerHTML=soc;
+  const ds=(L.donate||[]).filter(d=>d.url&&d.label);
+  $('#donateBtns').innerHTML=ds.length?ds.map((d,i)=>`<a class="btn ${i?'':'main'}" href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.label)}</a>`).join(''):`<div style="color:var(--dim);font-size:13px">${LANG==='ru'?'Ссылки на поддержку появятся здесь совсем скоро.':'Support links will appear here very soon.'}</div>`;
+  $('#lotusRow').innerHTML=Array.from({length:14},(_,i)=>`<span style="animation-delay:${(i*0.28).toFixed(2)}s">${i%2?'·':'ॐ'}</span>`).join('');
+  document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.set===LANG));
+  observe();
+  if(EDIT)enableEditing();
+}
+let io;
+function observe(){if(io)io.disconnect();io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});document.querySelectorAll('.reveal,.manifest li').forEach(el=>{if(!el.classList.contains('in'))io.observe(el);});}
+function setLang(l){LANG=l;LS.set('py.lang',l);render();}
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.set));
-let L=null;try{L=localStorage.getItem('py.lang');}catch(e){}
-const q=new URLSearchParams(location.search).get('lang');setLang(q||L||((navigator.language||'').startsWith('ru')?'ru':'en'));
-// появление
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-// звёзды из знаков
-const cv=document.getElementById('stars'),cx=cv.getContext('2d');let st=[];
-function rs(){const d=Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;cx.setTransform(d,0,0,d,0,0);st=[];const n=Math.round(innerWidth*innerHeight/5200);for(let i=0;i<n;i++)st.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,b:Math.random(),p:Math.random()*6.28,c:['·','·','·','ः','ऽ','·'][i%6]});}
-function fr(t){cx.clearRect(0,0,innerWidth,innerHeight);cx.textAlign='center';cx.textBaseline='middle';cx.font="10px 'Tiro Devanagari Sanskrit', serif";
-  for(const s of st){const a=(0.12+0.5*s.b*s.b)*(0.6+0.4*Math.sin(t/1600+s.p));cx.fillStyle='rgba(232,184,106,'+a.toFixed(3)+')';cx.fillText(s.c,s.x,s.y);}
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(fr);}
-addEventListener('resize',rs);rs();requestAnimationFrame(fr);
+
+async function load(){
+  let draft=null;try{draft=JSON.parse(LS.get('py.draft')||'null');}catch(e){}
+  try{const r=await fetch('content.json?'+Date.now(),{cache:'no-store'});C=await r.json();}catch(e){C=null;}
+  if(draft&&LS.get('py.admin')==='1')C=draft;
+  if(!C){document.querySelector('main').innerHTML='<p class="wrap" style="padding:40px 22px">Не удалось загрузить содержимое страницы. Обнови страницу.</p>';return;}
+  LANG=new URLSearchParams(location.search).get('lang')||LS.get('py.lang')||((navigator.language||'').startsWith('ru')?'ru':'en');
+  if(!C[LANG])LANG='ru';
+  render();
+  if(LS.get('py.admin')==='1')openAdmin(true);
+}
+load();
+
+/* звёзды из знаков */
+const cv=$('#stars'),cx=cv.getContext('2d');let stars=[];
+function rs(){const d=Math.min(2,devicePixelRatio||1);cv.width=innerWidth*d;cv.height=innerHeight*d;cx.setTransform(d,0,0,d,0,0);stars=[];const n=Math.round(innerWidth*innerHeight/5200);for(let i=0;i<n;i++)stars.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,b:Math.random(),p:Math.random()*6.28,v:0.02+Math.random()*0.06,c:['·','·','·','ः','ऽ','·'][i%6]});}
+function fr(t){cx.clearRect(0,0,innerWidth,innerHeight);cx.textAlign='center';cx.textBaseline='middle';cx.font="10px 'Tiro Devanagari Sanskrit', serif";const sy=scrollY;
+  for(const s of stars){const y=((s.y-sy*s.v*4)%innerHeight+innerHeight)%innerHeight;const a=(0.12+0.5*s.b*s.b)*(0.6+0.4*Math.sin(t/1600+s.p));cx.fillStyle='rgba(232,184,106,'+a.toFixed(3)+')';cx.fillText(s.c,s.x,y);}
+  requestAnimationFrame(fr);}
+addEventListener('resize',rs);rs();if(!matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(fr);else fr(0);
+
+/* ===== админка: Ctrl/Cmd+Shift+K или 5 касаний по ॐ в шапке ===== */
+async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function askPass(){modal(`<h3>Вход</h3><label>Пароль<input id="pw" type="password" autocomplete="current-password"></label>`,async m=>{const v=m.querySelector('#pw').value.trim();
+  const cap=v.charAt(0).toUpperCase()+v.slice(1).toLowerCase();if(await sha(v)===PASS||await sha(cap)===PASS){LS.set('py.admin','1');openAdmin();}else toast('Неверный пароль');},'Войти');setTimeout(()=>{const p=$('#pw');p&&p.focus();},50);}
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='KeyK'){e.preventDefault();EDIT?closeAdmin():askPass();}});
+let taps=[];$('#logo').addEventListener('click',()=>{const n=Date.now();taps=taps.filter(x=>n-x<2000);taps.push(n);if(taps.length>=5){taps=[];if(!EDIT)askPass();}});
+
+function saveDraft(){LS.set('py.draft',JSON.stringify(C));const s=$('#admSt');if(s)s.textContent='черновик сохранён';}
+function enableEditing(){document.querySelectorAll('[data-k]').forEach(el=>{el.contentEditable='true';el.spellcheck=true;
+  const a=el.closest('a');if(a){a.dataset.href=a.getAttribute('href');a.removeAttribute('href');}
+  el.oninput=()=>{const v=el.innerText.replace(/\n+$/,'');set(C[LANG],el.dataset.k,v);document.querySelectorAll(`[data-k="${el.dataset.k}"]`).forEach(o=>{if(o!==el)o.textContent=v;});saveDraft();};
+  el.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!['P','SPAN'].includes(el.tagName)){e.preventDefault();el.blur();}};});}
+function disableEditing(){document.querySelectorAll('[data-k]').forEach(el=>{el.contentEditable='false';el.oninput=null;el.onkeydown=null;});document.querySelectorAll('a[data-href]').forEach(a=>{a.setAttribute('href',a.dataset.href);delete a.dataset.href;});}
+
+function openAdmin(silent){EDIT=true;document.body.classList.add('edit');
+  if(!$('#adm')){const d=document.createElement('div');d.id='adm';d.innerHTML=`<span class="st">Редактирование</span>
+    <button data-a="lang">RU / EN</button><button data-a="road">Дорожная карта</button><button data-a="links">Ссылки и донаты</button>
+    <button data-a="save" class="pri">Опубликовать</button><button data-a="dl">Скачать JSON</button><button data-a="reset">Сбросить</button><button data-a="exit">Выйти</button><span class="st" id="admSt"></span>`;
+    document.body.appendChild(d);d.onclick=e=>{const a=e.target.dataset.a;if(!a)return;({lang:()=>setLang(LANG==='ru'?'en':'ru'),road:roadModal,links:linksModal,save:publish,dl:download,reset:resetDraft,exit:closeAdmin})[a]();};}
+  render();if(!silent)toast('Режим редактирования. Нажми на любой текст, чтобы изменить его.',3500);}
+function closeAdmin(){EDIT=false;document.body.classList.remove('edit');LS.del('py.admin');const d=$('#adm');d&&d.remove();disableEditing();render();toast('Редактирование выключено');}
+function resetDraft(){if(!confirm('Сбросить несохранённые правки и вернуть опубликованную версию?'))return;LS.del('py.draft');fetch('content.json?'+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(j=>{C=j;render();toast('Черновик сброшен');});}
+function download(){const b=new Blob([JSON.stringify(C,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='content.json';a.click();}
+function modal(html,onOk,okText){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="card">${html}<div class="row"><button data-x>Отмена</button><button class="pri" data-ok>${okText||'Готово'}</button></div></div>`;document.body.appendChild(m);
+  const ok=()=>{onOk(m);m.remove();};m.querySelector('[data-x]').onclick=()=>m.remove();m.querySelector('[data-ok]').onclick=ok;
+  m.onclick=e=>{if(e.target===m)m.remove();};m.onkeydown=e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();ok();}if(e.key==='Escape')m.remove();};return m;}
+
+function linksModal(){const L=C.links,d=L.donate||(L.donate=[]);while(d.length<3)d.push({label:'',url:''});
+  modal(`<h3>Ссылки и донаты</h3>
+  <label>Telegram<input id="l_tg" value="${esc(L.telegram)}" placeholder="https://t.me/..."></label>
+  <label>Instagram<input id="l_ig" value="${esc(L.instagram)}" placeholder="https://instagram.com/..."></label>
+  <label>Адрес формы вайтлиста (Formspree)<input id="l_fs" value="${esc(L.formspree)}" placeholder="https://formspree.io/f/..."></label>
+  <p class="hint">Кнопки поддержки: название и ссылка. Кнопки без ссылки не показываются.</p>
+  ${d.map((x,i)=>`<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:8px"><label>Название ${i+1}<input id="d_l${i}" value="${esc(x.label)}"></label><label>Ссылка ${i+1}<input id="d_u${i}" value="${esc(x.url)}" placeholder="https://..."></label></div>`).join('')}`,
+  m=>{L.telegram=m.querySelector('#l_tg').value.trim();L.instagram=m.querySelector('#l_ig').value.trim();L.formspree=m.querySelector('#l_fs').value.trim();
+    d.forEach((x,i)=>{x.label=m.querySelector('#d_l'+i).value.trim();x.url=m.querySelector('#d_u'+i).value.trim();});saveDraft();render();});}
+
+function roadModal(){
+  const draw=m=>{m.querySelector('#rl').innerHTML=C.ru.roadmap.items.map((_,i)=>`<div class="ri" data-i="${i}"><div class="tools"><select data-f="st">${['done','now','next'].map(s=>`<option value="${s}" ${C.roadmapStatus[i]===s?'selected':''}>${ST.ru[s]}</option>`).join('')}</select>
+      <button class="mini" data-f="up">↑</button><button class="mini" data-f="dn">↓</button><button class="mini" data-f="rm">удалить</button></div>
+      <label>Название (RU)<input data-f="rt" value="${esc(C.ru.roadmap.items[i].t)}"></label><label>Описание (RU)<textarea data-f="rd">${esc(C.ru.roadmap.items[i].d)}</textarea></label>
+      <label>Title (EN)<input data-f="et" value="${esc((C.en.roadmap.items[i]||{}).t)}"></label><label>Description (EN)<textarea data-f="ed">${esc((C.en.roadmap.items[i]||{}).d)}</textarea></label></div>`).join('');};
+  const sync=m=>m.querySelectorAll('.ri').forEach(r=>{const i=+r.dataset.i;C.roadmapStatus[i]=r.querySelector('[data-f=st]').value;C.ru.roadmap.items[i]={t:r.querySelector('[data-f=rt]').value,d:r.querySelector('[data-f=rd]').value};C.en.roadmap.items[i]={t:r.querySelector('[data-f=et]').value,d:r.querySelector('[data-f=ed]').value};});
+  const m=modal(`<h3>Дорожная карта</h3><p class="hint">Этапы идут сверху вниз. Статус: готово, сейчас, дальше.</p><div id="rl"></div><button class="mini" id="radd">+ этап</button>`,mm=>{sync(mm);saveDraft();render();});
+  draw(m);
+  const mv=(i,j)=>{for(const a of [C.ru.roadmap.items,C.en.roadmap.items,C.roadmapStatus]){const t=a[i];a[i]=a[j];a[j]=t;}};
+  m.querySelector('#rl').onclick=e=>{const f=e.target.dataset.f;if(!['up','dn','rm'].includes(f))return;sync(m);const i=+e.target.closest('.ri').dataset.i,n=C.ru.roadmap.items.length;
+    if(f==='up'&&i>0)mv(i,i-1);if(f==='dn'&&i<n-1)mv(i,i+1);if(f==='rm'&&confirm('Удалить этап?')){C.ru.roadmap.items.splice(i,1);C.en.roadmap.items.splice(i,1);C.roadmapStatus.splice(i,1);}draw(m);};
+  m.querySelector('#radd').onclick=()=>{sync(m);C.ru.roadmap.items.push({t:'Новый этап',d:''});C.en.roadmap.items.push({t:'New stage',d:''});C.roadmapStatus.push('next');draw(m);};
+}
+
+function b64(str){const bytes=new TextEncoder().encode(str);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin);}
+async function publish(){
+  const tok=LS.get('py.ghtoken');
+  if(!tok){modal(`<h3>Ключ GitHub</h3><p class="hint">Чтобы правки увидели все, странице нужен ключ доступа к репозиторию. Он хранится только в этом браузере и вводится один раз.<br><br>
+    github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.<br>Repository access: Only select repositories → <b>put-yoga</b>.<br>Permissions → Contents: <b>Read and write</b>.<br>Скопируй ключ и вставь сюда.</p>
+    <label>Ключ<input id="tk" placeholder="github_pat_..."></label>`,m=>{const v=m.querySelector('#tk').value.trim();if(v){LS.set('py.ghtoken',v);publish();}},'Сохранить ключ');return;}
+  const st=$('#admSt');st.textContent='публикую…';
+  const api=`https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${REPO.path}`,H={'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'};
+  try{
+    const g=await fetch(api+'?ref='+REPO.branch+'&t='+Date.now(),{headers:H,cache:'no-store'});
+    if(g.status===401||g.status===403){LS.del('py.ghtoken');throw new Error('ключ не подошёл, введи его заново');}
+    const cur=g.ok?(await g.json()).sha:undefined;
+    const r=await fetch(api,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},H),body:JSON.stringify({message:'Правки лендинга из админки',content:b64(JSON.stringify(C,null,1)),sha:cur,branch:REPO.branch})});
+    if(!r.ok)throw new Error('GitHub ответил '+r.status);
+    LS.del('py.draft');st.textContent='опубликовано';toast('Опубликовано. На сайте обновится через 1–2 минуты.',4500);
+  }catch(e){st.textContent='ошибка';toast('Не получилось: '+e.message+'. Можно скачать JSON.',5500);}
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,363 @@
+{
+ "links": {
+  "telegram": "https://t.me/ikaruneshwari",
+  "instagram": "",
+  "formspree": "",
+  "donate": [
+   {
+    "label": "Buy Me a Coffee",
+    "url": ""
+   },
+   {
+    "label": "Boosty",
+    "url": ""
+   },
+   {
+    "label": "",
+    "url": ""
+   }
+  ]
+ },
+ "roadmapStatus": [
+  "done",
+  "now",
+  "next",
+  "next",
+  "next",
+  "next"
+ ],
+ "landsImg": [
+  "village",
+  "treepose",
+  "stone",
+  "pond",
+  "snake",
+  "temple"
+ ],
+ "landsPos": [
+  "50% 50%",
+  "50% 50%",
+  "50% 70%",
+  "50% 35%",
+  "50% 12%",
+  "50% 40%"
+ ],
+ "ru": {
+  "brand": "ПУТЬ ЙОГА",
+  "hero": {
+   "title": "ПУТЬ ЙОГА",
+   "sub": "RPG · визуальная новелла · практика",
+   "lead": "Игра, в которой практика и есть механика. Телефон становится ковриком: чтобы пройти уровень, нужно удержать равновесие, выровнять дыхание и посидеть в тишине.",
+   "cta1": "Попасть в вайтлист",
+   "cta2": "Открыть прототип",
+   "cta3": "Поддержать"
+  },
+  "manifest": {
+   "kicker": "Манифест",
+   "title": "Во что мы верим, создавая эту игру",
+   "items": [
+    {
+     "t": "Практика и есть игра.",
+     "d": "Дерево здесь не проходится нажатием кнопки: нужно встать и удержать равновесие. Дыхание не прокачивается очками: нужно дышать."
+    },
+    {
+     "t": "Путь начинается не с асаны.",
+     "d": "Первая земля — деревня: пять домов ямы и пять домов ниямы. Сначала о том, как жить с другими и с собой. Так начинаются восемь частей йоги у Патанджали."
+    },
+    {
+     "t": "Ошибка — тоже учитель.",
+     "d": "Неверный выбор ничего не отнимает. Сцена начинается заново, наставница подсказывает, и ты пробуешь ещё раз."
+    },
+    {
+     "t": "Слова — из первоисточников.",
+     "d": "Каждый свиток в игре — строка из древних текстов на санскрите, с транслитерацией и переводом, сверенная по традиции. Без поздних украшений и красивых легенд."
+    },
+    {
+     "t": "Тишина — тоже механика.",
+     "d": "В тихой заводи муть оседает, только пока ты неподвижна. Чем дольше тишина, тем яснее вода."
+    },
+    {
+     "t": "Мир соткан из знаков.",
+     "d": "Каждая фигура в игре собрана из тысяч мелких знаков деванагари. Издали это человек, дерево, змей. Вблизи — письмо."
+    },
+    {
+     "t": "Без спешки.",
+     "d": "Здесь нет таймеров на выживание и гонки за рейтингом. Темп задаёт дыхание."
+    }
+   ]
+  },
+  "lands": {
+   "kicker": "Мир игры",
+   "title": "Земли первого пути",
+   "items": [
+    {
+     "tag": "yama · niyama",
+     "t": "Деревня",
+     "d": "Двое ворот, десять домов. В каждом — житель, выбор из трёх ответов и короткая практика. В награду — свиток из Йога-сутр."
+    },
+    {
+     "tag": "vṛkṣāsana",
+     "t": "Дерево у воды",
+     "d": "Поза дерева. Ветер качает фигуру, а ты удерживаешь её наклоном телефона. Устойчивость и лёгкость считаются отдельно."
+    },
+    {
+     "tag": "prāṇāyāma",
+     "t": "Камень прилива",
+     "d": "Дыхание касанием: держишь экран на вдохе, отпускаешь на выдохе. Вода поднимается и уходит вместе с тобой. Есть ритм с задержкой — кумбхакой."
+    },
+    {
+     "tag": "dhyāna",
+     "t": "Тихая заводь",
+     "d": "Медитация на 1, 3 или 5 минут. Каждое движение поднимает ил, неподвижность даёт ему осесть, и в воде появляется луна."
+    },
+    {
+     "tag": "bhujaṅgāsana",
+     "t": "Тропа змея",
+     "d": "На тропе встречается змей. Его не прогоняют: рядом с ним дышат ровно, пока он не успокоится. Тогда он показывает свою позу."
+    },
+    {
+     "tag": "ṣaṭ-cakra",
+     "t": "Храм на холме",
+     "d": "Открывается, когда пройден путь. Семь центров зажигаются по одному, с их слогами-биджами, как в Шат-чакра-нирупане."
+    }
+   ]
+  },
+  "how": {
+   "kicker": "Как играть",
+   "title": "Телефон — это коврик",
+   "items": [
+    {
+     "ico": "स्थिर",
+     "t": "Наклон и равновесие",
+     "d": "Гироскоп чувствует, насколько ровно ты держишься. Без датчиков всё работает от касаний."
+    },
+    {
+     "ico": "प्राण",
+     "t": "Дыхание касанием",
+     "d": "Держишь экран — вдох, отпускаешь — выдох. Игра ведёт ритм и показывает, насколько ты с ним совпала."
+    },
+    {
+     "ico": "ध्यान",
+     "t": "Неподвижность",
+     "d": "Положи телефон и не трогай. Время в тишине — это и есть результат."
+    },
+    {
+     "ico": "विद्या",
+     "t": "Выбор и свитки",
+     "d": "Диалоги визуальной новеллы, наставница, жители деревни. За каждый пройденный шаг — свиток в коллекцию."
+    }
+   ],
+   "quote": "Йога — это прекращение колебаний ума.",
+   "src": "Йога-сутры Патанджали 1.2",
+   "sources": [
+    "Йога-сутры Патанджали",
+    "Хатха-йога-прадипика",
+    "Гхеранда-самхита",
+    "Катха-упанишада",
+    "Бхагавад-гита",
+    "Шат-чакра-нирупана"
+   ]
+  },
+  "roadmap": {
+   "kicker": "Дорожная карта",
+   "title": "Куда ведёт путь",
+   "items": [
+    {
+     "t": "Прототип",
+     "d": "Деревня ямы и ниямы, пять практик, свитки, 8-битная музыка, фигуры из знаков. Играть можно уже сейчас."
+    },
+    {
+     "t": "Вайтлист и первые тестеры",
+     "d": "Собираем первых игроков, слушаем, где путь труден, а где слишком прост."
+    },
+    {
+     "t": "Новые земли",
+     "d": "Школы и учителя, парампара, встречи с животными, новые асаны и пранаямы."
+    },
+    {
+     "t": "Голос и звук",
+     "d": "Озвучка наставницы, звуковые ландшафты для каждой земли, полная английская версия."
+    },
+    {
+     "t": "Приложение",
+     "d": "Версии для App Store и Google Play, сохранение пути между устройствами."
+    },
+    {
+     "t": "Полный путь",
+     "d": "Все шесть земель, от первой деревни до храма на холме."
+    }
+   ]
+  },
+  "donate": {
+   "kicker": "Поддержать",
+   "title": "Помочь пути случиться",
+   "text": "Игру делает один человек: тексты, практики и проверку по первоисточникам. Если тебе откликается этот путь, можно поддержать разработку.",
+   "note": "Каждый вклад идёт на разработку, звук и проверку текстов."
+  },
+  "final": {
+   "title": "Первые игроки войдут раньше всех",
+   "text": "Оставь контакт в вайтлисте — пришлём ранний доступ, когда откроем следующую землю, и спросим, как тебе путь.",
+   "cta": "Попасть в вайтлист"
+  },
+  "footer": "Путь йога · прототип · 2026"
+ },
+ "en": {
+  "brand": "YOGI'S PATH",
+  "hero": {
+   "title": "YOGI'S PATH",
+   "sub": "RPG · visual novel · practice",
+   "lead": "A game where practice is the mechanic. Your phone becomes the mat: to pass a level you hold your balance, even out your breath and sit in stillness.",
+   "cta1": "Join the whitelist",
+   "cta2": "Try the prototype",
+   "cta3": "Support"
+  },
+  "manifest": {
+   "kicker": "Manifesto",
+   "title": "What we believe in, making this game",
+   "items": [
+    {
+     "t": "Practice is the game.",
+     "d": "You don't pass the tree by pressing a button: you stand and keep your balance. Breath isn't levelled up with points: you breathe."
+    },
+    {
+     "t": "The path doesn't begin with asana.",
+     "d": "The first land is a village: five houses of yama and five of niyama. First, how to live with others and with yourself. That's where Patañjali's eight limbs begin."
+    },
+    {
+     "t": "A mistake is a teacher too.",
+     "d": "A wrong choice takes nothing away. The scene starts over, the mentor gives a hint, and you try again."
+    },
+    {
+     "t": "Words from the source texts.",
+     "d": "Every scroll in the game is a line from the ancient texts in Sanskrit, with transliteration and translation, checked against the tradition. No later embellishments."
+    },
+    {
+     "t": "Stillness is a mechanic too.",
+     "d": "In the quiet pool the silt settles only while you stay still. The longer the silence, the clearer the water."
+    },
+    {
+     "t": "The world is woven from signs.",
+     "d": "Every figure in the game is made of thousands of tiny Devanagari signs. From afar it's a person, a tree, a serpent. Up close, it's script."
+    },
+    {
+     "t": "No rush.",
+     "d": "No survival timers, no leaderboard race. The pace is set by your breath."
+    }
+   ]
+  },
+  "lands": {
+   "kicker": "The world",
+   "title": "Lands of the first path",
+   "items": [
+    {
+     "tag": "yama · niyama",
+     "t": "The village",
+     "d": "Two gates, ten houses. Each has a resident, a choice of three answers and a short practice. The reward is a scroll from the Yoga Sūtras."
+    },
+    {
+     "tag": "vṛkṣāsana",
+     "t": "Tree by the water",
+     "d": "Tree pose. The wind sways the figure and you hold it steady by tilting the phone. Steadiness and ease are scored separately."
+    },
+    {
+     "tag": "prāṇāyāma",
+     "t": "Tide stone",
+     "d": "Breath by touch: hold the screen to inhale, release to exhale. The water rises and falls with you. One rhythm includes the retention, kumbhaka."
+    },
+    {
+     "tag": "dhyāna",
+     "t": "The quiet pool",
+     "d": "Meditation for 1, 3 or 5 minutes. Every movement stirs the silt, stillness lets it settle, and the moon appears in the water."
+    },
+    {
+     "tag": "bhujaṅgāsana",
+     "t": "Serpent's trail",
+     "d": "A serpent waits on the trail. You don't drive it away: you breathe evenly beside it until it calms. Then it shows you its pose."
+    },
+    {
+     "tag": "ṣaṭ-cakra",
+     "t": "Temple on the hill",
+     "d": "Opens once the path is walked. Seven centres light up one by one with their bīja syllables, as in the Ṣaṭ-cakra-nirūpaṇa."
+    }
+   ]
+  },
+  "how": {
+   "kicker": "How it plays",
+   "title": "Your phone is the mat",
+   "items": [
+    {
+     "ico": "स्थिर",
+     "t": "Tilt and balance",
+     "d": "The gyroscope feels how steady you are. Without sensors everything works by touch."
+    },
+    {
+     "ico": "प्राण",
+     "t": "Breath by touch",
+     "d": "Hold the screen to inhale, release to exhale. The game leads the rhythm and shows how closely you followed it."
+    },
+    {
+     "ico": "ध्यान",
+     "t": "Stillness",
+     "d": "Put the phone down and leave it. Time spent in stillness is the score."
+    },
+    {
+     "ico": "विद्या",
+     "t": "Choices and scrolls",
+     "d": "Visual-novel dialogue, a mentor, villagers. Every step you pass adds a scroll to your collection."
+    }
+   ],
+   "quote": "Yoga is the stilling of the movements of the mind.",
+   "src": "Patañjali's Yoga Sūtras 1.2",
+   "sources": [
+    "Yoga Sūtras",
+    "Haṭha Yoga Pradīpikā",
+    "Gheraṇḍa Saṃhitā",
+    "Kaṭha Upaniṣad",
+    "Bhagavad Gītā",
+    "Ṣaṭ-cakra-nirūpaṇa"
+   ]
+  },
+  "roadmap": {
+   "kicker": "Roadmap",
+   "title": "Where the path leads",
+   "items": [
+    {
+     "t": "Prototype",
+     "d": "The yama and niyama village, five practices, scrolls, 8-bit music, figures made of signs. Playable now."
+    },
+    {
+     "t": "Whitelist and first testers",
+     "d": "Gathering the first players and listening to where the path is hard and where it's too easy."
+    },
+    {
+     "t": "New lands",
+     "d": "Schools and teachers, paramparā, encounters with animals, new asanas and pranayamas."
+    },
+    {
+     "t": "Voice and sound",
+     "d": "Voiced mentor, soundscapes for each land, a full English version."
+    },
+    {
+     "t": "The app",
+     "d": "App Store and Google Play versions, progress synced across devices."
+    },
+    {
+     "t": "The full path",
+     "d": "All six lands, from the first village to the temple on the hill."
+    }
+   ]
+  },
+  "donate": {
+   "kicker": "Support",
+   "title": "Help the path happen",
+   "text": "The game is made by one person: texts, practices and checking against the source texts. If this path speaks to you, you can support its development.",
+   "note": "Every contribution goes to development, sound and text research."
+  },
+  "final": {
+   "title": "First players get in first",
+   "text": "Leave your contact on the whitelist — we'll send early access when the next land opens, and ask how the path feels.",
+   "cta": "Join the whitelist"
+  },
+  "footer": "Yogi's Path · prototype · 2026"
+ }
+}

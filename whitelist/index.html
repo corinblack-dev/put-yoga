@@ -43,6 +43,14 @@ input:focus,select:focus{outline:none;border-color:rgba(232,184,106,.7)}
 .err{color:#e0907a;font-size:13px;display:none}
 html[lang=ru] [data-l=en],html[lang=en] [data-l=ru]{display:none!important}
 @media (max-width:420px){.row{grid-template-columns:1fr}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+h1{animation:rise 1.2s .1s ease both}.lead{animation:rise 1.2s .25s ease both}form{animation:rise 1.2s .4s ease both}
+.btn{position:relative;overflow:hidden}.btn::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,236,190,.22),transparent);animation:shine 4.5s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+.chips label{transition:border-color .25s,background .25s}.chips label:has(input:checked){border-color:rgba(232,184,106,.7);background:rgba(232,184,106,.08)}
+input,select{transition:border-color .3s,box-shadow .3s}input:focus,select:focus{box-shadow:0 0 0 3px rgba(232,184,106,.12)}
+.ok{animation:rise .9s ease both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
@@ -87,7 +95,10 @@ html[lang=ru] [data-l=en],html[lang=en] [data-l=ru]{display:none!important}
 <script>
 // endpoint: адрес формы Formspree (https://formspree.io/f/XXXX) или Google Apps Script. Пока пусто — заявки не уходят.
 const CONFIG={endpoint:'',instagram:''};
-document.querySelectorAll('[data-ig]').forEach(a=>{if(CONFIG.instagram)a.href=CONFIG.instagram;else a.style.display='none';});
+document.querySelectorAll('[data-ig]').forEach(a=>a.style.display='none');
+fetch('../landing/content.json?'+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(j=>{const L=j.links||{};CONFIG.endpoint=L.formspree||'';CONFIG.instagram=L.instagram||'';
+  document.querySelectorAll('[data-ig]').forEach(a=>{if(CONFIG.instagram){a.href=CONFIG.instagram;a.style.display='';}});
+  if(L.telegram)document.querySelectorAll('a[href^="https://t.me/"]').forEach(a=>a.href=L.telegram);}).catch(()=>{});
 function setLang(l){document.documentElement.lang=l;document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.set===l));try{localStorage.setItem('py.lang',l);}catch(e){}}
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.set));
 let L=null;try{L=localStorage.getItem('py.lang');}catch(e){}setLang(new URLSearchParams(location.search).get('lang')||L||((navigator.language||'').startsWith('ru')?'ru':'en'));
