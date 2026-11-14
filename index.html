@@ -516,6 +516,13 @@ const IRON=pal([[16,16,18],[44,46,50],[86,90,96],[140,146,152],[200,206,212]]);
 const CLOTH=pal([[40,8,12],[110,24,30],[180,50,48],[226,110,80],[250,190,150]]);
 const PINKP=pal([[50,20,30],[140,70,90],[220,140,160],[250,210,220],[255,245,248]]);
 const WOOL=pal([[40,26,16],[104,72,44],[164,120,76],[212,174,126],[242,222,188]]);
+SC.fruit=()=>{ const cx=195,cy=500,r=46;
+  SS([ell(cx,cy,r,r*0.94)],TERRA,{depth:r*0.8,kl:0.7,amb:0.24,rimB:0.78,light:[-0.5,-0.75],
+    pat:(x,y,d,b)=>b*(0.82+0.26*fbm(x/9,y/9))});
+  SS([cap(cx+4,cy-r*0.86,cx+9,cy-r*1.3,4,3)],WOOD,{pat:woodV,amb:0.3,depth:4});
+  SS([ell(cx+26,cy-r*1.06,17,8,-0.45)],MOSS,{amb:0.3,kl:0.6,depth:6,rimB:0.7,
+    pat:(x,y,d,b)=>b*(0.75+0.35*Math.abs(Math.sin((x-cx)/3)))});
+  render({r:1.5,a:0.14});radial(cx-r*0.35,cy-r*0.35,r*0.7,'255,220,170',0.16);};
 const MOONP=pal([[26,30,44],[86,96,122],[150,160,184],[208,216,232],[250,252,255]]);
 SC.moon=()=>{ const cx=195,cy=300,R=86;
   SS([ell(cx,cy,R,R)],MOONP,{amb:0.7,kd:0.14,kl:0.2,depth:R*0.55,rimB:0.45,light:[-0.3,-0.35],glow:true,
@@ -527,6 +534,26 @@ SC.moon=()=>{ const cx=195,cy=300,R=86;
   render({r:1.8,a:0.1});
   radial(cx,cy,R*2.8,'185,200,245',0.1);radial(cx,cy,R*1.3,'226,236,255',0.11);};
 const LT=[-0.5,-0.8];
+function bladeArc(cx,cy,L,B,palf,o){ o=o||{};
+  const sweep=Math.PI*0.92*Math.max(0.025,B),R=L/sweep,N=30,rot=o.rot||0,sq=o.sq==null?1:o.sq,a0=-sweep/2,P=[];
+  const pt=u=>{const a=a0+sweep*u,x=Math.sin(a)*R,y=(Math.cos(a)-1)*R*sq,c=Math.cos(rot),s2=Math.sin(rot);
+    return [cx+x*c-y*s2,cy+x*s2+y*c];};
+  for(let i=0;i<N-1;i++){const u=i/(N-1),u2=(i+1)/(N-1);
+    const th=Math.max(0.9,lerp(L*0.045,L*0.007,Math.pow(u,0.7)));
+    const [x1,y1]=pt(u),[x2,y2]=pt(u2);P.push(cap(x1,y1,x2,y2,th,th*0.9));}
+  SS(P,palf,Object.assign({k:L*0.015,depth:L*0.04,kl:0.74,amb:0.2,rimB:0.85,light:[-0.4,-0.9]},o));
+  return [pt(0),pt(0.06)];}
+SC.blank=(bend,hot)=>{ const B=bend==null?0:clamp(bend,0,1),Hh=hot==null?0:clamp(hot,0,1);
+  const cx=195,cy=470,L=300,palf=Hh>0.25?HOTM:IRON;
+  const [h0,h1]=bladeArc(cx,cy,L,B,palf,{rot:0.13,sq:-0.6,
+    amb:lerp(0.18,0.46,Hh),kd:0.28,kl:lerp(0.8,0.42,Hh),rimB:lerp(0.9,0.7,Hh),glow:true,
+    emit:Hh>0.12?(x,y)=>0.3*Hh*Math.exp(-((y-cy+40)**2)/(2*110*110)):null});
+  if(B>0.62){const k=(B-0.62)/0.38,dx=h0[0]-h1[0],dy=h0[1]-h1[1],Ln=Math.hypot(dx,dy)||1,ux=dx/Ln,uy=dy/Ln;
+    SS([cap(h0[0]+ux*4,h0[1]+uy*4,h0[0]+ux*16,h0[1]+uy*16,8,7.5)],IRON,{depth:8,kl:0.75,amb:0.3,rimB:0.8,pat:grain(3)});
+    SS([cap(h0[0]+ux*16,h0[1]+uy*16,h0[0]+ux*(16+52*k),h0[1]+uy*(16+52*k),9,8)],WOOD,{pat:woodH,depth:10,kl:0.72,amb:0.3,rimB:0.7});}
+  render({r:1.7,a:0.2});
+  if(Hh>0.1)radial(cx,cy-24,170*Hh,'255,140,50',0.22*Hh);};
+
 function sickleShape(sx,sy,R,palf,o){ o=o||{};
   const sq=o.sq==null?0.52:o.sq,rt=o.rot||0,ca=Math.cos(rt),sa=Math.sin(rt);
   const A0=Math.PI*1.02,A1=Math.PI*1.97,N=30,P=[];
@@ -581,88 +608,22 @@ SC.basket=()=>{ const cx=195,b=624,w=104,h=104,top=b-h;
   const mr=mat({pal:SAND});for(let i=0;i<46;i++)dot(cx+76+hash(i,4)*34,b-8+hash(i,5)*30,0.5+0.4*hash(i,6),mr,false);
   render({r:1.5,a:0.14});};
 
-SC.diya=(fh)=>{ const cx=190,b=606,F=fh==null?1:clamp(fh,0,1.6);
+SC.diya=(fh)=>{ const cx=195,b=606,F=fh==null?1:clamp(fh,0,1.6);
   SS([ell(cx,b-26,72,26)],TERRA,{cut:[box(cx,b-82,112,56)],pat:grain(4),depth:14,kl:0.65});
-  SS([cap(cx+58,b-28,cx+94,b-40,10,5)],TERRA,{pat:grain(4),depth:6,kl:0.65});
-  SS([ell(cx,b-26,72,9)],TERRA,{amb:0.4,kl:0.4,rimB:0.7});SS([ell(cx,b-25,62,6)],GOLD,{amb:0.45,kd:0.1,kl:0.3,rimB:0.6,glow:true});
+  SS([cap(cx+58,b-28,cx+92,b-38,10,5)],TERRA,{pat:grain(4),depth:6,kl:0.65});
+  SS([ell(cx,b-26,72,9)],TERRA,{amb:0.4,kl:0.4,rimB:0.7});
   SS([ell(cx,b-5,30,7)],TERRA,{pat:grain(4)});
-  if(F>0.08)flame(cx+94,b-42,86*F,12*(0.6+0.4*F));render({r:1.5,a:0.14});
-  if(F>0.08){radial(cx+94,b-46-40*F,112*F,'255,190,90',0.19*F);radial(cx+94,b-44-30*F,32*F,'255,240,200',0.28*F);}
-  else radial(cx+94,b-44,30,'255,190,90',0.06);};
+  const WAX=pal([[60,50,36],[150,130,100],[220,200,166],[246,234,206],[255,250,236]]);
+  const ch=lerp(78,34,clamp(1.35-F,0,1));
+  SS([box(cx-4,b-30-ch/2,21,ch/2,6),cap(cx-22,b-32-ch,cx-24,b-18-ch,4,3),cap(cx+14,b-34-ch,cx+17,b-12-ch,4,3)],WAX,
+    {k:4,amb:0.34,kd:0.3,kl:0.5,rimB:0.72,depth:14,emit:(x,y)=>0.3*Math.exp(-((y-(b-34-ch))**2)/(2*20*20))});
+  SS([ell(cx-4,b-30-ch,20,6)],WAX,{amb:0.45,kl:0.5,rimB:0.8});
+  SS([cap(cx-4,b-32-ch,cx-4,b-41-ch,1.2,1)],INK,{amb:0.2});
+  if(F>0.08)flame(cx-4,b-36-ch,78*F,11*(0.62+0.38*F));
+  render({r:1.5,a:0.14});
+  if(F>0.08){radial(cx-4,b-42-ch-34*F,116*F,'255,190,90',0.2*F);radial(cx-4,b-40-ch-26*F,32*F,'255,240,200',0.3*F);}
+  else radial(cx-4,b-34-ch,26,'255,190,90',0.05);};
 
-SC.well=()=>{ const cx=195,b=650;
-  const brick=(x,y,d,bb)=>{const row=Math.floor(y/10),xx=x+(row%2)*10;return ((y%10)<1.7||(xx%20)<1.7)?bb*0.35:bb*(0.8+0.3*fbm(x/4,y/4));};
-  SS([box(cx,b-48,96,48,4)],STONE,{pat:brick,depth:32,kl:0.6,amb:0.2,light:[-0.8,-0.3]});
-  SS([ell(cx,b-96,100,18)],STONE,{pat:grain(4),amb:0.3,kl:0.6,rimB:0.7});
-  SS([ell(cx,b-96,84,13)],SEA,{amb:0.35,kd:0.2,kl:0.4,rimB:0.6,glow:true,pat:(x,y,d,bb)=>bb*(0.7+0.4*Math.sin(x/5+y))});
-  SS([box(cx-84,b-150,5.5,54,2)],WOOD,{pat:woodV});SS([box(cx+84,b-150,5.5,54,2)],WOOD,{pat:woodV});
-  SS([box(cx,b-202,94,5.5,2)],WOOD,{pat:woodH,amb:0.25});
-  const mr=mat({pal:SAND});curve([[cx,b-197],[cx,b-130]],mr,0.55,false);SS([ell(cx,b-122,11,10)],TERRA,{amb:0.3});
-  render({r:1.5,a:0.14});};
-
-SC.lota=()=>{ const cx=195,b=636,r=58;
-  SS([ell(cx,b-r,r,r*0.9),cap(cx,b-r*1.7,cx,b-r*2.1,r*0.42,r*0.38)],GOLD,{k:r*0.2,depth:r*0.7,amb:0.2,kd:0.3,kl:0.7,rimB:0.75,glow:true,
-    pat:(x,y,d,bb)=>bb*(0.8+0.3*Math.abs(Math.sin((y-b)/3.2)))});
-  SS([ell(cx,b-r*2.15,r*0.62,r*0.14)],GOLD,{amb:0.4,kl:0.7,rimB:0.85});SS([ell(cx,b-r*0.08,r*0.55,r*0.12)],GOLD,{amb:0.25});
-  render({r:1.5,a:0.14});radial(cx,b-r,70,'255,220,150',0.12);};
-
-SC.sickle=()=>{ const sx=196,sy=496,R=104;
-  sickleShape(sx,sy,R,IRON,{rot:-0.16});
-  render({r:1.6,a:0.18});};
-
-SC.boat=()=>{ const cx=195,y=560,w=138;
-  SS([ell(cx,y,w,w*0.32),cap(cx-w*0.92,y-2,cx-w*1.12,y-w*0.26,8,5),cap(cx+w*0.92,y-2,cx+w*1.12,y-w*0.26,8,5)],WOOD,
-    {cut:[box(cx,y-w*0.3,w*1.3,w*0.3)],k:12,pat:woodH,depth:12,kl:0.65,amb:0.2});
-  SS([ell(cx,y-1,w*0.96,w*0.05)],WOOD,{amb:0.35,kl:0.6,rimB:0.7});
-  SS([ell(cx-w*0.62,y-26,6,8)],GOLD,{amb:0.6,glow:true});
-  render({r:1.5,a:0.14});radial(cx-w*0.62,y-26,46,'255,210,120',0.26);};
-
-SC.treepose=()=>{ const cx=200,b=800,X=u=>cx+u,Y=u=>b-u;
-  const P=[ell(X(0),Y(598),19,25),ell(X(2),Y(582),14,13),cap(X(0),Y(570),X(0),Y(546),7.5,8.5),
-    cap(X(-14),Y(548),X(-40),Y(530),7,10),cap(X(14),Y(548),X(40),Y(530),7,10),
-    ell(X(0),Y(492),33,46),ell(X(-11),Y(500),12,10),ell(X(11),Y(500),12,10),
-    cap(X(0),Y(462),X(2),Y(412),27,22),ell(X(4),Y(386),37,30,0.06),ell(X(-12),Y(355),16,13),ell(X(20),Y(355),16,13),
-    cap(X(16),Y(370),X(16),Y(222),18,11),ell(X(17),Y(300),15,56),ell(X(15),Y(214),10,12),
-    cap(X(15),Y(206),X(13),Y(44),10,5.5),ell(X(11),Y(145),10.5,38),cap(X(13),Y(42),X(13),Y(26),6,6),ell(X(22),Y(14),18,7,0.04),
-    cap(X(-12),Y(372),X(-104),Y(296),17,10),ell(X(-58),Y(334),40,13,-0.69),ell(X(-106),Y(292),10,11),
-    cap(X(-104),Y(290),X(-4),Y(296),9,5.5),ell(X(-58),Y(288),32,9,-0.05),ell(X(2),Y(304),6,15,0.2),
-    cap(X(-36),Y(532),X(-58),Y(624),9.5,7),ell(X(-48),Y(578),9,24,0.24),cap(X(-58),Y(624),X(-6),Y(700),7,4.5),
-    cap(X(36),Y(532),X(58),Y(624),9.5,7),ell(X(48),Y(578),9,24,-0.24),cap(X(58),Y(624),X(6),Y(700),7,4.5),ell(X(0),Y(714),7,20)];
-  SS(P,GOLD,{k:12,amb:0.22,kd:0.33,kl:0.5,depth:16,rimB:0.62,light:[-0.35,-0.95],glow:true,
-    emit:(x,y)=>0.18*Math.exp(-((x-cx)**2+(y-Y(450))**2)/(2*40*40))});
-  render({r:1.8,a:0.22});radial(cx,Y(714),70,'255,220,120',0.33);};
-
-SC.cobra=(L)=>{ L=L==null?0.85:L;const G=620,P0=[222,G-16],th=lerp(0.04,0.6,L);
-  const dir=a=>[-Math.cos(a),-Math.sin(a)],seg=(p,a,len)=>{const [dx,dy]=dir(a);return [p[0]+dx*len,p[1]+dy*len];};
-  const W1=seg(P0,th*0.45,44),C1=seg(W1,th*0.95,62),S1=seg(C1,th*1.05,26),N1=seg(S1,th*1.1+0.12,16),Hd=seg(N1,th*0.55+0.05,18);
-  const tF=lerp(0.04,0.6,0.85),W2=seg(P0,tF*0.45,44),C2=seg(W2,tF*0.95,62),S2=seg(C2,tF*1.05,26),Hn=[S2[0]+26,G-5];
-  const ua=48,fa=44;let dx=Hn[0]-S1[0],dy=Hn[1]-S1[1],d=Math.min(Math.hypot(dx,dy),ua+fa-0.5);
-  const a0=Math.atan2(dy,dx),ac=Math.acos(clamp((ua*ua+d*d-fa*fa)/(2*ua*d),-1,1));
-  const Ea=[S1[0]+Math.cos(a0-ac)*ua,S1[1]+Math.sin(a0-ac)*ua],Eb=[S1[0]+Math.cos(a0+ac)*ua,S1[1]+Math.sin(a0+ac)*ua],E=Ea[0]>Eb[0]?Ea:Eb;
-  const P=[cap(230,G-15,300,G-11,17,11),ell(265,G-15,36,13,0.05),cap(300,G-11,358,G-8,10,6),ell(332,G-12,24,8,0.04),ell(366,G-6,14,5,0.1),
-    ell(P0[0]+4,P0[1],32,19,-th*0.2),ell(P0[0]+18,P0[1]-12,20,13,-th*0.2),
-    cap(P0[0],P0[1],W1[0],W1[1],22,21),cap(W1[0],W1[1],C1[0],C1[1],22,25),
-    ell(C1[0]+Math.cos(th)*14,C1[1]+Math.sin(th)*14,30,23,th),
-    ell(C1[0]+Math.cos(th)*10+Math.sin(th)*14,C1[1]+Math.sin(th)*10+Math.cos(th)*14,13,10,th),
-    cap(C1[0],C1[1],S1[0],S1[1],22,15),cap(S1[0],S1[1],N1[0],N1[1],8,7),
-    ell(Hd[0],Hd[1],20,17,th*0.6),ell(Hd[0]+Math.cos(th)*10,Hd[1]-12,10,9)];
-  SS(P,GOLD,{k:10,amb:0.16,kd:0.3,kl:0.38,depth:14,rimB:0.45,light:[-0.3,1],emit:(x,y)=>0.08*L*Math.exp(-((x-C1[0])**2+(y-C1[1])**2)/(2*30*30))});
-  SS([cap(S1[0],S1[1],E[0],E[1],9,6.5),cap(E[0],E[1],Hn[0],Hn[1],6.5,4.5),ell(Hn[0]-6,Hn[1]+1,12,4)],GOLD,
-    {k:4,amb:0.22,kd:0.35,kl:0.45,depth:6,rimB:0.7,rim:CS*1.2,light:[-0.3,1],gap:true,over:true});
-  render({r:1.8,a:0.22});radial(C1[0],C1[1],80,'255,210,120',0.07+0.09*L);};
-
-SC.lotus=(ph)=>{ ph=ph==null?0.5:ph;const br=0.5-0.5*Math.cos(ph*Math.PI*2),fx=195,fy=560,mf=mat({pal:PINKP}),open=lerp(0.18,1,br);
-  const petal=(ang,len,wid,b0)=>{const a=ang*open;paint({prims:[ell(fx+Math.sin(a)*len*0.5,fy-Math.cos(a)*len*0.5,wid,len*0.55,a)]},
-    {m:mf,amb:0.28+b0,kd:0.35,kl:0.5,depth:10,rimB:0.72,light:[-0.4,-0.8]});};
-  for(const a of [-1.55,1.55,-1.25,1.25])petal(a,80,20,-0.05);
-  for(const a of [-0.95,0.95,-0.6,0.6])petal(a,92,21,0);
-  for(const a of [-0.3,0.3,0])petal(a,100,22,0.05);
-  if(br>0.45){const k=(br-0.45)/0.55;SS([ell(fx,fy-32*k,20*k,11*k)],GOLD,{amb:0.4,kl:0.6,rimB:0.8,glow:true});}
-  SS([ell(fx,fy+10,50,14)],LEAF,{amb:0.3,kl:0.5});
-  render({r:1.6,a:0.18});radial(fx,fy-36,130*(0.6+0.4*br),'255,200,210',0.05+0.05*br);radial(fx,fy-24,40,'255,240,220',0.08*br);};
-
-
-/* ---------- вещи старика, полотно, кузница ---------- */
 SC.elder=()=>{ const cx=195,cy=448,X=v=>cx+(v-195),Y=v=>cy+(v-450);
   SS([box(cx,Y(574),150,13,7)],CLOTH,{depth:7,kl:0.5,amb:0.16,pat:(x,y,d,b)=>b*(Math.abs(Math.sin(x/7))<0.2?1.4:0.8)});
   SS([ell(X(195),Y(318),30,36),cap(X(195),Y(350),X(195),Y(372),8,9.5),ell(X(195),Y(392),62,19),
@@ -715,6 +676,41 @@ SC.loom=(fill)=>{ const cx=195,b=660,f=fill==null?0.55:clamp(fill,0.08,0.95);
   SS([ell(cx+44,yT-20,32,5),cap(cx+12,yT-20,cx+76,yT-20,3,3)],GOLD,{amb:0.35,kl:0.6,rimB:0.8,glow:true});
   render({r:1.5,a:0.14});};
 
+SC.well=()=>{ const cx=195,b=650;
+  const brick=(x,y,d,bb)=>{const row=Math.floor(y/10),xx=x+(row%2)*10;return ((y%10)<1.7||(xx%20)<1.7)?bb*0.35:bb*(0.8+0.3*fbm(x/4,y/4));};
+  SS([box(cx,b-48,96,48,4)],STONE,{pat:brick,depth:32,kl:0.6,amb:0.2,light:[-0.8,-0.3]});
+  SS([ell(cx,b-96,100,18)],STONE,{pat:grain(4),amb:0.3,kl:0.6,rimB:0.7});
+  SS([ell(cx,b-96,84,13)],SEA,{amb:0.35,kd:0.2,kl:0.4,rimB:0.6,glow:true,pat:(x,y,d,bb)=>bb*(0.7+0.4*Math.sin(x/5+y))});
+  SS([box(cx-84,b-150,5.5,54,2)],WOOD,{pat:woodV});SS([box(cx+84,b-150,5.5,54,2)],WOOD,{pat:woodV});
+  SS([box(cx,b-202,94,5.5,2)],WOOD,{pat:woodH,amb:0.25});
+  const mr=mat({pal:SAND});curve([[cx,b-197],[cx,b-130]],mr,0.55,false);SS([ell(cx,b-122,11,10)],TERRA,{amb:0.3});
+  render({r:1.5,a:0.14});};
+
+const BRASSD=pal([[12,11,9],[38,34,26],[68,62,48],[100,92,72],[132,124,100]]);
+SC.lota=(cl)=>{ const c=cl==null?1:clamp(cl,0,1),cx=195,b=636,r=58;
+  const grime=(x,y,d,bb)=>{const n=fbm(x/6.5+2,y/6.5-1),g=(1-c)*(n>0.48?0.78:0.4);
+    return bb*(0.78+0.34*Math.abs(Math.sin((y-b)/3.2)))*(1-g);};
+  const P=[ell(cx,b-r,r,r*0.9),cap(cx,b-r*1.7,cx,b-r*2.1,r*0.42,r*0.38)];
+  SS(P,c>0.42?GOLD:BRASSD,{k:r*0.2,depth:r*0.7,amb:lerp(0.11,0.26,c),kd:lerp(0.2,0.32,c),kl:lerp(0.32,0.82,c),
+    rimB:lerp(0.38,0.9,c),glow:c>0.42,pat:grime,
+    emit:c>0.45?(x,y)=>0.26*(c-0.45)/0.55*Math.exp(-((x-(cx-r*0.38))**2+(y-(b-r*1.26))**2)/(2*(r*0.34)**2)):null});
+  SS([ell(cx,b-r*2.15,r*0.62,r*0.14)],c>0.42?GOLD:BRASSD,{amb:lerp(0.15,0.5,c),kl:lerp(0.32,0.8,c),rimB:lerp(0.4,0.95,c)});
+  SS([ell(cx,b-r*0.08,r*0.55,r*0.12)],c>0.42?GOLD:BRASSD,{amb:lerp(0.12,0.3,c)});
+  if(c>0.55){const k=(c-0.55)/0.45;SS([ell(cx-r*0.4,b-r*1.3,r*0.17*k,r*0.26*k,0.35)],
+    pal([[120,90,20],[220,180,80],[255,235,170],[255,250,230],[255,255,255]]),{amb:0.75*k,kd:0.1,kl:0.15,rimB:0.3,glow:true,emit:()=>0.5*k});}
+  render({r:1.5,a:0.14});radial(cx,b-r,74,'255,220,150',0.02+0.16*c);};
+
+SC.sickle=()=>{ const sx=196,sy=496,R=104;
+  sickleShape(sx,sy,R,IRON,{rot:-0.16});
+  render({r:1.6,a:0.18});};
+
+SC.boat=()=>{ const cx=195,y=560,w=138;
+  SS([ell(cx,y,w,w*0.32),cap(cx-w*0.92,y-2,cx-w*1.12,y-w*0.26,8,5),cap(cx+w*0.92,y-2,cx+w*1.12,y-w*0.26,8,5)],WOOD,
+    {cut:[box(cx,y-w*0.3,w*1.3,w*0.3)],k:12,pat:woodH,depth:12,kl:0.65,amb:0.2});
+  SS([ell(cx,y-1,w*0.96,w*0.05)],WOOD,{amb:0.35,kl:0.6,rimB:0.7});
+  SS([ell(cx-w*0.62,y-26,6,8)],GOLD,{amb:0.6,glow:true});
+  render({r:1.5,a:0.14});radial(cx-w*0.62,y-26,46,'255,210,120',0.26);};
+
 SC.forge=(hot)=>{ const cx=195,b=640,L=hot==null?1:clamp(hot,0,1);
   SS([rock(cx-98,b-36,70,38,3,0,0.1)],STONE,{pat:grain(5),depth:16,kl:0.5,amb:0.12});
   if(L>0.05)for(let r=Math.floor((b-124)/CS);r<(b-46)/CS;r++)for(let c=Math.floor((cx-166)/CS);c<(cx-30)/CS;c++){
@@ -734,7 +730,7 @@ SC.forge=(hot)=>{ const cx=195,b=640,L=hot==null?1:clamp(hot,0,1);
 function bake(name,z,dpr){
   CS=3.0/z;COLS=Math.ceil(W/CS);ROWS=Math.ceil(H/CS);BR=new Float32Array(COLS*ROWS);MAT=new Int16Array(COLS*ROWS).fill(-1);GL=new Uint8Array(COLS*ROWS);MATS.length=0;SEED=7;
   cv=document.createElement('canvas');const px=dpr*z;cv.width=Math.ceil(W*px);cv.height=Math.ceil(H*px);ctx=cv.getContext('2d');ctx.scale(px,px);
-  {const q=String(name).split('#');SC[q[0]](q.length>1?+q[1]:undefined);}
+  {const q=String(name).split('#'),f=SC[q[0]];if(!f){console.warn('нет сцены: '+name);}else f.apply(null,q.slice(1).map(Number));}
   const occ=new Uint8Array(COLS*ROWS);let c0=COLS,c1=0,r0=ROWS,r1=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(MAT[r*COLS+c]>=0){occ[r*COLS+c]=1;if(c<c0)c0=c;if(c>c1)c1=c;if(r<r0)r0=r;if(r>r1)r1=r;}
   return {cv,occ,cols:COLS,rows:ROWS,cs:CS,bb:[c0*CS,r0*CS,(c1+1)*CS,(r1+1)*CS]};
 }
@@ -1428,7 +1424,7 @@ const FIG_POT=mkFig([['e',0,0.0,0.19,0.23],['c',0,0.2,0,0.3,0.1],['e',0,0.31,0.1
 const FIG_BOAT=mkFig([['c',-0.42,0,0.42,0,0.05],['e',0,-0.03,0.44,0.085],['o',0.05,0.1,0.06],['c',0.05,0.12,0.05,0.26,0.03]],0.02);FIG_BOAT.spr={n:'boat',ax:195,ay:560,u:313};
 const FIG_HOUSE=mkFig([['e',0,-0.04,0.28,0.24],['c',-0.4,0.12,0,0.52,0.05],['c',0.4,0.12,0,0.52,0.05],['e',0,0.24,0.12,0.12]],0.02);
 FIG_HOUSE.spr={n:'house',ax:110,ay:575,u:300};
-const FIG_LAMP=mkFig([['e',0,0,0.12,0.05],['c',0,0.03,0,0.1,0.04],['e',0,0.12,0.06,0.02]],0.02);FIG_LAMP.spr={n:'diya',ax:190,ay:580,u:290};
+const FIG_LAMP=mkFig([['e',0,0,0.12,0.05],['c',0,0.03,0,0.1,0.04],['e',0,0.12,0.06,0.02]],0.02);FIG_LAMP.spr={n:'diya',ax:195,ay:580,u:268};
 function stillMech(dur,draw){ // покой: без касаний и без тряски
   let still=0,tt=0;return {done:false,score:0,
     update(dt){tt+=dt;const moving=PT.down||(sensorsLive()&&M.jolt>0.35);M.jolt*=0.9;if(!moving)still+=dt;else still=Math.max(0,still-dt*0.5);this.p=clamp(still/dur,0,1);if(still>=dur){this.done=true;this.score=clamp(1-(tt-dur)/dur,0.3,1);}},
@@ -1467,7 +1463,7 @@ function rubMech(need,draw){ // натереть, потом замереть
     move(){if(PT.down&&st==='rub'){dist+=Math.hypot(PT.x-lx,PT.y-ly);}lx=PT.x;ly=PT.y;},
     down(){lx=PT.x;ly=PT.y;},
     update(dt){this.clean=clamp(dist/need,0,1);if(st==='rub'&&this.clean>=1){st='still';tick(620);hint('Теперь замри: вода должна успокоиться');}
-      if(st==='still'){const moving=PT.down||(sensorsLive()&&M.jolt>0.35);M.jolt*=0.9;if(!moving)still+=dt;else still=Math.max(0,still-dt);this.calm=clamp(still/4,0,1);if(still>=(FAST?1:3)){this.done=true;this.score=1;}}},
+      if(st==='still'){const moving=PT.down||(sensorsLive()&&M.jolt>0.35);M.jolt*=0.9;if(!moving)still+=dt;else still=Math.max(0,still-dt);this.calm=clamp(still/4,0,1);if(still>=(FAST?1:3)){this.done=true;this.score=1;}}this.st=st;},
     render(t){draw(t,this.clean||0,this.calm||0,st);}};
 }
 function forgeMech(draw){ // держать в огне до нужного цвета, затем три удара
@@ -1531,7 +1527,9 @@ const HOUSES=[
      {t:'Поднять и съесть',reply:'Хозяин видит из окна и закрывает ставни.'},
      {t:'Собрать и отнести к калитке',ok:true}],
    task:'Наклоняй телефон, чтобы корзина ловила падающие плоды. Нужно пять.',
-   mech:()=>catchMech(FAST?2:3,(t,m)=>{for(const f of m.fr)putC(px2c(f.x*W),py2r(f.y*H),'o',PAL.amber[6]);const bx=m.bx*W;drawFig(mkFig([['e',0,0,0.4,0.1],['c',-0.38,0.05,-0.3,0.3,0.03],['c',0.38,0.05,0.3,0.3,0.03],['c',-0.3,0.3,0.3,0.3,0.03]],0.02),bx,H*0.8,Math.min(W*0.4,H*0.24),0,PAL.amber,RD);
+   mech:()=>catchMech(FAST?2:3,(t,m)=>{
+     for(const f of m.fr)drawSprite('fruit',195,500,f.x*W,f.y*H,Math.min(W*0.0011,H*0.0005),0,1,false);
+     const bx=m.bx*W;drawFig(FIG_BASKET,bx,H*0.8,Math.min(W*0.44,H*0.26),0,PAL.amber,RD);
      if(m.shown!==m.got){m.shown=m.got;center('<div class="mid">'+(m.got||0)+' из '+(FAST?2:3)+'</div>');}for(let c=0;c<COLS;c++)if(hash(c,1)<0.5)putC(c,py2r(H*0.08),'&',PAL.grass[5]);landscape(t,{stars:0.0,grass:0.86});}),
    end:'То, что ты не взял, пришло само.',scroll:'ys2_37'},
   {id:'brahmacharya',fail:['Масла мало, а ночь длинная. Что бережёт огонь?','Сразу всё — и ничего не остаётся к полуночи. Подумай о фитиле.','Барабаны будут и завтра. Светильник — только сегодня.'],rgb:'240,156,96',petals:4,n:'Брахмачарья',short:'Брахмач.',ru:'сбережение силы',who:'Ученик',deva:'ब्रह्मचर्य',
@@ -1560,7 +1558,9 @@ const HOUSES=[
      {t:'Вымыть только снаружи',reply:'Сосуд блестит, а вода в нём всё равно мутная.'},
      {t:'Вымыть снаружи и изнутри',ok:true}],
    task:'Три экран пальцем, сосуд светлеет. Потом замри: вода успокоится, и в ней появится отражение.',
-   mech:()=>rubMech(FAST?W*1.5:W*4,(t,clean,calm,st)=>{const ox=W/2,oy=H*0.6;drawFig(FIG_POT,ox,oy,Math.min(W*0.9,H*0.55),0,clean>0.5?PAL.amber:PAL.path,RD);
+   mech:()=>rubMech(FAST?W*1.5:W*4,(t,m)=>{const ox=W/2,oy=H*0.6,clean=m.clean||0,calm=m.calm||0,st=m.st;
+     const Sp=Math.min(W*0.9,H*0.55)*FIGK;
+     drawSprite('lota#'+(Math.round(clean*8)/8),195,578,ox,oy,Sp/300,0,1,false);
      if(st==='still'){const c0=px2c(ox),r0=py2r(oy-H*0.02);for(let d=-3;d<=3;d++)putC(c0+d,r0,calm>0.8?'~':'-',PAL.water[Math.round(3+calm*4)]);if(calm>0.8)putC(c0,r0-1,'☺',PAL.amberHi[7]);}
      const r=py2r(H*0.16);for(let c=2;c<COLS-2;c++)if(c/COLS<(st==='rub'?clean:calm))putC(c,r,'·',PAL.amber[5]);landscape(t,{stars:0.3,grass:0.84});}),
    end:'Снаружи — песок и вода. Внутри — то, что ты держишь в уме.',scroll:'ys2_41'},
@@ -1586,7 +1586,9 @@ const HOUSES=[
      {t:'Держать до нужного цвета и ударить',ok:true}],
    task:'Держи экран: заготовка греется. Отпусти, когда она в янтарной полосе. Потом три удара.',
    mech:()=>forgeMech((t,m)=>{const cg=COLS-3,rT=py2r(H*0.25),rB=py2r(H*0.75);for(let r=rT;r<=rB;r++){const v=1-(r-rT)/(rB-rT),band=v>=0.55&&v<=0.9;putC(cg,r,band?'█':'│',band?PAL.amber[4]:PAL.stone[3]);}putC(cg-1,Math.round(lerp(rB,rT,m.heat)),'◀',PAL.amber[7]);
-     const ox=W*0.45,oy=H*0.6;drawFig(mkFig([['c',-0.3,0.1,0.1,0.1,0.05],['c',0.1,0.1,0.35,-0.1,0.045],['c',0.35,-0.1,0.3,-0.3,0.035]],0.02),ox,oy,Math.min(W*0.8,H*0.45),0,m.st==='hit'?PAL.amberHi:m.heat>0.55?PAL.amber:PAL.path,RD);
+     const ox=W*0.45,oy=H*0.6,Sb=Math.min(W*0.8,H*0.45)*FIGK;
+     const hits=m.hits||0,bend=m.st==='hit'?Math.min(1,hits/3):0,hot=m.st==='hit'?Math.max(0.15,0.8-hits*0.22):(m.heat||0);
+     drawSprite('blank#'+(Math.round(bend*3)/3)+'#'+(Math.round(hot*8)/8),195,470,ox,oy,Sb/416,0,1,false);
      if(m.st==='heat'){for(let r=py2r(oy+H*0.05);r<py2r(oy+H*0.2);r++)for(let c=px2c(ox-W*0.2);c<px2c(ox+W*0.2);c++)if(hash(c,r+((t*8)|0))<0.3+m.heat*0.4)putC(c,r,'^*'[(hash(r,c)*2)|0],PAL.amber[Math.round(2+m.heat*5)]);}
      if(m.msg)center('<div class="mid">'+m.msg+'</div>');if(m.st==='hit')center('<div class="big">'+'✦'.repeat(m.hits)+'</div>');landscape(t,{stars:0.2,grass:0.88});}),
    end:'Жар нужен, чтобы выгорело лишнее, а не чтобы сгорело всё.',scroll:'ys2_43'},
@@ -1646,7 +1648,7 @@ const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вс�
     landscape(t,{dim:0.45,stars:0.0,grass:0.78});},
   brahmacharya:(t,st)=>{const ox=W*0.26,oy=H*0.66,Sl=Math.min(W*0.58,H*0.35);
     const fh=st==='bad'?0.25+0.55*(0.5+0.5*Math.sin(t*15)):st==='ok'?1.25:1;
-    drawSprite('diya#'+(Math.round(fh*4)/4),190,580,ox,oy,Sl*FIGK/290,0,1,false);
+    drawSprite('diya#'+(Math.round(fh*4)/4),195,580,ox,oy,Sl*FIGK/268,0,1,false);
     if(st!=='t')drawFig(FIG_STAND,W*0.7,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
     const beat=Math.pow(0.5+0.5*Math.sin(t*6),6),loud=st==='t'||st===0||st===1;for(let i=0;i<2;i++){const cx=px2c(W*0.84)+i*4,cy=py2r(H*0.6);putC(cx,cy,beat>0.5&&loud?'●':'◦',PAL.amber[Math.round(3+(loud?beat:0.2)*4)]);putC(cx-1,cy+1,'॥',PAL.stone[4]);putC(cx+1,cy+1,'॥',PAL.stone[4]);}
     moon(W*0.82,H*0.14,st==='ok'?6:2);landscape(t,{dim:0.45,stars:0.4,grass:0.74});},
@@ -1667,7 +1669,7 @@ const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вс�
     landscape(t,{dim:0.45,stars:0.3,grass:0.72});},
   shaucha:(t,st)=>{drawFig(FIG_WELL,W*0.3,H*0.55,Math.min(W*0.6,H*0.36),0,PAL.stone,RD);
     if(st!=='t'&&st!==0)drawFig(FIG_STAND,W*0.58,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
-    drawFig(FIG_POT,W*0.8,H*0.64,Math.min(W*0.4,H*0.26),0,st==='bad'||st==='ok'?PAL.amber:PAL.path,RD);
+    drawSprite('lota#'+(st==='ok'?1:st==='bad'?0.15:0.4),195,578,W*0.8,H*0.64,Math.min(W*0.4,H*0.26)*FIGK/300,0,1,false);
     const c0=px2c(W*0.8),r0=py2r(H*0.6);if(st==='bad'){for(let d=-2;d<=2;d++)putC(c0+d,r0,'≈',PAL.shade[4]);}
     if(st==='ok'){for(let d=-2;d<=2;d++)putC(c0+d,r0,'~',PAL.water[6]);putC(c0,r0-1,'☺',PAL.amberHi[7]);}
     const act=st===0||st===1||st==='q';if(act)for(let i=0;i<4;i++){const k=(t*0.4+i/4)%1,rr=Math.round(2+k*6);for(let a=0;a<12;a++){const an=a/12*Math.PI*2;putC(px2c(W*0.3+Math.cos(an)*rr*CW),py2r(H*0.5+Math.sin(an)*rr*CH*0.5),'~',PAL.water[Math.round(6-k*4)]);}}
