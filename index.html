@@ -513,6 +513,7 @@ const HOTM=pal([[40,8,0],[150,30,0],[230,90,10],[255,180,60],[255,240,180]]);
 const IRON=pal([[16,16,18],[44,46,50],[86,90,96],[140,146,152],[200,206,212]]);
 const CLOTH=pal([[40,8,12],[110,24,30],[180,50,48],[226,110,80],[250,190,150]]);
 const PINKP=pal([[50,20,30],[140,70,90],[220,140,160],[250,210,220],[255,245,248]]);
+const WOOL=pal([[40,26,16],[104,72,44],[164,120,76],[212,174,126],[242,222,188]]);
 const LT=[-0.5,-0.8];
 function SS(prims,palf,o){o=o||{};paint({prims,k:o.k||0,cut:o.cut},Object.assign({m:typeof palf==='number'?palf:mat({pal:palf}),amb:0.18,kd:0.35,kl:0.55,depth:12,rimB:0.6,light:LT},o));}
 const grain=f=>(x,y,d,b)=>b*(0.8+0.35*fbm(x/f,y/f));
@@ -543,23 +544,14 @@ SC.basket=()=>{ const cx=195,b=624,w=104,h=104,top=b-h;
   const mr=mat({pal:SAND});for(let i=0;i<46;i++)dot(cx+76+hash(i,4)*34,b-8+hash(i,5)*30,0.5+0.4*hash(i,6),mr,false);
   render({r:1.5,a:0.14});};
 
-SC.diya=()=>{ const cx=190,b=606;
+SC.diya=(fh)=>{ const cx=190,b=606,F=fh==null?1:clamp(fh,0,1.6);
   SS([ell(cx,b-26,72,26)],TERRA,{cut:[box(cx,b-82,112,56)],pat:grain(4),depth:14,kl:0.65});
   SS([cap(cx+58,b-28,cx+94,b-40,10,5)],TERRA,{pat:grain(4),depth:6,kl:0.65});
   SS([ell(cx,b-26,72,9)],TERRA,{amb:0.4,kl:0.4,rimB:0.7});SS([ell(cx,b-25,62,6)],GOLD,{amb:0.45,kd:0.1,kl:0.3,rimB:0.6,glow:true});
   SS([ell(cx,b-5,30,7)],TERRA,{pat:grain(4)});
-  flame(cx+94,b-42,80,12);render({r:1.5,a:0.14});radial(cx+94,b-78,120,'255,190,90',0.26);radial(cx+94,b-70,34,'255,240,200',0.34);};
-
-SC.loom=()=>{ const cx=195,b=660;
-  const fw=P=>SS(P,WOOD,{pat:woodV,depth:6,kl:0.7,amb:0.2});
-  fw([box(cx-128,b-105,9,105,2)]);fw([box(cx+128,b-105,9,105,2)]);
-  SS([box(cx,b-310,136,8,3)],WOOD,{pat:woodH,amb:0.22,kl:0.7});SS([box(cx,b-62,136,9,3)],WOOD,{pat:woodH,amb:0.22,kl:0.7});
-  const mt=mat({pal:INK});for(let x=cx-116;x<=cx+116;x+=5)curve([[x,b-302],[x,b-168]],mt,0.55,false);
-  SS([box(cx,b-114,118,52,1)],CLOTH,{amb:0.3,kd:0.2,kl:0.4,depth:4,rimB:0.5,
-    pat:(x,y,d,bb)=>{const yy=y-(b-166),bo=yy<11||yy>93,mo=Math.abs(Math.sin((x-cx)/6))*Math.abs(Math.sin(yy/6));return bo?(mo>0.5?0.9:0.55):bb*(0.8+0.2*Math.sin(x/2.5));}});
-  SS([box(cx,b-168,120,3,1)],GOLD,{amb:0.5,rimB:0.8});
-  SS([ell(cx+44,b-188,32,5),cap(cx+12,b-188,cx+76,b-188,3,3)],GOLD,{amb:0.35,kl:0.6,rimB:0.8,glow:true});
-  render({r:1.5,a:0.14});};
+  if(F>0.08)flame(cx+94,b-42,86*F,12*(0.6+0.4*F));render({r:1.5,a:0.14});
+  if(F>0.08){radial(cx+94,b-46-40*F,112*F,'255,190,90',0.19*F);radial(cx+94,b-44-30*F,32*F,'255,240,200',0.28*F);}
+  else radial(cx+94,b-44,30,'255,190,90',0.06);};
 
 SC.well=()=>{ const cx=195,b=650;
   const brick=(x,y,d,bb)=>{const row=Math.floor(y/10),xx=x+(row%2)*10;return ((y%10)<1.7||(xx%20)<1.7)?bb*0.35:bb*(0.8+0.3*fbm(x/4,y/4));};
@@ -581,7 +573,7 @@ SC.sickle=()=>{ const cx=215,cy=520,R=86;
   SS([ell(cx,cy,R,R*0.92,0)],IRON,{cut:[ell(cx+R*0.28,cy-R*0.2,R*0.86,R*0.8),box(cx-R*0.2,cy+R*0.45,R*1.3,R*0.6)],depth:6,kl:0.7,amb:0.2,rimB:0.78});
   SS([cap(cx-R*0.92,cy-R*0.12,cx-R*1.55,cy+R*0.55,10,9)],WOOD,{pat:woodH,amb:0.25,kl:0.7});
   SS([ell(cx-R*0.95,cy-R*0.08,9,6,0.7)],GOLD,{amb:0.3,rimB:0.8});
-  render({r:1.6,a:0.18});radial(cx+R*0.2,cy-R*0.7,30,'255,250,230',0.3);};
+  render({r:1.6,a:0.18});};
 
 SC.boat=()=>{ const cx=195,y=560,w=138;
   SS([ell(cx,y,w,w*0.32),cap(cx-w*0.92,y-2,cx-w*1.12,y-w*0.26,8,5),cap(cx+w*0.92,y-2,cx+w*1.12,y-w*0.26,8,5)],WOOD,
@@ -634,6 +626,78 @@ SC.lotus=(ph)=>{ ph=ph==null?0.5:ph;const br=0.5-0.5*Math.cos(ph*Math.PI*2),fx=1
   SS([ell(fx,fy+10,50,14)],LEAF,{amb:0.3,kl:0.5});
   render({r:1.6,a:0.18});radial(fx,fy-36,130*(0.6+0.4*br),'255,200,210',0.05+0.05*br);radial(fx,fy-24,40,'255,240,220',0.08*br);};
 
+
+/* ---------- вещи старика, полотно, кузница ---------- */
+SC.elder=()=>{ const cx=195,cy=448,X=v=>cx+(v-195),Y=v=>cy+(v-450);
+  SS([box(cx,Y(574),150,13,7)],CLOTH,{depth:7,kl:0.5,amb:0.16,pat:(x,y,d,b)=>b*(Math.abs(Math.sin(x/7))<0.2?1.4:0.8)});
+  SS([ell(X(195),Y(318),30,36),cap(X(195),Y(350),X(195),Y(372),8,9.5),ell(X(195),Y(392),62,19),
+     cap(X(195),Y(392),X(195),Y(470),46,40),ell(X(195),Y(500),46,26),
+     cap(X(133),Y(398),X(119),Y(470),14,11),cap(X(119),Y(470),X(150),Y(536),11,9),
+     cap(X(257),Y(398),X(271),Y(470),14,11),cap(X(271),Y(470),X(240),Y(536),11,9),
+     ell(X(195),Y(566),140,28),ell(X(85),Y(560),42,24),ell(X(305),Y(560),42,24),
+     cap(X(75),Y(572),X(235),Y(548),18,13),cap(X(315),Y(572),X(155),Y(548),18,13)],
+    BRONZE,{k:14,depth:30,amb:0.3,kd:0.35,kl:0.65,rimB:0.7,pat:grain(7)});
+  SS([cap(X(195),Y(338),X(195),Y(386),19,7)],SAND,{amb:0.4,kd:0.25,kl:0.5,depth:8,rimB:0.7,pat:(x,y,d,b)=>b*(0.7+0.4*Math.abs(Math.sin((x-cx)/2.2)))});
+  render({r:1.5,a:0.14});radial(cx,Y(400),110,'255,210,120',0.07);};
+
+SC.staff=()=>{ const x=182,b=600;
+  SS([cap(x,b,x+22,b-300,7,5.5)],WOOD,{pat:woodV,depth:7,kl:0.7,amb:0.22});
+  SS([ell(x+23,b-306,11,13,0.07)],WOOD,{pat:grain(3),depth:10,kl:0.7,amb:0.28});
+  for(const u of [0.3,0.58,0.82])SS([ell(x+22*u,b-300*u,8.5,4,0.07)],WOOD,{amb:0.3,kl:0.6,depth:4});
+  SS([ell(x+18,b-246,9,5,0.07)],SAND,{amb:0.4,kl:0.5,rimB:0.75});
+  render({r:1.5,a:0.14});};
+
+SC.blanket=()=>{ const cx=195,b=520;
+  for(let k=0;k<4;k++){const y=b-14-k*22,w=66-k*3;
+    SS([cap(cx-w,y,cx+w,y,11,10)],WOOL,{depth:12,kl:0.62,amb:0.22,
+      pat:(px,py,d,bb)=>bb*(0.76+0.26*Math.sin((px-cx)/8)+0.12*fbm(px/3,py/3))});
+    SS([ell(cx-w,y,9,10)],WOOL,{amb:0.34,kl:0.5,depth:7,
+      pat:(px,py,d,bb)=>bb*(0.7+0.4*Math.abs(Math.sin(Math.atan2(py-y,px-(cx-w))*4)))});}
+  SS([box(cx+6,b-58,118,4,2)],CLOTH,{amb:0.36,kl:0.42,depth:4,
+    pat:(px,py,d,bb)=>bb*(Math.abs(Math.sin((px-cx)/5))>0.6?1.3:0.6)});
+  render({r:1.5,a:0.14});};
+
+SC.books=()=>{ const cx=195,b=524,w=78;
+  SS([box(cx,b-7,w+9,10,3)],WOOD,{pat:woodH,amb:0.26,kl:0.7,depth:8});
+  for(let k=0;k<5;k++)SS([box(cx+(k%2?4:-3),b-20-k*14,w,6,2)],SAND,
+    {depth:6,kl:0.66,amb:0.28,pat:(px,py,d,bb)=>bb*(0.8+0.26*Math.sin(px/2.2))});
+  SS([box(cx+1,b-98,w+9,10,3)],WOOD,{pat:woodH,amb:0.26,kl:0.7,depth:8});
+  SS([box(cx-4,b-52,5,98,0)],CLOTH,{amb:0.5,kl:0.4,depth:4});
+  SS([ell(cx-4,b-104,9,6,0.5),ell(cx-16,b-110,6,4,1.1)],CLOTH,{amb:0.45,depth:4});
+  render({r:1.5,a:0.14});};
+
+SC.loom=(fill)=>{ const cx=195,b=660,f=fill==null?0.55:clamp(fill,0.08,0.95);
+  const fw=P=>SS(P,WOOD,{pat:woodV,depth:6,kl:0.7,amb:0.2});
+  fw([box(cx-128,b-105,9,105,2)]);fw([box(cx+128,b-105,9,105,2)]);
+  SS([box(cx,b-310,136,8,3)],WOOD,{pat:woodH,amb:0.22,kl:0.7});SS([box(cx,b-62,136,9,3)],WOOD,{pat:woodH,amb:0.22,kl:0.7});
+  const h=236*f,yT=b-62-h,mt=mat({pal:INK});
+  for(let x=cx-116;x<=cx+116;x+=5)curve([[x,b-302],[x,yT-4]],mt,0.55,false);
+  SS([box(cx,yT+h/2,118,h/2,1)],WOOL,{amb:0.26,kd:0.24,kl:0.46,depth:5,rimB:0.55,
+    pat:(x,y,d,bb)=>{const yy=y-yT;return bb*(0.74+0.2*Math.sin((x-cx)/2.6)+0.14*Math.sin(yy/2.2));}});
+  for(const yy of [8,h-8]){if(yy<4||yy>h)continue;SS([box(cx,yT+yy,118,3.5,1)],CLOTH,{amb:0.32,kl:0.45,depth:3,
+    pat:(x,y,d,bb)=>bb*(Math.abs(Math.sin((x-cx)/5))>0.6?1.25:0.6)});}
+  SS([box(cx,yT,120,3,1)],GOLD,{amb:0.5,rimB:0.8});
+  SS([ell(cx+44,yT-20,32,5),cap(cx+12,yT-20,cx+76,yT-20,3,3)],GOLD,{amb:0.35,kl:0.6,rimB:0.8,glow:true});
+  render({r:1.5,a:0.14});};
+
+SC.forge=(hot)=>{ const cx=195,b=640,L=hot==null?1:clamp(hot,0,1);
+  SS([rock(cx-98,b-36,70,38,3,0,0.1)],STONE,{pat:grain(5),depth:16,kl:0.5,amb:0.12});
+  if(L>0.05)for(let r=Math.floor((b-124)/CS);r<(b-46)/CS;r++)for(let c=Math.floor((cx-166)/CS);c<(cx-30)/CS;c++){
+    const x=c*CS,y=r*CS,v=fbm(x/8,y/6-1),top=b-66-60*L*Math.exp(-((x-(cx-98))**2)/(2*32*32));
+    if(y>top&&v>0.38){const i=r*COLS+c;if(i>=0&&i<MAT.length){MAT[i]=mat({pal:FIRE});BR[i]=clamp((y-top)/60*0.6+v*0.6,0,1)*L;GL[i]=1;}}}
+  SS([box(cx+44,b-12,54,12,3),box(cx+44,b-40,26,20,2),box(cx+44,b-66,74,14,3),cap(cx-18,b-68,cx-64,b-63,13,4)],
+    IRON,{k:4,depth:12,kl:0.7,amb:0.18,pat:grain(4)});
+  const R=54,sx=cx+26,sy=b-106,P=[ell(sx,sy,R,R*0.92,0)];
+  SS(P,L>0.3?HOTM:IRON,{cut:[ell(sx+R*0.28,sy-R*0.2,R*0.86,R*0.8),box(sx-R*0.2,sy+R*0.45,R*1.3,R*0.6)],
+    depth:6,kl:0.6,amb:L>0.3?0.3:0.2,rimB:L>0.3?0.7:0.78,glow:L>0.3,
+    emit:L>0.3?(x,y)=>0.18*L*Math.exp(-((x-sx+R*0.6)**2+(y-sy)**2)/(2*(R*0.5)**2)):null});
+  SS([cap(sx-R*0.92,sy-R*0.12,sx-R*1.6,sy+R*0.5,8,7)],WOOD,{pat:woodH,amb:0.25,kl:0.7,depth:6});
+  SS([cap(cx+124,b-158,cx+104,b-86,5,5)],WOOD,{pat:woodV,kl:0.7,amb:0.24,depth:7});
+  SS([box(cx+128,b-168,22,12,3)],IRON,{kl:0.7,amb:0.22,depth:9,pat:grain(4)});
+  if(L>0.1){const ms=mat({pal:FIRE});for(let i=0;i<30;i++){const a=-Math.PI/2+(hash(i,7)-0.5)*2.2,d=26+hash(i,8)*70*L;
+    dot(sx+Math.cos(a)*d,sy+Math.sin(a)*d*0.8,0.6+0.4*hash(i,9),ms,true);}}
+  render({r:1.6,a:0.2});
+  if(L>0.05){radial(cx-122,b-74,112*L,'255,140,50',0.25*L);radial(sx-R*0.5,sy,60*L,'255,150,55',0.18*L);}};
 function bake(name,z,dpr){
   CS=3.0/z;COLS=Math.ceil(W/CS);ROWS=Math.ceil(H/CS);BR=new Float32Array(COLS*ROWS);MAT=new Int16Array(COLS*ROWS).fill(-1);GL=new Uint8Array(COLS*ROWS);MATS.length=0;SEED=7;
   cv=document.createElement('canvas');const px=dpr*z;cv.width=Math.ceil(W*px);cv.height=Math.ceil(H*px);ctx=cv.getContext('2d');ctx.scale(px,px);
@@ -1523,7 +1587,7 @@ function flame(ox,oy,h,fl,t){for(let r=py2r(oy-h);r<py2r(oy-H*0.01);r++){const y
 function moon(cx,cy,b){['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(px2c(cx)+j-3,py2r(cy)+i,s[j],PAL.sky[b]);});}
 const FIG_LOOM=mkFig([['c',-0.36,-0.3,-0.36,0.4,0.035],['c',0.36,-0.3,0.36,0.4,0.035],['c',-0.4,0.4,0.4,0.4,0.03],['c',-0.4,-0.3,0.4,-0.3,0.03]],0.02);FIG_LOOM.spr={n:'loom',ax:195,ay:501,u:345};
 const FIG_STAND=mkFig([['o',0,0.64,0.085],['c',0,0.53,0,0.22,0.09],['c',-0.05,0.22,-0.09,-0.22,0.05],['c',0.05,0.22,0.09,-0.22,0.05],['c',-0.1,0.48,-0.19,0.2,0.035],['c',0.1,0.48,0.19,0.2,0.035]],0.015);
-FIG_STAND.spr={n:'body',ax:195,ay:635,u:660,anim:'breath'};const FIG_WOMAN={spr:{n:'woman',ax:195,ay:635,u:660,anim:'breath'}};
+FIG_STAND.spr={n:'body',ax:195,ay:635,u:660,anim:'breath'};const FIG_WOMAN={spr:{n:'woman',ax:195,ay:635,u:660,anim:'breath'}};const FIG_ELDER={spr:{n:'elder',ax:195,ay:594,u:420,anim:'breath'}};const FIG_STAFF={spr:{n:'staff',ax:195,ay:444,u:491}};const FIG_BLANKET={spr:{n:'blanket',ax:201,ay:472,u:292}};const FIG_BOOKS={spr:{n:'books',ax:195,ay:472,u:272}};
 const ISTG={s:'t'};
 const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вступления, 'q' вопрос, 'bad' неверный ответ, 'ok' верный
   ahimsa:(t,st)=>{const S1=Math.min(W*0.55,H*0.32),porch=py2r(H*0.55);drawFig(FIG_HOUSE,W*0.3,H*0.5,S1,0,PAL.stone,RD);
@@ -1547,18 +1611,26 @@ const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вс�
     if(st===1||st==='q'||st==='bad')for(let i=0;i<5;i++)putC(px2c(W*0.2)+i*3,py2r(H*0.76),'●',PAL.amber[5]);
     if(st==='ok'){drawFig(FIG_BASKET,W*0.5,H*0.74,Math.min(W*0.45,H*0.26),0,PAL.amber,RD);for(let i=-2;i<=2;i++)putC(px2c(W*0.5)+i,py2r(H*0.7),'●',PAL.amberHi[7]);}
     landscape(t,{dim:0.45,stars:0.0,grass:0.78});},
-  brahmacharya:(t,st)=>{const ox=W*0.38,oy=H*0.66;drawFig(FIG_LAMP,ox,oy,Math.min(W*0.6,H*0.36),0,PAL.path,RD);
-    const h=st==='bad'?H*0.05*(0.5+0.5*Math.sin(t*15)):st==='ok'?H*0.2:H*0.18,fl=st==='ok'?0.15:st==='bad'?2:1;if(h>H*0.02)flame(ox,oy,h,fl,t);
-    if(st!=='t')drawFig(FIG_STAND,W*0.62,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
+  brahmacharya:(t,st)=>{const ox=W*0.26,oy=H*0.66,Sl=Math.min(W*0.58,H*0.35);
+    const fh=st==='bad'?0.25+0.55*(0.5+0.5*Math.sin(t*15)):st==='ok'?1.25:1;
+    drawSprite('diya#'+(Math.round(fh*4)/4),190,580,ox,oy,Sl*FIGK/290,0,1,false);
+    if(st!=='t')drawFig(FIG_STAND,W*0.7,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
     const beat=Math.pow(0.5+0.5*Math.sin(t*6),6),loud=st==='t'||st===0||st===1;for(let i=0;i<2;i++){const cx=px2c(W*0.84)+i*4,cy=py2r(H*0.6);putC(cx,cy,beat>0.5&&loud?'●':'◦',PAL.amber[Math.round(3+(loud?beat:0.2)*4)]);putC(cx-1,cy+1,'॥',PAL.stone[4]);putC(cx+1,cy+1,'॥',PAL.stone[4]);}
     moon(W*0.82,H*0.14,st==='ok'?6:2);landscape(t,{dim:0.45,stars:0.4,grass:0.74});},
-  aparigraha:(t,st)=>{drawFig(FIG_SEAT,W*0.26,H*0.64,Math.min(W*0.5,H*0.3),0,PAL.amber,RD);
-    const y=H*0.62,xs=[0.55,0.68,0.8,0.92],pu=st===1||st==='q'?1+0.06*Math.sin(t*3):1;
+  aparigraha:(t,st)=>{drawFig(FIG_ELDER,W*0.26,H*0.64,Math.min(W*0.5,H*0.3),0,PAL.amber,RD);
+    const pos=[[0.52,0.60,0.20],[0.655,0.665,0.13],[0.80,0.705,0.13],[0.785,0.575,0.115]],pu=st===1||st==='q'?1+0.06*Math.sin(t*3):1;
     const items=st==='ok'?[0]:st==='bad'?[]:[0,1,2,3];
-    if(st==='bad'){for(let i=0;i<4;i++)putC(px2c(W*0.7)+i*2-3,py2r(H*0.6)-(i%2),'▣',PAL.path[5]);drawFig(FIG_STAND,W*0.72,H*0.68,Math.min(W*0.42,H*0.27)*0.9,0.3,PAL.stone,RD);}
-    for(const i of items){const x=W*xs[i];if(i===0)drawFig(mkFig([['c',0,-0.3,0,0.3,0.03]],0.01),x,y,H*0.22*pu,0.1,st==='ok'?PAL.amberHi:PAL.path,RD);
-      else if(i===1)drawFig(FIG_POT,x,y,H*0.16*pu,0,PAL.path,RD);else if(i===2)drawFig(mkFig([['e',0,0,0.4,0.12]],0.01),x,y+H*0.03,H*0.16*pu,0,PAL.path,RD);
-      else drawFig(mkFig([['c',-0.25,-0.1,0.25,-0.1,0.07],['c',-0.25,0.08,0.25,0.08,0.07]],0.01),x,y,H*0.16*pu,0,PAL.path,RD);}
+    if(st==='bad'){const px=W*0.72,py=H*0.8;
+      drawFig(FIG_STAFF,px-W*0.04,py-H*0.045,H*0.16,1.32,PAL.path,RD);
+      drawFig(FIG_BLANKET,px-W*0.05,py,H*0.12,0.06,PAL.path,RD);
+      drawFig(FIG_BOOKS,px+W*0.09,py-H*0.012,H*0.1,-0.12,PAL.path,RD);
+      drawFig(FIG_POT,px+W*0.015,py-H*0.03,H*0.1,0,PAL.path,RD);
+      drawFig(FIG_STAND,W*0.74,H*0.62,Math.min(W*0.42,H*0.27)*0.9,0.3,PAL.stone,RD);}
+    for(const i of items){const [fx,fy,fs]=pos[i],x=W*fx,y=H*fy,S2=H*fs*pu,pl=st==='ok'?PAL.amberHi:PAL.path;
+      if(i===0)drawFig(FIG_STAFF,x,y,S2,0.08,pl,RD);
+      else if(i===1)drawFig(FIG_POT,x,y,S2,0,PAL.path,RD);
+      else if(i===2)drawFig(FIG_BLANKET,x,y,S2,0,PAL.path,RD);
+      else drawFig(FIG_BOOKS,x,y,S2,0,PAL.path,RD);}
     landscape(t,{dim:0.45,stars:0.3,grass:0.72});},
   shaucha:(t,st)=>{drawFig(FIG_WELL,W*0.3,H*0.55,Math.min(W*0.6,H*0.36),0,PAL.stone,RD);
     if(st!=='t'&&st!==0)drawFig(FIG_STAND,W*0.58,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
@@ -1568,17 +1640,17 @@ const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вс�
     const act=st===0||st===1||st==='q';if(act)for(let i=0;i<4;i++){const k=(t*0.4+i/4)%1,rr=Math.round(2+k*6);for(let a=0;a<12;a++){const an=a/12*Math.PI*2;putC(px2c(W*0.3+Math.cos(an)*rr*CW),py2r(H*0.5+Math.sin(an)*rr*CH*0.5),'~',PAL.water[Math.round(6-k*4)]);}}
     landscape(t,{dim:0.45,stars:0.3,grass:0.78});},
   santosha:(t,st)=>{const ox=W*0.42,oy=H*0.55,Sc=Math.min(W*0.7,H*0.42),ph=0.5+0.5*Math.sin(t*(st==='bad'?4:1.5));
-    drawFig(FIG_LOOM,ox,oy,Sc,0,PAL.stone,RD);
-    const cl=st==='bad'?0.3:0.55;{const h=0.5*cl,r=Math.min(h/2,0.08);drawFig(mkFig([['c',-0.3+r,0.28-h/2,0.3-r,0.28-h/2,h/2]],0.01),ox,oy,Sc,0,PAL.amber,RD);}
-    if(st!=='ok')putC(px2c(ox+(ph-0.5)*Sc*0.6),py2r(oy-(0.28-0.5*cl)*Sc),'◆',PAL.amberHi[7]);
+    const cl=st==='bad'?0.25:st==='ok'?0.92:0.55;
+    drawSprite('loom#'+cl,195,501,ox,oy,Sc*FIGK/345,0,1,false);
+    if(st!=='ok')putC(px2c(ox+(ph-0.5)*Sc*0.6),py2r(oy-(-0.38+0.684*cl)*Sc),'◆',PAL.amberHi[7]);
     if(st==='bad')for(let i=0;i<3;i++)putC(px2c(ox)+i*2-2,py2r(oy-0.1*Sc)+i,'╱',PAL.stone[6]);
     if(st!=='t'&&st!==0)drawFig(FIG_STAND,W*0.82,H*0.7,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
     if(st==='ok')putC(px2c(W*0.82),py2r(H*0.52),'▬',PAL.amberHi[7]);
     landscape(t,{dim:0.45,stars:0.25,grass:0.8});},
-  tapas:(t,st)=>{const ox=W*0.42,oy=H*0.58,pu=0.5+0.5*Math.sin(t*2);
-    const pal=st==='bad'?PAL.shade:st==='ok'?PAL.amberHi:pu>0.5?PAL.amber:PAL.path;drawFig(FIG_SICKLE,ox,oy,Math.min(W*0.7,H*0.4),0,pal,RD);
-    if(st==='bad')for(let i=0;i<4;i++)putC(px2c(ox)+i*2-2,py2r(oy)-i,'╱',PAL.stone[6]);
-    const fire=st!=='ok';if(fire)for(let r=py2r(oy+H*0.04);r<py2r(oy+H*0.2);r++)for(let c=px2c(ox-W*0.22);c<px2c(ox+W*0.22);c++)if(hash(c,r+((t*8)|0))<(st==='bad'?0.2:0.45))putC(c,r,'ऽर'[(hash(r,c)*2)|0],PAL.amber[Math.round(2+4*hash(c,r+3))]);
+  tapas:(t,st)=>{const ox=W*0.44,pu=0.5+0.5*Math.sin(t*2),Sf=Math.min(W*0.92,H*0.52);
+    const hot=st==='ok'?0:st==='bad'?1:0.45+0.55*pu;
+    drawSprite('forge#'+(Math.round(hot*4)/4),195,640,ox,H*0.72,Sf*FIGK/360,0,1,false);
+    if(st==='bad')for(let i=0;i<4;i++)putC(px2c(ox)+i*2-2,py2r(H*0.55)-i,'╱',PAL.stone[6]);
     if(st!=='t')drawFig(FIG_STAND,W*0.8,H*0.7,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
     landscape(t,{dim:0.45,stars:0.2,grass:0.82});},
   svadhyaya:(t,st)=>{drawFig(FIG_SEAT,W/2,H*0.68,Math.min(W*0.55,H*0.32),0,PAL.amber,RD);const G=['यो','ग','श्चि','त्त','वृ','त्ति','नि','रो','धः'];
