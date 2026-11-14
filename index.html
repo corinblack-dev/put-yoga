@@ -711,7 +711,7 @@ SC.boat=()=>{ const cx=195,y=560,w=138;
   SS([ell(cx-w*0.62,y-26,6,8)],GOLD,{amb:0.6,glow:true});
   render({r:1.5,a:0.14});radial(cx-w*0.62,y-26,46,'255,210,120',0.26);};
 
-SC.forge=(hot)=>{ const cx=195,b=640,L=hot==null?1:clamp(hot,0,1);
+SC.forge=(hot,blade)=>{ const cx=195,b=640,L=hot==null?1:clamp(hot,0,1),BL=blade==null?1:blade;
   SS([rock(cx-98,b-36,70,38,3,0,0.1)],STONE,{pat:grain(5),depth:16,kl:0.5,amb:0.12});
   if(L>0.05)for(let r=Math.floor((b-124)/CS);r<(b-46)/CS;r++)for(let c=Math.floor((cx-166)/CS);c<(cx-30)/CS;c++){
     const x=c*CS,y=r*CS,v=fbm(x/8,y/6-1),top=b-66-60*L*Math.exp(-((x-(cx-98))**2)/(2*32*32));
@@ -719,7 +719,7 @@ SC.forge=(hot)=>{ const cx=195,b=640,L=hot==null?1:clamp(hot,0,1);
   SS([box(cx+44,b-12,54,12,3),box(cx+44,b-40,26,20,2),box(cx+44,b-66,74,14,3),cap(cx-18,b-68,cx-64,b-63,13,4)],
     IRON,{k:4,depth:12,kl:0.42,amb:0.1,rimB:0.5,pat:grain(4)});
   const R=66,sx=cx+38,sy=b-98;
-  sickleShape(sx,sy,R,L>0.3?HOTM:IRON,{rot:-0.2,sq:0.5,amb:L>0.3?0.38:0.24,kl:L>0.3?0.5:0.85,rimB:L>0.3?0.75:0.95,glow:true,
+  if(BL)sickleShape(sx,sy,R,L>0.3?HOTM:IRON,{rot:-0.2,sq:0.5,amb:L>0.3?0.38:0.24,kl:L>0.3?0.5:0.85,rimB:L>0.3?0.75:0.95,glow:true,
     emit:L>0.3?(x,y)=>0.24*L*Math.exp(-(Math.pow(Math.hypot(x-sx,(y-sy)/0.5)-R,2))/(2*Math.pow(R*0.22,2))):null});
   SS([cap(cx+140,b-158,cx+120,b-86,5,5)],WOOD,{pat:woodV,kl:0.7,amb:0.24,depth:7});
   SS([box(cx+144,b-168,22,12,3)],IRON,{kl:0.7,amb:0.22,depth:9,pat:grain(4)});
@@ -851,6 +851,8 @@ function bgWater(c,r,t,b0){
 }
 function landscape(t,o){
   const st=o.stars,rv=o.river,gr=o.grass,g0=Math.floor(gr*ROWS);
+  if(o.moon!==false){const m=Array.isArray(o.moon)?o.moon:(st>=0.2?[0.84,0.11,3]:null);
+    if(m)moon(W*m[0],H*m[1],m[2]);}
   const dm=o.dim||1;eachCell((c,r)=>{const y=r/ROWS;if(rv&&y>=rv[0]&&y<=rv[1])bgWater(c,r,t,0.12);else if(y>=gr)bgGrass(c,r,t,g0,dm);else if(y<st)bgStars(c,r,t);});
 }
 function bgForest(c,r,t){
@@ -1084,14 +1086,14 @@ const sceneTitle={name:'title',
       {go:start,new:()=>{S=fresh();save();hud();start();}});},
   leave(){$('#title').classList.add('hidden');},
   zs(){return Math.min(H*0.0006,W*0.0015);},
-  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.555,z,0,1,false,null,'breath');landscape(t,{stars:0.5,river:[0.6,0.64],grass:0.64});},
+  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.555,z,0,1,false,null,'breath');landscape(t,{stars:0.5,river:[0.6,0.64],grass:0.64,moon:[0.17,0.09,4]});},
   post(t){const z=this.zs();omPulse(W/2,H*0.555-(596-210)*z,z,t);}
 };
 const sceneRiver={name:'river',
   enter(){$('#hud').classList.add('hidden');vn(PROLOGUE(),()=>{S.intro=true;save();go(sceneMap);});},
   up(){if(vnAdv)vnAdv();},
   zs(){return Math.min(H*0.0008,W*0.0018);},
-  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.55,z,0,1,false,null,'breath');landscape(t,{stars:0.36,river:[0.57,0.62],grass:0.62});},
+  render(t){const z=this.zs();drawSprite('meditation',195,596,W/2,H*0.55,z,0,1,false,null,'breath');landscape(t,{stars:0.36,river:[0.57,0.62],grass:0.62,moon:[0.17,0.09,3]});},
   post(t){const z=this.zs();omPulse(W/2,H*0.55-(596-210)*z,z,t);}
 };
 
@@ -1539,9 +1541,12 @@ const HOUSES=[
      {t:'Пойти на праздник, свет подождёт',reply:'Светильник гаснет.'},
      {t:'Прикрыть огонь ладонью и дышать медленно',ok:true}],
    task:'Держи экран на вдохе, отпускай на выдохе. Выдох длиннее вдоха: пламя горит ровно.',
-   mech:()=>breathMech({i:4,o:6,c:FAST?1:2},(t,B)=>{const ox=W/2,oy=H*0.72,h=(0.12+0.3*B.lvl)*H,fl=B.started&&!B.ok?1:0.2;drawFig(FIG_LAMP,ox,oy,Math.min(W*0.8,H*0.45),0,PAL.path,RD);
-     for(let r=py2r(oy-h);r<py2r(oy-H*0.02);r++){const y=(r*CH-(oy-h))/h,w=Math.max(1,Math.round((1-y)*(1-y)*5+Math.sin(t*9+r)*fl*2));for(let d=-w;d<=w;d++)putC(px2c(ox)+d+Math.round(Math.sin(t*12+r*0.7)*fl*2),r,y<0.3?'^':y<0.7?'*':'#',PAL.amber[Math.round(3+y*4)]);}
-     const mc=px2c(W*0.8),mr=py2r(H*0.12);['  .--.','.(    )',"  `--'"].forEach((s,i)=>{for(let j=0;j<s.length;j++)if(s[j]!==' ')putC(mc+j-3,mr+i,s[j],PAL.sky[2+Math.round(4*B.cyc/3)]);});landscape(t,{stars:0.4,grass:0.78});}),
+   mech:()=>{const Sl=Math.min(W*0.8,H*0.45)*FIGK,zl=Sl/268;
+     const m=breathMech({i:4,o:6,c:FAST?1:2},(t,B)=>{const ox=W/2,oy=H*0.72;
+       const fh=clamp(0.25+1.3*B.lvl,0.1,1.55);
+       drawSprite('diya#'+(Math.round(fh*4)/4),195,580,ox,oy,zl,0,1,false);
+       landscape(t,{stars:0.4,grass:0.78,moon:[0.82,0.12,2+Math.round(4*B.cyc/3)]});});
+     m.enter=()=>prebake(['diya#0.25','diya#0.5','diya#0.75','diya#1','diya#1.25','diya#1.5'],zl);return m;},
    end:'Огонь горит долго, когда не тратит себя на треск.',scroll:'ys2_38'},
   {id:'aparigraha',fail:['Чем больше в сумке, тем тяжелее дорога. Что действительно нужно в пути?','Отказаться от всего — тоже способ не слышать дарящего. Возьми то, что нужно.','Старик дарит не вещи, а свободу. Подумай, что из этого пригодится.'],rgb:'186,182,160',petals:3,n:'Апариграха',ru:'нестяжание',who:'Старик',deva:'अपरिग्रह',
    intro:['Старик уходит жить в лес и раздаёт вещи: посох, котёл, одеяло, книги.'],
@@ -1646,12 +1651,11 @@ const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вс�
     if(st===1||st==='q'||st==='bad')for(let i=0;i<5;i++)putC(px2c(W*0.2)+i*3,py2r(H*0.76),'●',PAL.amber[5]);
     if(st==='ok'){drawFig(FIG_BASKET,W*0.5,H*0.74,Math.min(W*0.45,H*0.26),0,PAL.amber,RD);for(let i=-2;i<=2;i++)putC(px2c(W*0.5)+i,py2r(H*0.7),'●',PAL.amberHi[7]);}
     landscape(t,{dim:0.45,stars:0.0,grass:0.78});},
-  brahmacharya:(t,st)=>{const ox=W*0.26,oy=H*0.66,Sl=Math.min(W*0.58,H*0.35);
+  brahmacharya:(t,st)=>{const ox=W*0.5,oy=H*0.68,Sl=Math.min(W*0.72,H*0.42);
     const fh=st==='bad'?0.25+0.55*(0.5+0.5*Math.sin(t*15)):st==='ok'?1.25:1;
     drawSprite('diya#'+(Math.round(fh*4)/4),195,580,ox,oy,Sl*FIGK/268,0,1,false);
-    if(st!=='t')drawFig(FIG_STAND,W*0.7,H*0.68,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
-    const beat=Math.pow(0.5+0.5*Math.sin(t*6),6),loud=st==='t'||st===0||st===1;for(let i=0;i<2;i++){const cx=px2c(W*0.84)+i*4,cy=py2r(H*0.6);putC(cx,cy,beat>0.5&&loud?'●':'◦',PAL.amber[Math.round(3+(loud?beat:0.2)*4)]);putC(cx-1,cy+1,'॥',PAL.stone[4]);putC(cx+1,cy+1,'॥',PAL.stone[4]);}
-    moon(W*0.82,H*0.14,st==='ok'?6:2);landscape(t,{dim:0.45,stars:0.4,grass:0.74});},
+    const beat=Math.pow(0.5+0.5*Math.sin(t*6),6),loud=st==='t'||st===0||st===1;for(let i=0;i<2;i++){const cx=px2c(W*0.86)+i*3,cy=py2r(H*0.62);putC(cx,cy,beat>0.5&&loud?'●':'◦',PAL.amber[Math.round(3+(loud?beat:0.2)*4)]);putC(cx-1,cy+1,'॥',PAL.stone[4]);putC(cx+1,cy+1,'॥',PAL.stone[4]);}
+    landscape(t,{dim:0.45,stars:0.4,grass:0.74,moon:[0.2,0.13,st==='ok'?6:3]});},
   aparigraha:(t,st)=>{drawFig(FIG_ELDER,W*0.26,H*0.64,Math.min(W*0.5,H*0.3),0,PAL.amber,RD);
     const pos=[[0.52,0.60,0.20],[0.655,0.665,0.13],[0.80,0.705,0.13],[0.785,0.575,0.115]],pu=st===1||st==='q'?1+0.06*Math.sin(t*3):1;
     const items=st==='ok'?[0]:st==='bad'?[]:[0,1,2,3];
@@ -1684,7 +1688,7 @@ const ILL={ // (t, стадия): 't' заголовок, 0/1 строки вс�
     landscape(t,{dim:0.45,stars:0.25,grass:0.8});},
   tapas:(t,st)=>{const ox=W*0.44,pu=0.5+0.5*Math.sin(t*2),Sf=Math.min(W*0.92,H*0.52);
     const hot=st==='ok'?0:st==='bad'?1:0.45+0.55*pu;
-    drawSprite('forge#'+(Math.round(hot*4)/4),195,640,ox,H*0.72,Sf*FIGK/360,0,1,false);
+    drawSprite('forge#'+(Math.round(hot*4)/4)+'#0',195,640,ox,H*0.72,Sf*FIGK/360,0,1,false);
     if(st==='bad')for(let i=0;i<4;i++)putC(px2c(ox)+i*2-2,py2r(H*0.55)-i,'╱',PAL.stone[6]);
     if(st!=='t')drawFig(FIG_STAND,W*0.8,H*0.7,Math.min(W*0.42,H*0.27),0,PAL.amber,RD);
     landscape(t,{dim:0.45,stars:0.2,grass:0.82});},
